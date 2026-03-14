@@ -1,0 +1,209 @@
+// components/watchtower/scenario-accordion.tsx
+"use client";
+
+import { useState } from "react";
+import type { Scenario, SevCode } from "@/lib/watchtower/data";
+
+const SEV_STYLES: Record<SevCode, string> = {
+  EX: "bg-[rgba(255,0,85,0.18)] text-[#ff0055] border border-[rgba(255,0,85,0.3)]",
+  CR: "bg-red-dim text-red-bright border border-red-protocol/28",
+  HI: "bg-amber-dim text-amber-protocol border border-amber-DEFAULT/26",
+  EL: "bg-blue-dim text-blue-DEFAULT border border-blue-DEFAULT/22",
+  ME: "bg-[rgba(168,85,247,0.12)] text-purple-DEFAULT border border-purple-DEFAULT/22",
+};
+
+const SEV_LABELS: Record<SevCode, string> = {
+  EX:"EXISTENTIAL", CR:"CRITICAL", HI:"HIGH", EL:"ELEVATED", ME:"MEDIUM",
+};
+
+const PRI_COLORS = { "1":"#e84040", "2":"#f0a500", "3":"#c9a84c" } as const;
+
+interface ScenarioAccordionProps {
+  scenarios: Scenario[];
+}
+
+export function ScenarioAccordion({ scenarios }: ScenarioAccordionProps) {
+  const [expanded, setExpanded] = useState<string | null>(null);
+
+  const toggle = (id: string) =>
+    setExpanded((prev) => (prev === id ? null : id));
+
+  return (
+    <div className="flex flex-col gap-2.5">
+      {scenarios.map((s) => {
+        const isOpen = expanded === s.id;
+        const barColor = s.prob >= 40 ? "#e84040" : "#f0a500";
+
+        return (
+          <article
+            key={s.id}
+            className="bg-void-1 border border-border-protocol rounded-[10px] overflow-hidden"
+          >
+            {/* Accordion header */}
+            <button
+              onClick={() => toggle(s.id)}
+              className="w-full flex items-center gap-3.5 px-4.5 py-4
+                         text-left flex-wrap hover:bg-void-2
+                         transition-colors duration-150 focus-visible:outline-none
+                         focus-visible:ring-2 focus-visible:ring-gold-protocol/40"
+              aria-expanded={isOpen}
+            >
+              <span className="text-[22px] flex-shrink-0">{s.icon}</span>
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2.5 flex-wrap mb-1.5">
+                  <span className="font-mono text-[10px] text-text-mute2">{s.id}</span>
+                  <span className="font-syne font-bold text-[15px] text-text-base">
+                    {s.title}
+                  </span>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full
+                                   bg-purple-DEFAULT/10 text-purple-DEFAULT
+                                   border border-purple-DEFAULT/22
+                                   font-mono text-[10px] font-semibold">
+                    {s.window}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <span className={`inline-block px-2 py-0.5 rounded font-mono
+                                    text-[9.5px] font-bold tracking-[.06em]
+                                    ${SEV_STYLES[s.sev]}`}>
+                    {SEV_LABELS[s.sev]}
+                  </span>
+
+                  <div className="flex items-center gap-2 min-w-[120px]">
+                    <div className="w-[60px] h-[3px] rounded-sm bg-white/[0.07] overflow-hidden">
+                      <div
+                        className="h-full rounded-sm"
+                        style={{ width:`${s.prob}%`, background:barColor }}
+                      />
+                    </div>
+                    <span
+                      className="font-mono text-[11px] font-bold tabular-nums"
+                      style={{ color: barColor }}
+                    >
+                      {s.prob}% prob
+                    </span>
+                  </div>
+
+                  <span className="font-mono text-[10px] text-text-mute2">
+                    Ark prep: {s.prepTime}
+                  </span>
+                </div>
+              </div>
+
+              <span
+                className="text-text-mute2 text-base flex-shrink-0 transition-transform duration-200"
+                style={{ transform: isOpen ? "rotate(180deg)" : "none" }}
+              >
+                ▼
+              </span>
+            </button>
+
+            {/* Accordion body */}
+            {isOpen && (
+              <div
+                className="border-t border-border-protocol px-4.5 py-4
+                           animate-[fadeUp_0.25s_ease_both]"
+              >
+                <p className="text-text-dim text-[13px] leading-relaxed mb-4">
+                  {s.summary}
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {/* Triggers + Cascade */}
+                  <div>
+                    <SectionLabel>Triggers</SectionLabel>
+                    {s.triggers.map((t, i) => (
+                      <BodyRow key={i} icon="▸" color="#f0a500">{t}</BodyRow>
+                    ))}
+
+                    <SectionLabel className="mt-3.5">Cascade Links</SectionLabel>
+                    {s.cascade.map((c, i) => (
+                      <BodyRow key={i} icon="→" color="#e84040">{c}</BodyRow>
+                    ))}
+                  </div>
+
+                  {/* Mitigation table */}
+                  <div>
+                    <SectionLabel>Mitigation</SectionLabel>
+                    <table className="w-full border-collapse">
+                      <thead>
+                        <tr>
+                          {["Action","Pri.","Cost"].map((h) => (
+                            <th
+                              key={h}
+                              className="text-left font-mono text-[9.5px] tracking-[.12em]
+                                         uppercase text-text-mute2 px-3.5 py-2.5
+                                         border-b border-border-bright whitespace-nowrap"
+                            >
+                              {h}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {s.mitigation.map((m, i) => (
+                          <tr key={i} className="border-b border-white/[0.04]">
+                            <td className="px-3.5 py-2.5 text-[12px] text-text-dim">
+                              {m.action}
+                            </td>
+                            <td className="px-3.5 py-2.5">
+                              <span
+                                className="font-mono text-[11px] font-bold"
+                                style={{ color: PRI_COLORS[m.pri] ?? "#c9a84c" }}
+                              >
+                                {m.pri}
+                              </span>
+                            </td>
+                            <td className="px-3.5 py-2.5 font-mono text-[11px] text-text-mute2">
+                              {m.cost}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+          </article>
+        );
+      })}
+    </div>
+  );
+}
+
+function SectionLabel({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={`font-mono text-[9px] text-text-mute2 tracking-[.12em]
+                  uppercase mb-2 ${className}`}
+    >
+      {children}
+    </div>
+  );
+}
+
+function BodyRow({
+  icon,
+  color,
+  children,
+}: {
+  icon: string;
+  color: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex gap-2 py-1.5 border-b border-white/[0.04] text-[12.5px]">
+      <span className="flex-shrink-0" style={{ color }}>{icon}</span>
+      <span className="text-text-dim">{children}</span>
+    </div>
+  );
+}
