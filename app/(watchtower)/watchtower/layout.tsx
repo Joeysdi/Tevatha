@@ -31,16 +31,21 @@ export default function WatchtowerLayout({ children }: { children: ReactNode }) 
     <div className="flex flex-col h-screen bg-void-3 overflow-hidden">
 
       {/* ── TOPBAR (server — static chrome) ──────────────────────────── */}
-      <header className="flex-shrink-0 bg-void-1 border-b border-border-protocol
-                         px-5 py-2.5 flex items-center justify-between gap-3
-                         flex-wrap z-50">
-        <div className="flex items-center gap-4 flex-wrap">
+      <header className="flex-shrink-0 bg-void-1 border-b border-border-bright/60
+                         px-6 py-3.5 flex items-center justify-between gap-4
+                         flex-wrap z-50"
+              style={{ boxShadow: "0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.4)" }}>
+        <div className="flex items-center gap-5 flex-wrap">
           {/* Wordmark */}
-          <div className="font-syne font-extrabold text-lg tracking-tight
-                          text-gold-protocol leading-none">
-            ⚔ <span className="text-gold-protocol">TEVATHA</span>{" "}
-            <span className="text-text-mute2 font-light text-xs tracking-[.1em]
-                             align-middle">WATCHTOWER</span>
+          <div className="flex items-center gap-3 leading-none">
+            <span className="font-syne font-extrabold text-[17px] tracking-tight
+                             text-gold-protocol">
+              ⚔ TEVATHA
+            </span>
+            <span className="w-px h-4 bg-border-bright opacity-40" />
+            <span className="font-mono text-[10px] text-text-mute2 tracking-[.18em] uppercase">
+              Watchtower
+            </span>
           </div>
 
           {/* Status badges — static server render */}
@@ -51,15 +56,16 @@ export default function WatchtowerLayout({ children }: { children: ReactNode }) 
         </div>
 
         <div className="flex items-center gap-5 flex-wrap">
-          {/* 85s counter — static; no JS timer needed, value is fixed */}
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-red-protocol
-                             shadow-[0_0_8px_rgba(232,64,64,0.8)]
-                             animate-pulse" />
-            <span className="font-syne font-bold text-xl text-red-protocol
-                             leading-none">85s</span>
-            <span className="font-mono text-[10px] text-text-mute2
-                             tracking-[.1em]">TO MIDNIGHT</span>
+          {/* 85s counter */}
+          <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg
+                          bg-red-protocol/10 border border-red-protocol/20">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-protocol
+                             shadow-[0_0_8px_rgba(232,64,64,0.9)]
+                             animate-pulse flex-shrink-0" />
+            <span className="font-syne font-bold text-[18px] text-red-protocol
+                             leading-none tabular-nums">85s</span>
+            <span className="font-mono text-[9.5px] text-text-mute2
+                             tracking-[.12em] uppercase">to midnight</span>
           </div>
 
           {/* Live UTC clock — isolated client island */}
@@ -75,7 +81,7 @@ export default function WatchtowerLayout({ children }: { children: ReactNode }) 
 
       {/* ── PAGE CONTENT ─────────────────────────────────────────────── */}
       <main className="flex-1 overflow-y-auto">
-        <div className="max-w-5xl mx-auto px-5 py-7 pb-20 w-full">
+        <div className="max-w-5xl mx-auto px-6 py-8 pb-24 w-full">
           {children}
         </div>
       </main>

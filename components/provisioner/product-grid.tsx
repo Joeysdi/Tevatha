@@ -53,18 +53,18 @@ export function ProductGrid({ products }: ProductGridProps) {
   return (
     <>
       {/* Filter strip */}
-      <div className="flex flex-wrap gap-1.5 p-1 bg-void-2 rounded-xl
-                      border border-border-protocol mb-6">
+      <div className="flex flex-wrap gap-1.5 p-1.5 bg-void-2 rounded-xl
+                      border border-border-protocol mb-7">
         {availableFilters.map((f) => (
           <button
             key={f}
             onClick={() => setActiveFilter(f)}
             className={`
-              px-3.5 py-1.5 text-[11.5px] rounded-lg transition-all duration-150
+              px-4 py-1.5 text-[11.5px] rounded-lg transition-all duration-150
               font-medium focus-visible:outline-none whitespace-nowrap
               ${activeFilter === f
-                ? "bg-void-3 text-text-base font-semibold border border-border-hover"
-                : "text-text-mute2 hover:text-text-base"
+                ? "bg-void-3 text-text-base font-semibold border border-border-hover shadow-[0_1px_4px_rgba(0,0,0,0.4)]"
+                : "text-text-mute2 hover:text-text-base hover:bg-white/[0.03]"
               }
             `}
           >
@@ -76,7 +76,7 @@ export function ProductGrid({ products }: ProductGridProps) {
           </button>
         ))}
         <span className="ml-auto self-center pr-2 font-mono text-[9.5px]
-                          text-text-mute2">
+                          text-text-mute2 tracking-[.06em]">
           {filtered.length} ITEMS
         </span>
       </div>
@@ -118,16 +118,17 @@ function ProductCard({
   return (
     <article
       className={`bg-void-1 border rounded-xl overflow-hidden
-                  transition-all duration-200 ${g.border} ${g.glow}`}
+                  transition-all duration-200 ${g.border} ${g.glow}
+                  hover:-translate-y-0.5`}
     >
       {/* Card header */}
-      <div className="p-4">
-        <div className="flex items-start justify-between gap-2 mb-3">
+      <div className="p-5">
+        <div className="flex items-start justify-between gap-3 mb-3">
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
               <GradeBadge grade={p.grade} composite={p.gradeComposite} size="sm" />
               {p.criticalFlag && (
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5
+                <span className="inline-flex items-center gap-1 px-2 py-0.5
                                  rounded-full bg-red-dim text-red-bright
                                  border border-red-protocol/28
                                  font-mono text-[9px] font-semibold">
@@ -136,27 +137,27 @@ function ProductCard({
                 </span>
               )}
             </div>
-            <h3 className="font-syne font-bold text-[14px] text-text-base
+            <h3 className="font-syne font-bold text-[15px] text-text-base
                             leading-snug">
               {p.name}
             </h3>
-            <p className="font-mono text-[9.5px] text-text-mute2 mt-0.5">
+            <p className="font-mono text-[9.5px] text-text-mute2 mt-1">
               {p.brand} · {p.sku}
             </p>
           </div>
 
           <div className="text-right flex-shrink-0">
-            <div className="font-syne font-bold text-[18px] text-gold-protocol
+            <div className="font-syne font-bold text-[19px] text-gold-protocol
                             leading-none">
               ${(p.priceUsd / 100).toFixed(2)}
             </div>
-            <div className="font-mono text-[9px] text-text-mute2 mt-0.5">
+            <div className="font-mono text-[9px] text-text-mute2 mt-1">
               {p.priceUsdc} USDC
             </div>
           </div>
         </div>
 
-        <p className="text-[12px] text-text-dim leading-relaxed mb-3">
+        <p className="text-[12.5px] text-text-dim leading-relaxed mb-3.5">
           {p.spec}
         </p>
 
@@ -172,14 +173,14 @@ function ProductCard({
       </div>
 
       {/* Build note */}
-      <div className="px-4 py-2 bg-void-2 border-t border-border-protocol">
+      <div className="px-5 py-2.5 bg-void-2 border-t border-border-protocol">
         <p className="font-mono text-[10px] text-text-mute2 leading-relaxed">
           ▸ {p.buildNote}
         </p>
       </div>
 
       {/* Checkout toggle */}
-      <div className="p-4 border-t border-border-protocol">
+      <div className="p-5 border-t border-border-protocol">
         {!expanded ? (
           <div className="flex gap-2">
             {!p.highTicket && p.stripePriceId ? (

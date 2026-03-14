@@ -31,7 +31,7 @@ interface ThreatGridProps {
 
 export function ThreatGrid({ domains }: ThreatGridProps) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       {domains.map((d) => (
         <DomainCard key={d.id} domain={d} />
       ))}
@@ -49,25 +49,30 @@ function DomainCard({ domain: d }: { domain: ThreatDomain }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       className={`
-        rounded-[9px] px-4 py-3.5 border-l-[3px]
-        transition-colors duration-200 cursor-default
-        ${hovered ? "bg-void-2" : "bg-void-1"}
+        rounded-xl px-5 py-4 border-l-[3px]
+        transition-all duration-200 cursor-default
+        ${hovered ? "bg-void-2 shadow-[0_4px_24px_rgba(0,0,0,0.4)] -translate-y-px" : "bg-void-1"}
       `}
-      style={{ borderLeftColor: borderColor, borderTop: `1px solid rgba(255,255,255,0.06)`, borderRight:`1px solid rgba(255,255,255,0.06)`, borderBottom:`1px solid rgba(255,255,255,0.06)` }}
+      style={{
+        borderLeftColor: borderColor,
+        borderTop: "1px solid rgba(255,255,255,0.07)",
+        borderRight: "1px solid rgba(255,255,255,0.07)",
+        borderBottom: "1px solid rgba(255,255,255,0.07)",
+      }}
     >
       {/* Header row */}
-      <div className="flex items-start justify-between mb-2.5">
-        <div className="flex items-center gap-2">
-          <span className="text-[18px] leading-none">{d.icon}</span>
-          <span className="font-syne font-bold text-[15px] text-text-base">
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex items-center gap-2.5">
+          <span className="text-[20px] leading-none">{d.icon}</span>
+          <span className="font-syne font-bold text-[15.5px] text-text-base">
             {d.label}
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <span
-            className="font-mono text-[10px] font-bold"
-            style={{ color: d.trend === "↑" ? "#e84040" : "rgba(100,116,139,0.8)" }}
+            className="font-mono text-[11px] font-bold"
+            style={{ color: d.trend === "↑" ? "#e84040" : "rgba(100,116,139,0.7)" }}
           >
             {d.trend}
           </span>
@@ -76,23 +81,23 @@ function DomainCard({ domain: d }: { domain: ThreatDomain }) {
       </div>
 
       {/* Score row */}
-      <div className="flex items-center justify-between mb-1.5">
+      <div className="flex items-center justify-between mb-2">
         <span className="font-mono text-[9.5px] tracking-[.1em] text-text-mute2 uppercase">
-          Score
+          Ark Score
         </span>
         <span
-          className="font-mono text-[12px] font-bold"
+          className="font-mono text-[13px] font-bold tabular-nums"
           style={{ color: scoreColor }}
         >
-          {d.score}/100
+          {d.score}<span className="text-text-mute2 font-normal text-[10px]">/100</span>
         </span>
       </div>
 
       {/* Bar */}
-      <div className="h-[4px] rounded-sm bg-white/[0.07] overflow-hidden">
+      <div className="h-[5px] rounded-full bg-white/[0.07] overflow-hidden">
         <div
-          className="h-full rounded-sm transition-[width] duration-[1100ms] ease-[cubic-bezier(0.4,0,0.2,1)]"
-          style={{ width: `${d.score}%`, background: scoreColor }}
+          className="h-full rounded-full transition-[width] duration-[1100ms] ease-[cubic-bezier(0.4,0,0.2,1)]"
+          style={{ width: `${d.score}%`, background: scoreColor, boxShadow: `0 0 8px ${scoreColor}40` }}
         />
       </div>
     </article>

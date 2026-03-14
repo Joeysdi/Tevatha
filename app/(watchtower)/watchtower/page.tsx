@@ -14,6 +14,15 @@ import {
 
 export const metadata: Metadata = { title: "Hub" };
 
+function SectionHeader({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-3 mb-4">
+      <h2 className="font-syne font-bold text-[17px] text-text-base">{label}</h2>
+      <div className="flex-1 h-px bg-border-protocol" />
+    </div>
+  );
+}
+
 const TIER_STYLES: Record<TierClass, string> = {
   t4: "bg-red-protocol/20 text-red-bright",
   t3: "bg-amber-dim text-amber-protocol",
@@ -26,25 +35,30 @@ export default function WatchtowerHubPage() {
     <div>
       {/* ── HERO ────────────────────────────────────────────────────── */}
       <section
-        className="relative rounded-xl border p-7 mb-5 overflow-hidden"
+        className="relative rounded-2xl border p-8 mb-7 overflow-hidden"
         style={{
-          background: "linear-gradient(135deg,rgba(232,64,64,0.08),rgba(11,13,24,1))",
-          borderColor: "rgba(232,64,64,0.22)",
+          background: "linear-gradient(135deg,rgba(232,64,64,0.09) 0%,rgba(11,13,24,0) 60%),rgba(8,12,16,0.9)",
+          borderColor: "rgba(232,64,64,0.25)",
+          boxShadow: "0 0 0 1px rgba(255,255,255,0.03) inset, 0 8px 40px rgba(0,0,0,0.4)",
         }}
       >
-        <div className="flex flex-wrap gap-9 items-center">
+        {/* Subtle top accent line */}
+        <div className="absolute top-0 left-0 right-0 h-px"
+             style={{ background: "linear-gradient(90deg,transparent,rgba(232,64,64,0.4),transparent)" }} />
+
+        <div className="flex flex-wrap gap-10 items-center">
           {/* Left — copy */}
-          <div className="flex-1 min-w-[240px]">
+          <div className="flex-1 min-w-[260px]">
             <p className="font-mono text-[9.5px] text-gold-protocol
-                          tracking-[.22em] uppercase mb-3">
+                          tracking-[.24em] uppercase mb-4 opacity-90">
               Tevatha Watchtower · Global Fragility Monitor
             </p>
-            <h1 className="font-syne font-extrabold text-[clamp(26px,5vw,34px)]
-                           leading-[1.12] text-text-base mb-2.5">
+            <h1 className="font-syne font-extrabold text-[clamp(28px,5vw,38px)]
+                           leading-[1.1] text-text-base mb-3">
               Threat Intelligence{" "}
               <span className="text-red-bright">Command Center</span>
             </h1>
-            <p className="text-text-dim text-[13px] leading-relaxed max-w-[460px] mb-4">
+            <p className="text-text-dim text-[13.5px] leading-relaxed max-w-[480px] mb-6">
               The window between signal and collapse is measured in weeks, not years.
               This is where you read the wall before the writing fades.
             </p>
@@ -52,19 +66,19 @@ export default function WatchtowerHubPage() {
             {/* Nav quick-links with prefetch */}
             <div className="flex gap-3 flex-wrap">
               {[
-                { href:"/watchtower/scenarios", label:"View Scenarios →" },
-                { href:"/watchtower/signals",   label:"Signal Feed →"    },
+                { href:"/watchtower/scenarios", label:"View Scenarios" },
+                { href:"/watchtower/signals",   label:"Signal Feed"    },
               ].map((l) => (
                 <Link
                   key={l.href}
                   href={l.href}
                   prefetch
-                  className="font-mono text-[11px] text-text-mute2
-                             border border-border-protocol rounded-md px-3.5 py-1.5
-                             hover:text-text-base hover:border-border-hover
-                             transition-all duration-150"
+                  className="inline-flex items-center gap-1.5 font-mono text-[11px]
+                             text-text-dim border border-border-bright/60 rounded-lg
+                             px-4 py-2 hover:text-text-base hover:border-border-hover
+                             hover:bg-white/[0.04] transition-all duration-200"
                 >
-                  {l.label}
+                  {l.label} <span className="text-text-mute2">→</span>
                 </Link>
               ))}
             </div>
@@ -76,16 +90,23 @@ export default function WatchtowerHubPage() {
       </section>
 
       {/* ── THREAT DOMAIN GRID ──────────────────────────────────────── */}
-      <section className="mb-5">
+      <section className="mb-7">
+        <SectionHeader label="Active Threat Domains" />
         <ThreatGrid domains={DOMAINS} />
       </section>
 
       {/* ── COLLAPSE PROBABILITY MATRIX ─────────────────────────────── */}
-      <section className="bg-void-1 border border-border-protocol rounded-[10px]
-                           p-4.5 mb-5">
-        <h2 className="font-syne font-bold text-base text-text-base mb-3.5">
-          Collapse Probability Matrix — 5-Year Window
-        </h2>
+      <section className="bg-void-1 border border-border-protocol rounded-2xl
+                           overflow-hidden mb-7"
+               style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.3)" }}>
+        <div className="px-6 py-4 border-b border-border-protocol bg-white/[0.02]">
+          <h2 className="font-syne font-bold text-[17px] text-text-base">
+            Collapse Probability Matrix
+          </h2>
+          <p className="font-mono text-[10px] text-text-mute2 tracking-[.08em] mt-0.5">
+            5-YEAR FORWARD WINDOW
+          </p>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
             <thead>
@@ -94,9 +115,9 @@ export default function WatchtowerHubPage() {
                   <th
                     key={h}
                     className="text-left font-mono text-[9.5px] tracking-[.12em]
-                               uppercase text-text-mute2 px-3.5 py-2.5
+                               uppercase text-text-mute2 px-4 py-3
                                border-b border-border-bright whitespace-nowrap
-                               bg-white/[0.03]"
+                               bg-white/[0.02]"
                   >
                     {h}
                   </th>
@@ -105,42 +126,48 @@ export default function WatchtowerHubPage() {
             </thead>
             <tbody>
               {COLLAPSE_CLASSES.map((row) => (
-                // Client island per-row for intersection-triggered bar animation
                 <CollapseMatrixRow key={row.cls} row={row} />
               ))}
             </tbody>
           </table>
         </div>
-        <p className="font-mono text-[10px] text-text-mute2 mt-2.5 leading-relaxed">
-          Methodology: probability of at least one class-qualifying event within
-          5-year window. Source: Tevatha Collapse Bible v3 scenario weighting model.
-        </p>
+        <div className="px-6 py-3 border-t border-border-protocol bg-white/[0.01]">
+          <p className="font-mono text-[10px] text-text-mute2 leading-relaxed">
+            Methodology: probability of at least one class-qualifying event within
+            5-year window. Source: Tevatha Collapse Bible v3 scenario weighting model.
+          </p>
+        </div>
       </section>
 
       {/* ── PRIORITY SIGNAL FEED ────────────────────────────────────── */}
-      <section className="bg-void-1 border border-border-protocol rounded-[10px]
-                           p-4.5 mb-5">
-        <h2 className="font-syne font-bold text-base text-text-base mb-3.5">
-          Priority Signal Feed — Ranked by Ark Score
-        </h2>
+      <section className="bg-void-1 border border-border-protocol rounded-2xl
+                           overflow-hidden mb-7"
+               style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.3)" }}>
+        <div className="px-6 py-4 border-b border-border-protocol bg-white/[0.02]">
+          <h2 className="font-syne font-bold text-[17px] text-text-base">
+            Priority Signal Feed
+          </h2>
+          <p className="font-mono text-[10px] text-text-mute2 tracking-[.08em] mt-0.5">
+            RANKED BY ARK SCORE
+          </p>
+        </div>
 
         <div className="divide-y divide-border-protocol">
           {SIGNALS.map((s, i) => (
             <div
               key={i}
-              className="grid grid-cols-[1fr_auto_auto_auto] gap-2.5
-                         items-center py-2.5 hover:bg-white/[0.018]
-                         transition-colors px-1"
+              className="grid grid-cols-[1fr_auto_auto_auto] gap-3
+                         items-center py-3.5 px-6
+                         hover:bg-white/[0.025] transition-colors duration-150"
             >
-              <div className="flex items-start gap-2.5">
+              <div className="flex items-center gap-3">
                 <span
-                  className={`w-[7px] h-[7px] rounded-full flex-shrink-0 mt-1
-                               animate-pulse
+                  className={`w-2 h-2 rounded-full flex-shrink-0 animate-pulse
                                ${s.score >= 90
-                                 ? "bg-red-bright shadow-[0_0_6px_#e84040]"
-                                 : "bg-amber-protocol shadow-[0_0_6px_#f0a500]"}`}
+                                 ? "bg-red-bright shadow-[0_0_8px_#e84040]"
+                                 : "bg-amber-protocol shadow-[0_0_8px_#f0a500]"}`}
                 />
-                <span className="text-[12.5px] text-text-base">{s.sig}</span>
+                <span className="text-[13px] text-text-base">{s.sig}</span>
               </div>
 
               <span className="font-mono text-[10px] text-text-mute2 whitespace-nowrap">
@@ -148,14 +175,14 @@ export default function WatchtowerHubPage() {
               </span>
 
               <span
-                className={`font-mono text-[12px] font-bold tabular-nums
+                className={`font-mono text-[13px] font-bold tabular-nums
                              ${s.score >= 85 ? "text-red-bright" : "text-amber-protocol"}`}
               >
                 {s.score}
               </span>
 
               <span
-                className={`inline-flex items-center px-2 py-0.5 rounded
+                className={`inline-flex items-center px-2.5 py-0.5 rounded-md
                              font-mono text-[9.5px] font-bold
                              ${TIER_STYLES[s.tier]}`}
               >
