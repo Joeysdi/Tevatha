@@ -1,4 +1,4 @@
-// app/(provisioner)/shop/page.tsx
+// app/(provisioner)/provisioner/page.tsx  →  URL: /provisioner
 import type { Metadata } from "next";
 import Link               from "next/link";
 import { ProductGrid }    from "@/components/provisioner/product-grid";

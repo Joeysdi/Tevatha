@@ -1,9 +1,9 @@
-// app/(provisioner)/tiers/page.tsx
+// app/(provisioner)/provisioner/scout/page.tsx  →  URL: /provisioner/scout
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Tier Assessment" };
+export const metadata: Metadata = { title: "Safe Zone Scoring" };
 
-export default function TiersPage() {
+export default function ScoutPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-void-0">
       <div
@@ -17,13 +17,13 @@ export default function TiersPage() {
         />
 
         <p className="font-mono text-[9.5px] text-gold-protocol tracking-[.22em] uppercase mb-4">
-          Provisioner · Tier Assessment
+          Provisioner · Safe Zone Analysis
         </p>
         <h1 className="font-syne font-bold text-[22px] text-text-base mb-3">
           Coming Soon
         </h1>
         <p className="font-mono text-[11px] text-text-mute2 leading-relaxed">
-          Preparedness scoring engine under construction.
+          Sanctuary scoring engine under construction.
         </p>
       </div>
     </div>
