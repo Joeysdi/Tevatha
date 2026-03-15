@@ -44,7 +44,7 @@ export default function RootLayout({
           ${syne.variable}
         `}
       >
-        <body className="bg-void-0 text-text-base font-sans antialiased">
+        <body className="bg-void-0 text-text-base font-sans antialiased overscroll-none">
           {children}
         </body>
       </html>
