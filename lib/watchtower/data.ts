@@ -123,56 +123,68 @@ export interface AlarmCategory {
 export const DOMAINS: ThreatDomain[] = [
   {
     id:"nuclear", label:"Nuclear / EMP", score:93, level:"CRITICAL", icon:"☢️", trend:"↑",
-    summary:"New START expired Feb 5, 2026 — no nuclear arms control treaty in force for the first time in 50+ years. Doomsday Clock at 85s (all-time record). China racing to 1,000 warheads by 2030.",
+    summary:"New START expired Feb 5, 2026 — no nuclear arms control treaty in force for the first time in 50+ years. Doomsday Clock at 85s (all-time record). China racing to 1,000 warheads by 2030. Five nuclear states now simultaneously expanding arsenals.",
     drivers:[
-      "Treaty collapse: New START lapse removes all legal limits on US-Russia arsenals",
-      "China ICBM expansion: 600+ warheads now → 1,000+ by 2030 — largest build-up since Cold War",
-      "Russia doctrine: threshold lowered from 'state existence' to 'critical threat to sovereignty'",
+      "Treaty collapse: New START lapse removes all legal limits on US-Russia arsenals — first time since 1972",
+      "China ICBM build-up: 600+ warheads now (SIPRI 2025) → 1,000+ by 2030, constructing hundreds of new silos in Xinjiang, Gansu, Qinghai",
+      "Russia doctrine shift (Nov 2024): use threshold lowered from 'state existence' to 'critical threat to sovereignty' — materially broader trigger",
+      "North Korea: ~50 assembled warheads (SIPRI 2025) + fissile material for 40 more; Kim pledged 'exponential' expansion; ICBM range now covers CONUS",
+      "NATO forward deployment: 125–130 US B61-12 nuclear gravity bombs at 6 bases across Belgium, Germany, Italy, Netherlands, Turkey — live escalation targets",
     ],
   },
   {
-    id:"cyber", label:"Cyber / Tech", score:83, level:"CRITICAL", icon:"🤖", trend:"↑",
-    summary:"Salt Typhoon (China MSS) confirmed inside 9+ US telecoms — FBI calls campaign 'still very much ongoing' (Feb 2026). Volt Typhoon pre-positioned in US power, water, and transport for wartime activation.",
+    id:"cyber", label:"Cyber / Tech", score:85, level:"CRITICAL", icon:"🤖", trend:"↑",
+    summary:"Salt Typhoon (China MSS) confirmed inside 9+ US telecoms — FBI calls campaign 'still very much ongoing' (Feb 2026). Volt Typhoon pre-positioned in US power, water, and transport for wartime activation. Nation-state cyber operations now routinely pre-position for wartime infrastructure denial.",
     drivers:[
-      "Salt Typhoon: 9+ US telecoms and 200+ orgs in 80 countries compromised — access active",
-      "Volt Typhoon: pre-positioned inside US grid, water systems, and transport for wartime use",
-      "AI kill-chain automation deployed in combat; UN autonomous weapons treaty rejected by US + Russia",
+      "Salt Typhoon: 9+ US telecoms and 200+ orgs in 80 countries compromised — access confirmed active as of Feb 2026 (FBI)",
+      "Volt Typhoon: pre-positioned inside US power grids, water systems, and transport — assessed as wartime disruption prep, not espionage",
+      "Midnight Blizzard (Russia SVR): breached Microsoft corporate email Jan 2024 — including senior leadership and US federal agency accounts; spear-phishing hit 100+ orgs through Oct 2024",
+      "Change Healthcare ransomware (Feb 2024): disrupted billing for 190M Americans — largest healthcare data breach ever; 74% of hospitals reported direct patient care impact",
+      "AI kill-chain in combat: Israel's Lavender + Habsora systems approve human targets in ~20 seconds; UN binding autonomous weapons treaty rejected by US + Russia",
     ],
   },
   {
-    id:"civil", label:"Civil / Political", score:76, level:"HIGH", icon:"🔥", trend:"↑",
-    summary:"China's most extensive Taiwan drills ever (Dec 29, 2025) simulated full blockade. CFR rates a 2026 Taiwan Strait crisis at even-money. NATO-US rift over Ukraine deepens as US pursues normalized Russia relations.",
+    id:"civil", label:"Civil / Political", score:78, level:"HIGH", icon:"🔥", trend:"↑",
+    summary:"China's most extensive Taiwan drills ever (Dec 29, 2025) simulated full blockade. CFR rates a 2026 Taiwan Strait crisis at even-money. Sudan is now the world's largest humanitarian displacement crisis. Iran is weeks from weapons-grade uranium enrichment capability.",
     drivers:[
-      "Taiwan: most extensive Chinese blockade drills ever — CFR rates 2026 crisis at 50% probability",
-      "Ukraine: no viable ceasefire — US severed direct aid, pushing burden to European NATO members",
-      "US domestic: CFR flags high-likelihood political violence and civil unrest in 2026",
+      "Taiwan: China's most extensive blockade drills ever (Dec 2025) — CFR rates 2026 crisis at 50%; Taiwan produces 92% of advanced semiconductors",
+      "Ukraine: war enters 3rd year — US severed direct aid; no viable ceasefire; European NATO members absorbing full burden",
+      "Iran nuclear: 408.6 kg uranium enriched to 60% (IAEA May 2025) — ~3 weeks from weapons-grade conversion capability; nuclear breakout risk highest since 2015",
+      "Sudan: 10.1M internally displaced + 4.3M refugees — world's largest active displacement crisis; 30M+ require humanitarian aid (UNHCR 2025)",
+      "US domestic: CFR rates political violence high-likelihood 2026; emergency power precedents and institutional norm erosion accelerating",
     ],
   },
   {
-    id:"economic", label:"Economic", score:74, level:"HIGH", icon:"💸", trend:"↑",
-    summary:"US debt reached $38.43T (~124% of GDP), growing $8B per day. Interest payments now consume ~20% of all federal revenue. CBO projects US will exceed the 1946 wartime debt peak by 2036.",
+    id:"economic", label:"Economic", score:76, level:"HIGH", icon:"💸", trend:"↑",
+    summary:"US debt reached $38.43T (~124% of GDP), growing $8B per day. Trump's 2025 tariff regime — 10% universal, 145% on China — represents the largest US tax increase as % of GDP since 1993. BRICS+ nations representing ~45% of global GDP are accelerating non-USD trade settlement.",
     drivers:[
-      "Debt: $38.43T (~124% GDP, $8B/day) — interest at ~20% of revenue, structural fiscal trap",
-      "Banking: $306B unrealized losses in US banking system (FDIC Q4 2025) — commercial RE watch",
-      "CBDC: 137 nations exploring — EU Digital Euro targets 2029; China e-CNY at $986B in transactions",
+      "Debt: $38.43T (~124% GDP, $8B/day) — interest consuming ~20% of federal revenue; CBO projects surpassing 1946 wartime peak by 2036",
+      "Tariff shock: 10% universal tariff + 145% China tariffs (April 2025) — largest US tax increase as % of GDP since 1993; retaliatory measures active from EU, China, Canada",
+      "Banking fragility: $306B unrealized losses in US banking system (FDIC Q4 2025); commercial real estate defaults accelerating",
+      "De-dollarization: BRICS+ (now 9 members + partner states) accelerating non-USD trade; Saudi Arabia exploring yuan oil pricing; USD share of global reserves at multi-decade low",
+      "CBDC displacement: 137 nations (98% of global GDP) exploring CBDCs — China e-CNY at $986B; EU Digital Euro targeting 2029 legislation; programmable money risk for financial freedom",
     ],
   },
   {
-    id:"bio", label:"Biological", score:72, level:"HIGH", icon:"🦠", trend:"↑",
-    summary:"Scientists describe H5N1 in animal reservoirs as 'completely out of control' (Jan 2026) — 70 US human cases, active in dairy herds. A novel recombinant MPXV strain (clade Ib+IIb, CFR 3–4%) was detected in India, January 13, 2026.",
+    id:"bio", label:"Biological", score:74, level:"HIGH", icon:"🦠", trend:"↑",
+    summary:"Scientists describe H5N1 in animal reservoirs as 'completely out of control' (Jan 2026) — 70 US human cases, active in dairy herds. A novel recombinant MPXV strain (clade Ib+IIb, CFR 3–4%) was detected in India, January 13, 2026. Antimicrobial resistance now kills 1.27M/year — projected 10M/year by 2050.",
     drivers:[
-      "H5N1: 'completely out of control' in reservoirs — 70 US human cases, active dairy herd spread",
-      "MPXV recombinant: novel clade Ib+IIb strain detected India Jan 2026 — CFR 3–4% vs <1% prior",
-      "Pandemic infrastructure: no H5N1 vaccine stockpile for general population; WHO PHEIC capacity strained",
+      "H5N1: 'completely out of control' in animal reservoirs — 70+ US human cases, active dairy herd spread; historical CFR ~48%; no general-population vaccine stockpile",
+      "MPXV recombinant: novel clade Ib+IIb strain detected India Jan 2026 — combines genomes of both clades; CFR 3–4% vs <1% for 2022 outbreak strain; under WHO investigation",
+      "Antimicrobial resistance (AMR): 1.27M deaths/year currently (Lancet 2024); WHO-commissioned O'Neill review projects 10M/year by 2050; ESKAPE pathogens resistant to last-resort antibiotics in 89+ countries",
+      "Drug-resistant TB: 1.25M deaths/year (WHO 2024); XDR-TB spreading in former Soviet states — requires 18–24 month treatments; pipeline of new antibiotics near-empty",
+      "Pandemic infrastructure gap: WHO PHEIC response capacity strained post-COVID; international pandemic prevention treaty stalled; no coordinated H5N1 human-use vaccine reserve",
     ],
   },
   {
-    id:"climate", label:"Climate", score:67, level:"ELEVATED", icon:"🌊", trend:"↑",
-    summary:"Arctic sea ice volume reached its lowest level on record (Mar 2026). WFP reports 96M facing acute food insecurity from weather extremes — a 3× increase since 2020. Argentina drought and Black Sea wheat winterkill are active now.",
+    id:"climate", label:"Climate", score:69, level:"ELEVATED", icon:"🌊", trend:"↑",
+    summary:"2024 confirmed as hottest year in recorded history — first calendar year to exceed +1.55°C above pre-industrial (WMO). Arctic sea ice volume at record low (Mar 2026). 96M face acute food insecurity. 2.4B people live in water-stressed countries.",
     drivers:[
-      "Arctic: sea ice volume at record low — 20% below 2024 levels, 2nd lowest extent ever recorded",
-      "Food: 96M facing weather-driven food insecurity (3× since 2020); climate-food prices rising 4× faster",
-      "Harvests: Argentina Pampas drought + Black Sea wheat winterkill threatening Q2 2026 supply",
+      "Temperature record: 2024 at +1.55°C above pre-industrial (WMO) — hottest year in recorded history; consecutive records now set 2023 and 2024",
+      "Arctic collapse: sea ice volume at record low (Mar 2026) — ~20% below 2024 levels; Arctic warming at 4× the global average rate, accelerating feedback loops",
+      "Food insecurity: 96M facing weather-driven acute hunger — 3× increase since 2020; climate-driven food prices rising 4× faster than non-climate-driven inflation",
+      "Water stress: 2.4B people living in water-stressed countries (UN 2025); 1.8B facing absolute water scarcity; aquifer depletion accelerating in India, Middle East, US High Plains",
+      "Harvest disruption: Argentina Pampas drought + Black Sea wheat winterkill (Jan–Feb 2026) threatening Q2 2026 grain supply; La Niña active Q1–Q2 2026 compounding risk",
     ],
   },
 ];
@@ -554,5 +566,6 @@ export const ALARM_CATEGORIES: AlarmCategory[] = [
 
 export const TICKER_TEXT =
   "☢ DOOMSDAY CLOCK: 85 SECONDS — ALL-TIME RECORD — NO NUCLEAR ARMS CONTROL TREATY IN FORCE — BAS JAN 27 2026 · " +
-  "⚠ NUCLEAR: CRITICAL 93/100 · CYBER: CRITICAL 83/100 · CIVIL: HIGH 76/100 · ECONOMIC: HIGH 74/100 · BIO: HIGH 72/100 · CLIMATE: ELEVATED 67/100 · " +
-  "SALT TYPHOON: 9+ US TELECOMS BREACHED — FBI: ONGOING · US DEBT $38.43T · TAIWAN DRILLS: MOST EXTENSIVE EVER DEC 2025 · H5N1: OUT OF CONTROL IN ANIMAL RESERVOIRS · ";
+  "⚠ NUCLEAR: CRITICAL 93/100 · CYBER: CRITICAL 85/100 · CIVIL: HIGH 78/100 · ECONOMIC: HIGH 76/100 · BIO: HIGH 74/100 · CLIMATE: ELEVATED 69/100 · " +
+  "SALT TYPHOON: 9+ US TELECOMS BREACHED — FBI: ONGOING · IRAN: 3 WEEKS FROM WEAPONS-GRADE URANIUM (IAEA) · SUDAN: WORLD'S LARGEST DISPLACEMENT CRISIS — 14M+ DISPLACED · " +
+  "US DEBT $38.43T · 10% UNIVERSAL TARIFF + 145% CHINA — LARGEST US TAX INCREASE SINCE 1993 · H5N1: OUT OF CONTROL IN ANIMAL RESERVOIRS · 2024 HOTTEST YEAR EVER: +1.55°C · ";
