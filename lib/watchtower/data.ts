@@ -116,12 +116,12 @@ export interface AlarmCategory {
 // ─────────────────────────────────────────────────────────────────────
 
 export const DOMAINS: ThreatDomain[] = [
-  { id:"nuclear",  label:"Nuclear / EMP",    score:91, level:"CRITICAL",  icon:"☢️", trend:"↑" },
-  { id:"economic", label:"Economic",         score:76, level:"HIGH",      icon:"💸", trend:"↑" },
-  { id:"civil",    label:"Civil / Political",score:73, level:"HIGH",      icon:"🔥", trend:"↑" },
-  { id:"cyber",    label:"Cyber / Tech",     score:79, level:"ELEVATED",  icon:"🤖", trend:"↑" },
-  { id:"bio",      label:"Biological",       score:68, level:"HIGH",      icon:"🦠", trend:"→" },
-  { id:"climate",  label:"Climate",          score:64, level:"ELEVATED",  icon:"🌊", trend:"↑" },
+  { id:"nuclear",  label:"Nuclear / EMP",    score:93, level:"CRITICAL",  icon:"☢️", trend:"↑" },
+  { id:"cyber",    label:"Cyber / Tech",     score:83, level:"CRITICAL",  icon:"🤖", trend:"↑" },
+  { id:"civil",    label:"Civil / Political",score:76, level:"HIGH",      icon:"🔥", trend:"↑" },
+  { id:"economic", label:"Economic",         score:74, level:"HIGH",      icon:"💸", trend:"↑" },
+  { id:"bio",      label:"Biological",       score:72, level:"HIGH",      icon:"🦠", trend:"↑" },
+  { id:"climate",  label:"Climate",          score:67, level:"ELEVATED",  icon:"🌊", trend:"↑" },
 ];
 
 // ─────────────────────────────────────────────────────────────────────
@@ -129,14 +129,14 @@ export const DOMAINS: ThreatDomain[] = [
 // ─────────────────────────────────────────────────────────────────────
 
 export const SIGNALS: Signal[] = [
-  { sig:"Doomsday Clock: 85 seconds to midnight — all-time closest in 78-yr history",      domain:"Nuclear",     score:97, tier:"t4" },
-  { sig:"US national debt: ~$36.4T (~123% of GDP) — structural fiscal dominance risk",     domain:"Economic",    score:88, tier:"t3" },
-  { sig:"AI arms race: no binding international safety treaty in effect",                   domain:"Cyber",       score:85, tier:"t2" },
-  { sig:"H5N1 human cluster surveillance: active multi-country monitoring",                 domain:"Biological",  score:79, tier:"t2" },
-  { sig:"NATO eastern flank under stress — cohesion indicators declining",                  domain:"Geopolitical",score:76, tier:"t2" },
-  { sig:"Global breadbasket drought indices rising — Q2 2026 food risk window",             domain:"Climate",     score:72, tier:"t2" },
-  { sig:"CBDC development active across G7 — cash elimination timelines emerging",          domain:"Economic",    score:69, tier:"t2" },
-  { sig:"SVB-class unrealised bank bond losses: ~$600B+ unresolved since 2023",             domain:"Economic",    score:66, tier:"t2" },
+  { sig:"Doomsday Clock: 85 seconds — all-time record (BAS Jan 27 2026). New START expired Feb 5 2026: first time in 50+ years no nuclear arms control treaty is in force",      domain:"Nuclear",     score:97, tier:"t4" },
+  { sig:"Salt Typhoon (China MSS): 9+ US telecoms compromised, 200+ orgs in 80+ countries — FBI confirms campaign 'still very much ongoing' as of Feb 2026",                    domain:"Cyber",       score:92, tier:"t3" },
+  { sig:"US debt $38.43T (~124% of GDP), growing $8B/day — interest payments now ~20% of all federal revenue. CBO projects debt exceeds 1946 wartime peak by 2036",             domain:"Economic",    score:88, tier:"t3" },
+  { sig:"China nuclear arsenal: 600+ warheads (SIPRI 2025), projecting 1,000+ by 2030 — constructing hundreds of new ICBM silos — largest nuclear build-up since Cold War",      domain:"Nuclear",     score:87, tier:"t3" },
+  { sig:"Taiwan Strait: China's most extensive military drills ever (Dec 29 2025) simulated full blockade — CFR rates 2026 Taiwan Strait crisis at even-money probability",       domain:"Geopolitical",score:83, tier:"t3" },
+  { sig:"H5N1 'completely out of control' in animal reservoirs — 70 confirmed US human cases, active dairy herd spread — no sustained human-to-human transmission yet",           domain:"Biological",  score:78, tier:"t2" },
+  { sig:"Russia nuclear doctrine: threshold lowered to 'critical threat to sovereignty' — materially broader than prior 'existence of state' language",                           domain:"Nuclear",     score:76, tier:"t3" },
+  { sig:"Arctic sea ice 2nd lowest ever recorded (Mar 2026); 96M facing acute food insecurity from weather extremes — 3× increase since 2020. Argentina Pampas drought active",  domain:"Climate",     score:73, tier:"t2" },
 ];
 
 // ─────────────────────────────────────────────────────────────────────
@@ -159,9 +159,9 @@ export const COLLAPSE_CLASSES: CollapseClass[] = [
 export const SCENARIOS: Scenario[] = [
   {
     id:"S01", cls:"A", icon:"💸", title:"Hyperinflation",
-    window:"2025–27", prob:45, sev:"CR", prepTime:"12 mo",
-    summary:"Sustained CPI >30%/yr in G7, driven by fiscal dominance. Real purchasing power destruction of 40–60% over 24 months.",
-    triggers:["Fed balance sheet reduction reversal while deficit >8% GDP","Treasury demand strike by foreign creditors","Dollar reserve share below 45%"],
+    window:"2026–28", prob:42, sev:"CR", prepTime:"12 mo",
+    summary:"Sustained CPI >30%/yr in G7, driven by fiscal dominance. US debt at $38.43T (~124% GDP) growing $8B/day. Interest consuming ~20% of federal revenue. CBO projects surpassing 1946 wartime debt peak by 2036.",
+    triggers:["Fed forced to monetize deficit while CPI re-accelerates","Treasury demand strike by foreign creditors","Dollar reserve share falls below 45% (currently ~58%)"],
     cascade:["A4 Sovereign Default","C1 Civil Conflict","A8 USD Depegging"],
     mitigation:[
       { action:"Physical gold + silver outside banking system",           pri:"1", cost:"15–25% net worth" },
@@ -172,9 +172,9 @@ export const SCENARIOS: Scenario[] = [
   },
   {
     id:"S03", cls:"A", icon:"🏦", title:"CBDC Mandatory Adoption",
-    window:"2026–28", prob:55, sev:"HI", prepTime:"6 mo",
-    summary:"Programmable money enables transaction blocking, spending expiry dates, negative interest rates. A crisis event accelerates mandatory adoption, eliminating cash.",
-    triggers:["G20 CBDC interoperability framework","Cash elimination timeline in 3+ major economies","Emergency rollout during banking crisis"],
+    window:"2027–30", prob:48, sev:"HI", prepTime:"6 mo",
+    summary:"137 countries (98% of global GDP) exploring CBDCs. China e-CNY: $986B in transactions. EU Digital Euro targets 2029 legislation. US retail CBDC halted by Trump executive order — but crisis event could accelerate non-US adoption. Programmable money enables transaction blocking, spending expiry, negative rates.",
+    triggers:["EU Digital Euro mandatory adoption legislation passed","Banking crisis accelerates emergency CBDC emergency rollout outside US","G20 CBDC interoperability framework adopted"],
     cascade:["A3 Asset Freeze","A8 USD Depegging"],
     mitigation:[
       { action:"Bitcoin self-custody on hardware wallet — off exchanges now", pri:"1", cost:"$100–$200 hardware" },
@@ -185,9 +185,9 @@ export const SCENARIOS: Scenario[] = [
   },
   {
     id:"S05", cls:"B", icon:"⚡", title:"Grid-Down EMP / Cyber Attack",
-    window:"2025–27", prob:25, sev:"CR", prepTime:"6 mo",
-    summary:"State-sponsored cyber or high-altitude EMP disables power grid 2–8 weeks. Food distribution fails at 72h. Water pumping at 96h. Hospital generators at 7 days.",
-    triggers:["State actor (Russia, China, DPRK) cyberweapon deployment","Solar Carrington-class event","Wartime escalation action"],
+    window:"2026–27", prob:32, sev:"CR", prepTime:"6 mo",
+    summary:"Salt Typhoon already inside 9+ US telecoms. Volt Typhoon pre-positioned in US power grids for wartime activation. State-sponsored cyber or EMP disables grid 2–8 weeks. Food distribution fails at 72h. Water pumping at 96h. Hospital generators at 7 days.",
+    triggers:["Volt Typhoon / Salt Typhoon activation during Taiwan conflict","Solar Carrington-class event","High-altitude EMP detonation over CONUS"],
     cascade:["B4 Water Failure","B5 Food Distribution","B8 Hospital Overload — simultaneous"],
     mitigation:[
       { action:"30-day food + water store (minimum)",          pri:"1", cost:"$500–$2K"  },
@@ -211,9 +211,9 @@ export const SCENARIOS: Scenario[] = [
   },
   {
     id:"S10", cls:"D", icon:"🦠", title:"H5N1 Pandemic",
-    window:"2025–27", prob:35, sev:"CR", prepTime:"3 mo",
-    summary:"H5N1 acquires sustained human-to-human transmission. Current CFR in human cases: ~52%. Even at 5% post-adaptation CFR, global health systems collapse within 8 weeks.",
-    triggers:["H5N1 confirmed in 2+ healthcare workers with no animal contact","WHO PHEIC for respiratory illness","Community transmission in 3+ countries simultaneously"],
+    window:"2026–27", prob:35, sev:"CR", prepTime:"3 mo",
+    summary:"Scientists describe H5N1 in animal reservoirs as 'completely out of control' (Jan 2026). 70 US human cases confirmed, active in dairy herds. Historical CFR ~48%. A novel recombinant MPXV strain (clade Ib+IIb) emerged Jan 2026 with 3–4% CFR. Either pathogen at sustained human-to-human transmission collapses health systems within 8 weeks.",
+    triggers:["H5N1 confirmed in healthcare workers with no animal contact","WHO PHEIC for respiratory illness","Recombinant MPXV sustained spread outside Central Africa"],
     cascade:["B8 Hospital Overload","A7 Supply Chain","C3 Surveillance State"],
     mitigation:[
       { action:"N95 respirators: 500 per adult household member",  pri:"1", cost:"$200–$500"  },
@@ -224,9 +224,9 @@ export const SCENARIOS: Scenario[] = [
   },
   {
     id:"S09", cls:"H", icon:"🚢", title:"Taiwan Strait Conflict",
-    window:"2025–27", prob:30, sev:"CR", prepTime:"6 mo",
-    summary:"Pentagon's pacing threat: 2027 conflict window. Taiwan produces 92% of advanced semiconductors. Global semiconductor shortage within 90 days of blockade.",
-    triggers:["China naval blockade declaration","Military incident in Taiwan Strait","US-China diplomatic breakdown over Taiwan status"],
+    window:"2026–27", prob:40, sev:"CR", prepTime:"6 mo",
+    summary:"China conducted its most extensive Taiwan military drills ever on Dec 29, 2025, simulating full blockade. CFR rates 2026 crisis at even-money. Taiwan produces 92% of advanced semiconductors — blockade triggers global semiconductor shortage within 90 days.",
+    triggers:["China naval blockade declaration","Military incident in Taiwan Strait","US mixed signals on Taiwan defense commitment"],
     cascade:["A7 Supply Chain","B2 Cyber Attack","A8 USD Reserve Loss"],
     mitigation:[
       { action:"Exit Asia-Pacific on blockade declaration (pre-planned)",  pri:"1", cost:"Route planning" },
@@ -251,7 +251,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
   { year:"2023", label:"SVB + Credit Suisse collapse — $600B+ unrealised losses exposed",sev:"high", colKey:"warn", signal:"Not resolved. Deferred. Watch: overnight repo rate as leading stress indicator." },
   { year:"2023", label:"Doomsday Clock: 90 seconds — then-closest in 76-year history",   sev:"critical",colKey:"red", signal:"BAS methodology is rigorous. Each advance = one Ark tier escalation." },
   { year:"2025", label:"Doomsday Clock: 89 seconds — new record",             sev:"critical", colKey:"red",  signal:"AI battlefield use, intensified nuclear rhetoric cited. Moved from 90s to 89s." },
-  { year:"2026", label:"Doomsday Clock: 85 seconds — all-time closest ever",  sev:"critical", colKey:"red",  isNow:true, signal:"Failure of leadership. Countries more aggressive, adversarial, nationalistic. Source: BAS Jan 27, 2026." },
+  { year:"2025", label:"Salt Typhoon: 9+ US telecoms compromised by China MSS", sev:"high",   colKey:"warn", signal:"Backbone ISP infrastructure. Access into energy, transport, healthcare networks. FBI: still active Feb 2026." },
+  { year:"2026", label:"Doomsday Clock: 85 seconds — all-time closest. New START expires", sev:"critical", colKey:"red", isNow:true, signal:"No nuclear arms control treaty in force for first time in 50+ years. China at 600+ warheads. BAS Jan 27, 2026 + New START Feb 5, 2026." },
 ];
 
 // ─────────────────────────────────────────────────────────────────────
@@ -393,7 +394,6 @@ export const ALARM_CATEGORIES: AlarmCategory[] = [
 // ─────────────────────────────────────────────────────────────────────
 
 export const TICKER_TEXT =
-  "☢ DOOMSDAY CLOCK: 85 SECONDS TO MIDNIGHT — ALL-TIME CLOSEST — BAS JAN 27 2026 · " +
-  "⚠ NUCLEAR DOMAIN: CRITICAL 91/100 · CYBER: ELEVATED 79/100 · ECONOMIC: HIGH 76/100 · " +
-  "CIVIL/POLITICAL: HIGH 73/100 · BIO: HIGH 68/100 · " +
-  "H5N1 SURVEILLANCE: ACTIVE · US DEBT: ~$36.4T · NATO COHESION: STRESSED · CBDC: DEVELOPMENT ACTIVE · ";
+  "☢ DOOMSDAY CLOCK: 85 SECONDS — ALL-TIME RECORD — NO NUCLEAR ARMS CONTROL TREATY IN FORCE — BAS JAN 27 2026 · " +
+  "⚠ NUCLEAR: CRITICAL 93/100 · CYBER: CRITICAL 83/100 · CIVIL: HIGH 76/100 · ECONOMIC: HIGH 74/100 · BIO: HIGH 72/100 · CLIMATE: ELEVATED 67/100 · " +
+  "SALT TYPHOON: 9+ US TELECOMS BREACHED — FBI: ONGOING · US DEBT $38.43T · TAIWAN DRILLS: MOST EXTENSIVE EVER DEC 2025 · H5N1: OUT OF CONTROL IN ANIMAL RESERVOIRS · ";

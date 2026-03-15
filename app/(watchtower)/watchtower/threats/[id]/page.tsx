@@ -17,46 +17,46 @@ const DOMAIN_META: Record<string, {
   watchFor: string[];
 }> = {
   nuclear: {
-    description: "Nuclear and EMP threats represent existential-level risk. A single detonation anywhere triggers Ark protocol immediately — no delay, no exceptions. A high-altitude EMP can disable power grid infrastructure for weeks to months, causing cascade failure across food, water, and hospital systems.",
+    description: "The Doomsday Clock is at 85 seconds — all-time closest in the clock's 79-year history (BAS, Jan 27, 2026). On February 5, 2026, New START — the last US-Russia nuclear arms control treaty — expired. No legally binding framework now governs either nation's nuclear stockpile. Russia lowered its nuclear use threshold to 'critical threat to sovereignty'. China is constructing hundreds of ICBM silos, projecting 1,000+ warheads by 2030 — the largest nuclear build-up since the Cold War. A single detonation anywhere triggers Ark protocol immediately. No delay. No exceptions.",
     scenarioIds: ["S05", "S09"],
     signalDomain: "Nuclear",
     gateIds: ["G1", "G2", "G3", "G5"],
-    watchFor: ["DEFCON level changes", "Nuclear testing by any nation", "Doomsday Clock movement", "EMP-capable weapon deployments", "High-altitude missile tests"],
+    watchFor: ["New US-Russia nuclear talks or absence thereof", "China ICBM silo completion reports", "DPRK seventh nuclear test preparation signals", "Any nuclear detonation anywhere on Earth", "High-altitude missile test by any nation (EMP precursor)"],
   },
   economic: {
-    description: "The global financial architecture is structurally fragile. US debt at 123% GDP, $600B+ unrealised bank losses unresolved since 2023, and active CBDC rollout across all G7 nations create three simultaneous vectors for financial system disruption — any one of which is sufficient.",
+    description: "US gross national debt reached $38.43 trillion as of January 2026 (~124% of GDP), growing at $8 billion per day. Interest payments now consume nearly one-fifth of all federal revenue — a structural fiscal trap. CBO projects debt will exceed the 1946 wartime peak of 106% by 2036. Banking system unrealized losses remain elevated at $306 billion (Q4 2025). 137 countries are exploring CBDCs; the EU Digital Euro targets 2029 legislation. The US halted retail CBDC development under Trump executive order — but 24 emerging markets face bond maturity cliffs by 2027.",
     scenarioIds: ["S01", "S03"],
     signalDomain: "Economic",
     gateIds: ["G4", "G7", "G8"],
-    watchFor: ["US 10-yr yield >5.5% sustained 30+ days", "VIX >45 sustained", "G7 bank bail-in announcements", "CBDC mandatory adoption timelines", "IMF emergency meetings"],
+    watchFor: ["US 10-yr Treasury yield >5.5% sustained 30+ days (currently 4.19%)", "VIX >45 sustained", "G7 bank bail-in announcements", "EU Digital Euro mandatory adoption timeline announced", "IMF emergency convening — sovereign debt cascade"],
   },
   civil: {
-    description: "Political scientists put active civil violence probability in the US at 30–35% through 2028. NATO cohesion is under measurable stress. The multipolar restructuring of global power begun in 2022 has a 10–20 year arc — this is not a short-term threat window.",
+    description: "CFR's 2026 Conflict Risk Assessment rates growing political violence and civil unrest in the United States as a high-likelihood, high-impact event. China conducted its most extensive military drills around Taiwan ever on December 29, 2025, simulating a complete blockade — CFR rates a 2026 Taiwan Strait crisis at even-money. Russia-Ukraine war continues with no viable ceasefire; the US severed direct aid, deepening the US-Europe rift. NATO's eastern flank cohesion is under active stress. The multipolar restructuring of power begun in 2022 has a 10–20 year arc.",
     scenarioIds: ["S07", "S09"],
     signalDomain: "Geopolitical",
     gateIds: ["G2", "G3"],
-    watchFor: ["Election results disputed by incumbents", "Emergency powers without legislature", "State nullification movements (10+ states)", "Taiwan Strait naval movements", "Militia mobilisation in 3+ states"],
+    watchFor: ["Taiwan Strait naval blockade declaration", "US emergency powers invoked without legislature", "NATO Article 5 formal invocation", "Ukraine ceasefire or collapse of frontlines", "China-Taiwan diplomatic breakdown acceleration"],
   },
   cyber: {
-    description: "No binding international AI safety treaty exists. Russia, China, and DPRK maintain active cyberweapon programs targeting critical infrastructure. A coordinated attack or high-altitude EMP event can collapse power grids for weeks — initiating simultaneous cascade failures in food, water, and hospital systems.",
+    description: "Salt Typhoon, linked to China's Ministry of State Security, has compromised at least 9 major US telecom companies and 200+ organizations across 80+ countries. As of February 2026, the FBI states the campaign is 'still very much ongoing'. Volt Typhoon (PRC) has been pre-positioning inside US critical infrastructure — power grids, water systems, transport — for potential wartime disruption activation. Israel's AI targeting systems (Lavender, Habsora) have deployed autonomous kill-chain decisions with ~20 seconds of human review. The UN resolution for a legally binding autonomous weapons treaty was rejected by the US and Russia.",
     scenarioIds: ["S05"],
     signalDomain: "Cyber",
     gateIds: ["G1", "G5"],
-    watchFor: ["Critical infrastructure cyberattacks in G7", "Internet shutdown in any G20 nation", "AI battlefield deployment announcements", "Power grid intrusion events", "Water treatment facility attacks"],
+    watchFor: ["Salt Typhoon / Volt Typhoon activation events (grid or water)", "Internet shutdown in any G20 nation", "Power grid intrusion events in G7", "State actor cyberweapon deployment announcement", "CISA emergency critical infrastructure advisory"],
   },
   bio: {
-    description: "H5N1 currently has a ~52% case fatality rate in human cases. Even at 5% post-adaptation CFR — a very conservative estimate — global health systems collapse within 8 weeks of sustained human-to-human transmission. The WHO is actively monitoring multi-country human clusters.",
+    description: "H5N1 bird flu has recorded 70 confirmed human cases in the US (March 2024 – June 2025) with no sustained human-to-human transmission confirmed. Scientists describe the situation in animal reservoirs as 'completely out of control'. Historical global CFR: ~48% (WHO 2003–2025). Even at 5% post-adaptation CFR, global health systems collapse within 8 weeks of sustained transmission. A novel recombinant MPXV strain (combining clade Ib and IIb genomic elements) was detected in India, January 13, 2026 — with clade Ib carrying a 3–4% CFR vs <1% for the 2022 outbreak strain.",
     scenarioIds: ["S10"],
     signalDomain: "Biological",
     gateIds: ["G6"],
-    watchFor: ["H5N1 confirmed in healthcare workers with no animal contact", "WHO PHEIC for respiratory pathogen", "Hospital capacity >120% in any G7 nation", "Community transmission in 3+ countries simultaneously"],
+    watchFor: ["H5N1 confirmed in healthcare workers with no animal contact", "WHO PHEIC for respiratory pathogen", "Hospital capacity >120% in any G7 nation", "Recombinant MPXV spread beyond India — international clusters", "H5N1 mammal-to-mammal transmission acceleration"],
   },
   climate: {
-    description: "Climate cascade effects are slower onset but irreversible in trajectory. Breadbasket droughts, sea level disruption, and supply chain fragility compound every other threat vector — acting as a force multiplier. The Q2 2026 food risk window is active.",
+    description: "Arctic sea ice extent reached its second-lowest level ever recorded as of March 1, 2026 — with sea ice volume the lowest on record. WFP reports 20% more people facing acute food insecurity since 2020, with weather-driven cases tripling to 96 million. Climate-related food price increases are rising at 4× the rate of non-climate-impacted foods. Argentina's Pampas region faces a severe drought threatening grain output. Black Sea wheat winterkill events occurred in late January/February 2026. La Niña patterns remain active. The FAO Global Emergency Appeal for 2026 has been issued.",
     scenarioIds: [],
     signalDomain: "Climate",
     gateIds: [],
-    watchFor: ["Global grain index movements", "Breadbasket drought indices", "Arctic amplification acceleration", "Supply chain food disruptions", "Wildfire smoke crop impact reports"],
+    watchFor: ["Global grain futures spike >40% in 60 days", "Argentina Pampas harvest loss confirmation", "Black Sea wheat export disruption from winterkill", "La Niña strengthening reports affecting key growing regions", "FAO food price index monthly reports"],
   },
 };
 
