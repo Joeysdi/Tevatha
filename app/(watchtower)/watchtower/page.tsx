@@ -229,17 +229,27 @@ export default function WatchtowerHubPage() {
             <StaggerChild key={i}>
               <div
                 className="grid grid-cols-[1fr_auto_auto] sm:grid-cols-[1fr_auto_auto_auto] gap-3 sm:gap-4
-                           items-center py-3 sm:py-3.5 px-4 sm:px-6
+                           items-start py-3 sm:py-3.5 px-4 sm:px-6
                            hover:bg-white/[0.025] transition-colors duration-150"
               >
-                <div className="flex items-center gap-2.5 min-w-0">
+                <div className="flex items-start gap-2.5 min-w-0">
                   <span
-                    className={`w-2 h-2 rounded-full flex-shrink-0 animate-pulse
+                    className={`w-2 h-2 rounded-full flex-shrink-0 animate-pulse mt-1
                                  ${s.score >= 90
                                    ? "bg-red-bright shadow-[0_0_8px_#e84040]"
                                    : "bg-amber-protocol shadow-[0_0_8px_#f0a500]"}`}
                   />
-                  <span className="text-[11.5px] sm:text-[13px] text-text-base truncate">{s.sig}</span>
+                  <div className="min-w-0">
+                    <span className="text-[11.5px] sm:text-[13px] text-text-base block leading-snug">{s.sig}</span>
+                    <a
+                      href={s.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-mono text-[8px] sm:text-[8.5px] text-text-mute2/60 hover:text-red-bright/70 transition-colors truncate block mt-0.5"
+                    >
+                      {s.source} ↗
+                    </a>
+                  </div>
                 </div>
 
                 {/* Domain hidden on mobile */}

@@ -18,10 +18,12 @@ export interface ThreatDomain {
 }
 
 export interface Signal {
-  sig:    string;
-  domain: string;
-  score:  number;
-  tier:   TierClass;
+  sig:       string;
+  domain:    string;
+  score:     number;
+  tier:      TierClass;
+  source:    string;     // display name of primary source
+  sourceUrl: string;     // direct URL to source document
 }
 
 export interface CollapseClass {
@@ -180,14 +182,102 @@ export const DOMAINS: ThreatDomain[] = [
 // ─────────────────────────────────────────────────────────────────────
 
 export const SIGNALS: Signal[] = [
-  { sig:"Doomsday Clock: 85 seconds — all-time record (BAS Jan 27 2026). New START expired Feb 5 2026: first time in 50+ years no nuclear arms control treaty is in force",      domain:"Nuclear",     score:97, tier:"t4" },
-  { sig:"Salt Typhoon (China MSS): 9+ US telecoms compromised, 200+ orgs in 80+ countries — FBI confirms campaign 'still very much ongoing' as of Feb 2026",                    domain:"Cyber",       score:92, tier:"t3" },
-  { sig:"US debt $38.43T (~124% of GDP), growing $8B/day — interest payments now ~20% of all federal revenue. CBO projects debt exceeds 1946 wartime peak by 2036",             domain:"Economic",    score:88, tier:"t3" },
-  { sig:"China nuclear arsenal: 600+ warheads (SIPRI 2025), projecting 1,000+ by 2030 — constructing hundreds of new ICBM silos — largest nuclear build-up since Cold War",      domain:"Nuclear",     score:87, tier:"t3" },
-  { sig:"Taiwan Strait: China's most extensive military drills ever (Dec 29 2025) simulated full blockade — CFR rates 2026 Taiwan Strait crisis at even-money probability",       domain:"Geopolitical",score:83, tier:"t3" },
-  { sig:"H5N1 'completely out of control' in animal reservoirs — 70 confirmed US human cases, active dairy herd spread — no sustained human-to-human transmission yet",           domain:"Biological",  score:78, tier:"t2" },
-  { sig:"Russia nuclear doctrine: threshold lowered to 'critical threat to sovereignty' — materially broader than prior 'existence of state' language",                           domain:"Nuclear",     score:76, tier:"t3" },
-  { sig:"Arctic sea ice 2nd lowest ever recorded (Mar 2026); 96M facing acute food insecurity from weather extremes — 3× increase since 2020. Argentina Pampas drought active",  domain:"Climate",     score:73, tier:"t2" },
+  {
+    sig:       "Doomsday Clock: 85 seconds to midnight — all-time closest in 79-year history. BAS cited failure of leadership, nuclear rhetoric, unchecked AI, and unresolved biological threats.",
+    domain:    "Nuclear",     score: 97, tier: "t4",
+    source:    "Bulletin of Atomic Scientists",
+    sourceUrl: "https://thebulletin.org/doomsday-clock/2026-statement/",
+  },
+  {
+    sig:       "New START expired Feb 5, 2026 — first time in 50+ years no legally binding treaty limits US or Russian nuclear arsenals. Putin offered voluntary compliance; no formal framework exists.",
+    domain:    "Nuclear",     score: 94, tier: "t4",
+    source:    "U.S. State Department",
+    sourceUrl: "https://www.state.gov/new-start/",
+  },
+  {
+    sig:       "Salt Typhoon (China MSS): 9+ major US telecoms compromised — Verizon, AT&T, T-Mobile, others. 200+ orgs across 80+ countries. FBI: campaign 'still very much ongoing' as of Feb 2026.",
+    domain:    "Cyber",       score: 92, tier: "t3",
+    source:    "CyberScoop / FBI",
+    sourceUrl: "https://cyberscoop.com/fbi-salt-typhoon-ongoing-threat-cybertalks-2026/",
+  },
+  {
+    sig:       "Volt Typhoon (China PRC): pre-positioned inside US power grids, water systems, and transport infrastructure — assessed as preparation for wartime disruption, not espionage.",
+    domain:    "Cyber",       score: 89, tier: "t3",
+    source:    "CISA Joint Advisory AA24-038A",
+    sourceUrl: "https://www.cisa.gov/news-events/cybersecurity-advisories/aa24-038a",
+  },
+  {
+    sig:       "US gross national debt: $38.43T (~124% of GDP), growing $8B per day. Interest payments now consume ~20% of all federal revenue — structural fiscal dominance trap with no exit.",
+    domain:    "Economic",    score: 88, tier: "t3",
+    source:    "Senate Joint Economic Committee",
+    sourceUrl: "https://www.jec.senate.gov/public/index.cfm/republicans/2026/1/national-debt-hits-38-43-trillion-increased-2-25-trillion-year-over-year-8-03-billion-per-day",
+  },
+  {
+    sig:       "China nuclear arsenal: 600+ warheads (SIPRI 2025 estimate), constructing hundreds of new ICBM silos — projecting 1,000+ warheads by 2030. Largest nuclear expansion by any state since the Cold War.",
+    domain:    "Nuclear",     score: 87, tier: "t3",
+    source:    "SIPRI Yearbook 2025",
+    sourceUrl: "https://www.sipri.org/yearbook/2025",
+  },
+  {
+    sig:       "Taiwan Strait: China conducted its most extensive military drills ever on Dec 29, 2025, simulating a complete blockade. CFR rates a 2026 Taiwan Strait crisis at even-money (50%) probability.",
+    domain:    "Geopolitical", score: 83, tier: "t3",
+    source:    "CFR Conflicts to Watch 2026",
+    sourceUrl: "https://www.cfr.org/report/conflicts-watch-2026",
+  },
+  {
+    sig:       "Russia revised nuclear doctrine (Nov 2024): use threshold lowered from 'threat to state existence' to 'critical threat to sovereignty' — a materially broader trigger still under active analyst debate.",
+    domain:    "Nuclear",     score: 82, tier: "t3",
+    source:    "RealClearDefense",
+    sourceUrl: "https://www.realcleardefense.com/articles/2026/03/09/is_russia_changing_its_nuclear_doctrine_to_affect_its_war_in_ukraine_1169225.html",
+  },
+  {
+    sig:       "CBO 2026–2036 Outlook: US debt held by public projected to reach 120% of GDP by 2036 — surpassing the 1946 wartime peak of 106%. Annual deficit tracking ~6% of GDP with no structural correction.",
+    domain:    "Economic",    score: 80, tier: "t3",
+    source:    "Congressional Budget Office",
+    sourceUrl: "https://www.cbo.gov/publication/61882",
+  },
+  {
+    sig:       "H5N1 avian flu 'completely out of control' in animal reservoirs (Jan 2026). 70 confirmed US human cases — active spread in dairy herds. Historical CFR ~48%. No sustained human-to-human transmission yet.",
+    domain:    "Biological",  score: 79, tier: "t2",
+    source:    "CDC Bird Flu Situation Summary",
+    sourceUrl: "https://www.cdc.gov/bird-flu/situation-summary/index.html",
+  },
+  {
+    sig:       "AI kill-chain deployed in combat: Israel's Lavender + Habsora systems approve human targets within ~20 seconds. UN binding LAWS treaty resolution rejected by US and Russia. No international framework.",
+    domain:    "Cyber",       score: 78, tier: "t2",
+    source:    "Stanford FSI",
+    sourceUrl: "https://fsi.stanford.edu/sipr/content/lethal-autonomous-weapons-next-frontier-international-security-and-arms-control",
+  },
+  {
+    sig:       "Russia-Ukraine: war enters 3rd year with no viable ceasefire. US severed direct financial aid to Ukraine. Russia repeatedly rejected Zelenskyy as negotiating partner. Analysts: unlikely to end in 2026.",
+    domain:    "Geopolitical", score: 74, tier: "t2",
+    source:    "CFR Conflicts to Watch 2026",
+    sourceUrl: "https://www.cfr.org/report/conflicts-watch-2026",
+  },
+  {
+    sig:       "Novel recombinant MPXV detected in India Jan 13, 2026 — combining clade Ib and IIb genomic elements. Under WHO investigation. Clade Ib CFR: 3–4% vs <1% for the 2022 outbreak strain.",
+    domain:    "Biological",  score: 73, tier: "t2",
+    source:    "WHO Disease Outbreak News",
+    sourceUrl: "https://www.who.int/emergencies/disease-outbreak-news/item/2026-DON595",
+  },
+  {
+    sig:       "Arctic sea ice volume at record low (March 2026) — approximately 20% below mid-2024 levels; extent 2nd lowest ever recorded. Arctic warming at 4× the global average rate.",
+    domain:    "Climate",     score: 71, tier: "t2",
+    source:    "NSIDC Sea Ice Today",
+    sourceUrl: "https://nsidc.org/sea-ice-today",
+  },
+  {
+    sig:       "137 countries (98% of global GDP) exploring CBDCs. China e-CNY: $986B in transactions. EU Digital Euro in preparation phase — legislation targeting 2029. US halted retail CBDC by executive order.",
+    domain:    "Economic",    score: 68, tier: "t2",
+    source:    "Atlantic Council CBDC Tracker",
+    sourceUrl: "https://www.atlanticcouncil.org/cbdctracker/",
+  },
+  {
+    sig:       "Global food insecurity: 96M people facing acute hunger from weather extremes — a 3× increase since 2020. Argentina Pampas drought + Black Sea wheat winterkill (Jan–Feb 2026) threatening Q2 grain supply.",
+    domain:    "Climate",     score: 65, tier: "t2",
+    source:    "WFP Global Hunger Crisis",
+    sourceUrl: "https://www.wfp.org/global-hunger-crisis",
+  },
 ];
 
 // ─────────────────────────────────────────────────────────────────────
