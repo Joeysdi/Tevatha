@@ -3,12 +3,11 @@
 
 import { useEffect, useState } from "react";
 
-// Locked at 85 seconds — this is a display fixture, not a countdown.
-// The value is sourced from BAS Jan 27, 2026.
+// Locked at 85 seconds — display fixture, not a countdown.
+// Source: Bulletin of Atomic Scientists, January 27, 2026.
 const LOCKED_SECONDS = 85;
 const MAX_SECONDS    = 120; // Historical max for arc scale
 
-// Historical comparison data
 const HISTORY = [
   { year: "1953", val: "120s", note: "Closest historically until 2020" },
   { year: "1991", val: "17min", note: "Post-Cold War reset" },
@@ -21,21 +20,25 @@ interface DoomsdayClockProps {
 }
 
 export function DoomsdayClock({ className = "" }: DoomsdayClockProps) {
-  // Animate arc fill on mount for visual polish
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     const id = requestAnimationFrame(() => setMounted(true));
     return () => cancelAnimationFrame(id);
   }, []);
 
-  // SVG arc parameters
-  const r           = 70;                         // radius
-  const cx          = 88;                         // center-x (extra space for glow)
-  const cy          = 88;
-  const circ        = 2 * Math.PI * r;
-  // Arc represents how close to midnight: 85s of 120s max
-  const pct         = LOCKED_SECONDS / MAX_SECONDS;
-  const dashOffset  = mounted ? circ * (1 - pct) : circ;  // animate from empty
+  const r    = 70;
+  const cx   = 88;
+  const cy   = 88;
+  // Extra top padding so the MIDNIGHT label doesn't clip into HTML above the SVG
+  const topPad = 26;
+
+  const circ       = 2 * Math.PI * r;
+  const pct        = LOCKED_SECONDS / MAX_SECONDS;
+  const dashOffset = mounted ? circ * (1 - pct) : circ;
+
+  // SVG viewport: extend upward by topPad so MIDNIGHT text has room
+  const svgW = cx * 2;
+  const svgH = cy * 2 + topPad;
 
   return (
     <div
@@ -43,20 +46,13 @@ export function DoomsdayClock({ className = "" }: DoomsdayClockProps) {
       role="figure"
       aria-label={`Doomsday Clock: ${LOCKED_SECONDS} seconds to midnight — all-time closest. Source: Bulletin of Atomic Scientists, January 27, 2026`}
     >
-      {/* Source label */}
-      <p className="font-mono text-[9.5px] text-red-bright tracking-[.16em] uppercase opacity-80 text-center">
-        Bulletin of Atomic Scientists · Jan 27, 2026
-      </p>
-
-      {/* SVG Arc */}
+      {/* SVG Arc — viewBox shifted up by topPad so MIDNIGHT fits */}
       <div className="relative">
         <svg
-          width={cx * 2}
-          height={cy * 2}
-          viewBox={`0 0 ${cx * 2} ${cy * 2}`}
-          className="overflow-visible"
+          width={svgW}
+          height={svgH}
+          viewBox={`0 ${-topPad} ${svgW} ${svgH}`}
         >
-          {/* Outer ambient glow filter */}
           <defs>
             <filter id="clock-glow" x="-30%" y="-30%" width="160%" height="160%">
               <feGaussianBlur stdDeviation="4" result="blur" />
@@ -98,7 +94,7 @@ export function DoomsdayClock({ className = "" }: DoomsdayClockProps) {
             MIDNIGHT
           </text>
 
-          {/* Active arc — danger fill */}
+          {/* Active arc */}
           <circle
             cx={cx} cy={cy} r={r}
             fill="none"
@@ -124,7 +120,7 @@ export function DoomsdayClock({ className = "" }: DoomsdayClockProps) {
             />
           )}
 
-          {/* Centre content */}
+          {/* Centre: seconds */}
           <text
             x={cx} y={cy - 10}
             textAnchor="middle"
@@ -180,6 +176,11 @@ export function DoomsdayClock({ className = "" }: DoomsdayClockProps) {
           </div>
         ))}
       </div>
+
+      {/* Source attribution — below the grid, no overlap risk */}
+      <p className="font-mono text-[8.5px] text-red-bright/60 tracking-[.14em] uppercase text-center">
+        Bulletin of Atomic Scientists · Jan 27, 2026
+      </p>
     </div>
   );
 }
