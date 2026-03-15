@@ -2,6 +2,7 @@ import type { Metadata }         from "next";
 import { auth }                   from "@clerk/nextjs/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { ReferralLinkCard }       from "@/components/protocol/referral-link-card";
+import { FadeUp, FadeIn, StaggerParent, StaggerChild } from "@/components/ui/motion";
 
 export const metadata: Metadata = { title: "Envoy Dashboard" };
 
@@ -105,6 +106,7 @@ export default async function EnvoyPage() {
     <div className="max-w-5xl mx-auto px-6 py-10 space-y-10">
 
       {/* ── Header ── */}
+      <FadeUp>
       <header className="border-b border-border-protocol pb-8">
         <p className="font-mono text-[9.5px] text-gold-DEFAULT tracking-[.22em] uppercase mb-3">
           Protocol · Envoy Network
@@ -119,31 +121,46 @@ export default async function EnvoyPage() {
           All figures settled in USDC — no fiat conversion risk.
         </p>
       </header>
+      </FadeUp>
 
       {/* ── Stat cards ── */}
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {statCards.map((s) => (
-          <div key={s.label}
-            className="bg-glass-protocol border border-border-protocol
-                       rounded-card-lg px-5 py-4 backdrop-blur-glass">
-            <p className="font-mono text-[9px] text-text-mute2
-                           tracking-[.14em] uppercase mb-2">{s.label}</p>
-            <p className={`font-syne font-extrabold text-[22px] leading-none mb-1 ${s.col}`}>
-              {s.val}
-            </p>
-            <p className="font-mono text-[10px] text-text-mute2">{s.sub}</p>
-          </div>
+      <section>
+      <StaggerParent className="grid grid-cols-2 lg:grid-cols-4 gap-4" delayChildren={0.1}>
+        {statCards.map((s, i) => (
+          <StaggerChild key={s.label}>
+            <div
+              className="bg-void-1 border border-cyan-border rounded-2xl p-5 relative overflow-hidden
+                         hover:shadow-[0_8px_24px_rgba(0,212,255,0.12)] transition-shadow duration-200
+                         hover:-translate-y-px"
+            >
+              {/* CYAN top accent line */}
+              <div
+                className="absolute top-0 left-0 right-0 h-px"
+                style={{ background: "linear-gradient(90deg,#00d4ff,transparent)" }}
+              />
+              <p className="font-mono text-[9px] text-text-mute2
+                             tracking-[.14em] uppercase mb-2">{s.label}</p>
+              <p className={`font-mono text-[22px] leading-none mb-1 font-bold ${s.col}`}>
+                <FadeIn delay={i * 0.1}>{s.val}</FadeIn>
+              </p>
+              <p className="font-mono text-[10px] text-text-mute2">{s.sub}</p>
+            </div>
+          </StaggerChild>
         ))}
+      </StaggerParent>
       </section>
 
       {/* ── Referral link (Client island) ── */}
-      <ReferralLinkCard userId={userId} />
+      <FadeUp delay={0.2}>
+        <ReferralLinkCard userId={userId} />
+      </FadeUp>
 
       {/* ── Commission tier table ── */}
       <section>
-        <h2 className="font-syne font-bold text-[15px] text-text-base mb-4">
-          Commission Tiers
-        </h2>
+        <div className="flex items-center gap-3 mb-4">
+          <h2 className="font-syne font-bold text-[17px] text-text-base">Commission Tiers</h2>
+          <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg,#00d4ff22,transparent)" }} />
+        </div>
         <div className="overflow-x-auto border border-border-protocol rounded-card">
           <table className="w-full border-collapse font-mono text-[12px]">
             <thead>
@@ -162,7 +179,7 @@ export default async function EnvoyPage() {
               {tierRates.map((r) => (
                 <tr key={r.tier}
                   className={`border-b border-border-protocol last:border-0
-                    ${ambassadorTier === r.tier ? "bg-cyan-dim" : ""}`}>
+                    ${ambassadorTier === r.tier ? "bg-cyan-dim border-l-2 border-l-cyan-DEFAULT" : ""}`}>
                   <td className="px-4 py-3 text-text-mute2">{r.tier}</td>
                   <td className="px-4 py-3 text-text-base font-bold">{r.label}</td>
                   <td className={`px-4 py-3 font-bold
@@ -179,9 +196,10 @@ export default async function EnvoyPage() {
 
       {/* ── Commission history ── */}
       <section>
-        <h2 className="font-syne font-bold text-[15px] text-text-base mb-4">
-          Commission History
-        </h2>
+        <div className="flex items-center gap-3 mb-4">
+          <h2 className="font-syne font-bold text-[17px] text-text-base">Commission History</h2>
+          <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg,#00d4ff22,transparent)" }} />
+        </div>
         {commissions.length === 0 ? (
           <div className="border border-border-protocol rounded-card p-10
                            text-center bg-glass-DEFAULT">

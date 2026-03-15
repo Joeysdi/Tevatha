@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import { GateTable }      from "@/components/watchtower/gate-table";
 import { ProvisionerCta } from "@/components/watchtower/provisioner-cta";
+import { FadeUp }         from "@/components/ui/motion";
 import { TIMELINE_EVENTS, GATES } from "@/lib/watchtower/data";
 
 export const metadata: Metadata = { title: "Timeline" };
@@ -92,7 +93,8 @@ export default function TimelinePage() {
           {TIMELINE_EVENTS.map((e, i) => {
             const col = EVENT_COLORS[e.colKey];
             return (
-              <div key={i} className="relative pl-[52px] pb-5">
+              <FadeUp key={i} delay={i * 0.07}>
+              <div className="relative pl-[52px] pb-5">
                 {/* Node dot */}
                 <div
                   className="absolute left-[14px] top-3.5 w-4 h-4 rounded-full
@@ -129,6 +131,7 @@ export default function TimelinePage() {
                   ▸ {e.signal}
                 </div>
               </div>
+              </FadeUp>
             );
           })}
         </div>

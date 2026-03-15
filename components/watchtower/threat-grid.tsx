@@ -1,7 +1,8 @@
 // components/watchtower/threat-grid.tsx
 "use client";
 
-import { useState } from "react";
+import { motion } from "framer-motion";
+import { StaggerParent, StaggerChild } from "@/components/ui/motion";
 import type { ThreatDomain, ThreatLevel } from "@/lib/watchtower/data";
 
 const LEVEL_STYLES: Record<ThreatLevel, string> = {
@@ -31,28 +32,27 @@ interface ThreatGridProps {
 
 export function ThreatGrid({ domains }: ThreatGridProps) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <StaggerParent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       {domains.map((d) => (
-        <DomainCard key={d.id} domain={d} />
+        <StaggerChild key={d.id}>
+          <DomainCard domain={d} />
+        </StaggerChild>
       ))}
-    </div>
+    </StaggerParent>
   );
 }
 
 function DomainCard({ domain: d }: { domain: ThreatDomain }) {
-  const [hovered, setHovered] = useState(false);
   const scoreColor = SCORE_COLORS[d.level];
   const borderColor = BORDER_COLORS[d.level];
 
   return (
-    <article
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      className={`
-        rounded-xl px-5 py-4 border-l-[3px]
-        transition-all duration-200 cursor-default
-        ${hovered ? "bg-void-2 shadow-[0_4px_24px_rgba(0,0,0,0.4)] -translate-y-px" : "bg-void-1"}
-      `}
+    <motion.article
+      whileHover={{ y: -2 }}
+      transition={{ duration: 0.15 }}
+      className="rounded-xl px-5 py-4 border-l-[3px] bg-void-1
+                 transition-shadow duration-200 cursor-default
+                 hover:shadow-[0_8px_24px_rgba(232,64,64,0.18)]"
       style={{
         borderLeftColor: borderColor,
         borderTop: "1px solid rgba(255,255,255,0.07)",
@@ -95,12 +95,20 @@ function DomainCard({ domain: d }: { domain: ThreatDomain }) {
 
       {/* Bar */}
       <div className="h-[5px] rounded-full bg-white/[0.07] overflow-hidden">
-        <div
-          className="h-full rounded-full transition-[width] duration-[1100ms] ease-[cubic-bezier(0.4,0,0.2,1)]"
-          style={{ width: `${d.score}%`, background: scoreColor, boxShadow: `0 0 8px ${scoreColor}40` }}
+        <motion.div
+          className="h-full rounded-full"
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          style={{
+            transformOrigin: "left",
+            width: `${d.score}%`,
+            background: scoreColor,
+            boxShadow: `0 0 8px ${scoreColor}40`,
+          }}
+          transition={{ duration: 0.9, delay: 0.3, ease: [0.4, 0, 0.2, 1] }}
         />
       </div>
-    </article>
+    </motion.article>
   );
 }
 

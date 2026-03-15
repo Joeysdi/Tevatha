@@ -1,6 +1,7 @@
 // app/(watchtower)/watchtower/signals/page.tsx
 import type { Metadata } from "next";
 import { ProvisionerCta }    from "@/components/watchtower/provisioner-cta";
+import { FadeUp, StaggerParent, StaggerChild } from "@/components/ui/motion";
 import { ALARM_CATEGORIES }  from "@/lib/watchtower/data";
 import type { TierClass }    from "@/lib/watchtower/data";
 
@@ -27,24 +28,26 @@ const SCHEDULE = [
 export default function SignalsPage() {
   return (
     <div>
-      <header className="mb-6">
-        <p className="font-mono text-[9.5px] text-gold-protocol tracking-[.22em]
-                       uppercase mb-3">
-          Signal Feed · Daily Intelligence Protocol
-        </p>
-        <h1 className="font-syne font-extrabold text-[clamp(26px,5vw,34px)]
-                       leading-[1.12] text-text-base mb-2">
-          Priority Signal{" "}
-          <span className="text-blue-DEFAULT">Monitor</span>
-        </h1>
-        <p className="text-text-dim max-w-[620px] leading-relaxed text-[13px]">
-          Not everything is a signal. Most noise is noise. These monitored
-          conditions have documented relationships to collapse scenarios.{" "}
-          <strong className="text-text-base">
-            Total daily commitment: 35 minutes maximum.
-          </strong>
-        </p>
-      </header>
+      <FadeUp>
+        <header className="mb-6">
+          <p className="font-mono text-[9.5px] text-gold-protocol tracking-[.22em]
+                         uppercase mb-3">
+            Signal Feed · Daily Intelligence Protocol
+          </p>
+          <h1 className="font-syne font-extrabold text-[clamp(26px,5vw,34px)]
+                         leading-[1.12] text-text-base mb-2">
+            Priority Signal{" "}
+            <span className="text-blue-DEFAULT">Monitor</span>
+          </h1>
+          <p className="text-text-dim max-w-[620px] leading-relaxed text-[13px]">
+            Not everything is a signal. Most noise is noise. These monitored
+            conditions have documented relationships to collapse scenarios.{" "}
+            <strong className="text-text-base">
+              Total daily commitment: 35 minutes maximum.
+            </strong>
+          </p>
+        </header>
+      </FadeUp>
 
       {/* Daily schedule — static server render */}
       <section className="bg-void-1 border border-border-protocol rounded-[10px]
@@ -92,9 +95,10 @@ export default function SignalsPage() {
       </section>
 
       {/* Alarm categories — static server render */}
+      <StaggerParent>
       {ALARM_CATEGORIES.map((cat) => (
+        <StaggerChild key={cat.cat}>
         <section
-          key={cat.cat}
           className="bg-void-1 border border-border-protocol rounded-[10px]
                       p-4.5 mb-4"
         >
@@ -139,7 +143,9 @@ export default function SignalsPage() {
             </table>
           </div>
         </section>
+        </StaggerChild>
       ))}
+      </StaggerParent>
 
       <ProvisionerCta
         headline="Signals identified. Preparation gap unknown."

@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import type { GearCategory } from "@/lib/watchtower/data";
 
 const DOMAIN_MAP: Record<string, string> = {
@@ -37,12 +38,11 @@ export function GearPanel({ categories }: GearPanelProps) {
             key={c.cat}
             onClick={() => setActive(c.cat)}
             className={`
-              px-3.5 py-1.5 text-[12px] rounded-md transition-all duration-150
-              font-medium focus-visible:outline-none
-              focus-visible:ring-2 focus-visible:ring-gold-protocol/40
+              px-3.5 py-1.5 text-[12px] font-medium transition-all duration-150
+              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-protocol/40
               ${active === c.cat
-                ? "bg-void-3 text-text-base font-semibold border border-border-hover"
-                : "text-text-mute2 hover:text-text-base"
+                ? "rounded-full border border-gold-protocol/60 bg-gold-glow text-gold-bright"
+                : "rounded-full text-text-mute2 hover:bg-white/[0.03]"
               }
             `}
           >
@@ -94,10 +94,10 @@ export function GearPanel({ categories }: GearPanelProps) {
               </thead>
               <tbody>
                 {current.items.map((item, i) => (
-                  <tr
+                  <motion.tr
                     key={i}
-                    className="border-b border-white/[0.04]
-                               hover:bg-white/[0.018] transition-colors"
+                    className="border-b border-white/[0.04]"
+                    whileHover={{ backgroundColor: "rgba(255,255,255,0.025)" }}
                   >
                     <td className="px-3.5 py-2.5 font-semibold text-text-base
                                    text-[12.5px] min-w-[160px]">
@@ -147,7 +147,7 @@ export function GearPanel({ categories }: GearPanelProps) {
                                    text-text-mute2 max-w-[160px]">
                       {item.note}
                     </td>
-                  </tr>
+                  </motion.tr>
                 ))}
               </tbody>
             </table>

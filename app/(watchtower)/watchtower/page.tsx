@@ -5,6 +5,7 @@ import { DoomsdayClock }      from "@/components/watchtower/doomsday-clock";
 import { ThreatGrid }         from "@/components/watchtower/threat-grid";
 import { CollapseMatrixRow }  from "@/components/watchtower/collapse-matrix-row";
 import { ProvisionerCta }     from "@/components/watchtower/provisioner-cta";
+import { FadeUp, StaggerParent, StaggerChild } from "@/components/ui/motion";
 import {
   DOMAINS,
   SIGNALS,
@@ -42,46 +43,56 @@ export default function WatchtowerHubPage() {
           boxShadow: "0 0 0 1px rgba(255,255,255,0.03) inset, 0 8px 40px rgba(0,0,0,0.4)",
         }}
       >
-        {/* Subtle top accent line */}
+        {/* RED top accent line */}
         <div className="absolute top-0 left-0 right-0 h-px"
-             style={{ background: "linear-gradient(90deg,transparent,rgba(232,64,64,0.4),transparent)" }} />
+             style={{ background: "linear-gradient(90deg,transparent,rgba(232,64,64,0.6),rgba(201,168,76,0.4),transparent)" }} />
 
         <div className="flex flex-wrap gap-10 items-center">
           {/* Left — copy */}
           <div className="flex-1 min-w-[260px]">
-            <p className="font-mono text-[9.5px] text-gold-protocol
-                          tracking-[.24em] uppercase mb-4 opacity-90">
-              Tevatha Watchtower · Global Fragility Monitor
-            </p>
-            <h1 className="font-syne font-extrabold text-[clamp(28px,5vw,38px)]
-                           leading-[1.1] text-text-base mb-3">
-              Threat Intelligence{" "}
-              <span className="text-red-bright">Command Center</span>
-            </h1>
-            <p className="text-text-dim text-[13.5px] leading-relaxed max-w-[480px] mb-6">
-              The window between signal and collapse is measured in weeks, not years.
-              This is where you read the wall before the writing fades.
-            </p>
+            <StaggerParent>
+              <StaggerChild>
+                <p className="font-mono text-[9.5px] text-gold-protocol
+                              tracking-[.24em] uppercase mb-4 opacity-90">
+                  Tevatha Watchtower · Global Fragility Monitor
+                </p>
+              </StaggerChild>
+              <StaggerChild>
+                <h1 className="font-syne font-extrabold text-[clamp(28px,5vw,38px)]
+                               leading-[1.1] text-text-base mb-3">
+                  Threat Intelligence{" "}
+                  <span className="text-red-bright">Command Center</span>
+                </h1>
+              </StaggerChild>
+              <StaggerChild>
+                <p className="text-text-dim text-[13.5px] leading-relaxed max-w-[480px] mb-6">
+                  The window between signal and collapse is measured in weeks, not years.
+                  This is where you read the wall before the writing fades.
+                </p>
+              </StaggerChild>
 
-            {/* Nav quick-links with prefetch */}
-            <div className="flex gap-3 flex-wrap">
-              {[
-                { href:"/watchtower/scenarios", label:"View Scenarios" },
-                { href:"/watchtower/signals",   label:"Signal Feed"    },
-              ].map((l) => (
-                <Link
-                  key={l.href}
-                  href={l.href}
-                  prefetch
-                  className="inline-flex items-center gap-1.5 font-mono text-[11px]
-                             text-text-dim border border-border-bright/60 rounded-lg
-                             px-4 py-2 hover:text-text-base hover:border-border-hover
-                             hover:bg-white/[0.04] transition-all duration-200"
-                >
-                  {l.label} <span className="text-text-mute2">→</span>
-                </Link>
-              ))}
-            </div>
+              {/* Nav quick-links with prefetch */}
+              <StaggerChild>
+                <div className="flex gap-3 flex-wrap">
+                  {[
+                    { href:"/watchtower/scenarios", label:"View Scenarios" },
+                    { href:"/watchtower/signals",   label:"Signal Feed"    },
+                  ].map((l) => (
+                    <Link
+                      key={l.href}
+                      href={l.href}
+                      prefetch
+                      className="inline-flex items-center gap-1.5 font-mono text-[11px]
+                                 text-text-dim border border-border-bright/60 rounded-lg
+                                 px-4 py-2 hover:text-text-base hover:border-border-hover
+                                 hover:bg-white/[0.04] transition-all duration-200"
+                    >
+                      {l.label} <span className="text-text-mute2">→</span>
+                    </Link>
+                  ))}
+                </div>
+              </StaggerChild>
+            </StaggerParent>
           </div>
 
           {/* Right — doomsday clock (client island) */}
@@ -95,7 +106,10 @@ export default function WatchtowerHubPage() {
         <ThreatGrid domains={DOMAINS} />
       </section>
 
+
+
       {/* ── COLLAPSE PROBABILITY MATRIX ─────────────────────────────── */}
+      <FadeUp delay={0.15}>
       <section className="bg-void-1 border border-border-protocol rounded-2xl
                            overflow-hidden mb-7"
                style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.3)" }}>
@@ -138,8 +152,10 @@ export default function WatchtowerHubPage() {
           </p>
         </div>
       </section>
+      </FadeUp>
 
       {/* ── PRIORITY SIGNAL FEED ────────────────────────────────────── */}
+      <FadeUp delay={0.2}>
       <section className="bg-void-1 border border-border-protocol rounded-2xl
                            overflow-hidden mb-7"
                style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.3)" }}>
@@ -152,46 +168,48 @@ export default function WatchtowerHubPage() {
           </p>
         </div>
 
-        <div className="divide-y divide-border-protocol">
+        <StaggerParent className="divide-y divide-border-protocol">
           {SIGNALS.map((s, i) => (
-            <div
-              key={i}
-              className="grid grid-cols-[1fr_auto_auto_auto] gap-3
-                         items-center py-3.5 px-6
-                         hover:bg-white/[0.025] transition-colors duration-150"
-            >
-              <div className="flex items-center gap-3">
+            <StaggerChild key={i}>
+              <div
+                className="grid grid-cols-[1fr_auto_auto_auto] gap-3
+                           items-center py-3.5 px-6
+                           hover:bg-white/[0.025] transition-colors duration-150"
+              >
+                <div className="flex items-center gap-3">
+                  <span
+                    className={`w-2 h-2 rounded-full flex-shrink-0 animate-pulse
+                                 ${s.score >= 90
+                                   ? "bg-red-bright shadow-[0_0_8px_#e84040]"
+                                   : "bg-amber-protocol shadow-[0_0_8px_#f0a500]"}`}
+                  />
+                  <span className="text-[13px] text-text-base">{s.sig}</span>
+                </div>
+
+                <span className="font-mono text-[10px] text-text-mute2 whitespace-nowrap">
+                  {s.domain}
+                </span>
+
                 <span
-                  className={`w-2 h-2 rounded-full flex-shrink-0 animate-pulse
-                               ${s.score >= 90
-                                 ? "bg-red-bright shadow-[0_0_8px_#e84040]"
-                                 : "bg-amber-protocol shadow-[0_0_8px_#f0a500]"}`}
-                />
-                <span className="text-[13px] text-text-base">{s.sig}</span>
+                  className={`font-mono text-[13px] font-bold tabular-nums
+                               ${s.score >= 85 ? "text-red-bright" : "text-amber-protocol"}`}
+                >
+                  {s.score}
+                </span>
+
+                <span
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-md
+                               font-mono text-[9.5px] font-bold
+                               ${TIER_STYLES[s.tier]}`}
+                >
+                  {s.tier.toUpperCase()}
+                </span>
               </div>
-
-              <span className="font-mono text-[10px] text-text-mute2 whitespace-nowrap">
-                {s.domain}
-              </span>
-
-              <span
-                className={`font-mono text-[13px] font-bold tabular-nums
-                             ${s.score >= 85 ? "text-red-bright" : "text-amber-protocol"}`}
-              >
-                {s.score}
-              </span>
-
-              <span
-                className={`inline-flex items-center px-2.5 py-0.5 rounded-md
-                             font-mono text-[9.5px] font-bold
-                             ${TIER_STYLES[s.tier]}`}
-              >
-                {s.tier.toUpperCase()}
-              </span>
-            </div>
+            </StaggerChild>
           ))}
-        </div>
+        </StaggerParent>
       </section>
+      </FadeUp>
 
       {/* ── PREFETCH LINKS — invisible, forces RSC prefetch for nav pages ── */}
       <div className="sr-only" aria-hidden>
@@ -203,12 +221,14 @@ export default function WatchtowerHubPage() {
         ))}
       </div>
 
-      <ProvisionerCta
-        headline="Signals mean nothing without a plan."
-        subtext="Your Watchtower read means you see it coming. The Provisioner is how you survive it — gear, sanctuary, and community mapped to your exact threat exposure."
-        label="Build Your Sanctuary →"
-        urgency="TIER 2 THREAT WINDOW: ACTIVE ACROSS 4 DOMAINS"
-      />
+      <FadeUp delay={0.3}>
+        <ProvisionerCta
+          headline="Signals mean nothing without a plan."
+          subtext="Your Watchtower read means you see it coming. The Provisioner is how you survive it — gear, sanctuary, and community mapped to your exact threat exposure."
+          label="Build Your Sanctuary →"
+          urgency="TIER 2 THREAT WINDOW: ACTIVE ACROSS 4 DOMAINS"
+        />
+      </FadeUp>
     </div>
   );
 }

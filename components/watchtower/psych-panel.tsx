@@ -2,6 +2,8 @@
 "use client";
 
 import { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { StaggerParent, StaggerChild } from "@/components/ui/motion";
 import type { PsychPillar, PsychThreat, SevCode } from "@/lib/watchtower/data";
 
 type Tab = "pillars" | "threats" | "protocol" | "crisis";
@@ -53,11 +55,11 @@ export function PsychPanel({ pillars, threats }: PsychPanelProps) {
             key={t.id}
             onClick={() => setTab(t.id)}
             className={`
-              px-3.5 py-1.5 text-[12px] rounded-md transition-all duration-150
-              font-medium focus-visible:outline-none
+              px-3.5 py-1.5 text-[12px] font-medium transition-all duration-150
+              focus-visible:outline-none
               ${tab === t.id
-                ? "bg-void-3 text-text-base font-semibold border border-border-hover"
-                : "text-text-mute2 hover:text-text-base"
+                ? "rounded-full border border-gold-protocol/60 bg-gold-glow text-gold-bright"
+                : "rounded-full text-text-mute2 hover:bg-white/[0.03]"
               }
             `}
           >
@@ -66,14 +68,21 @@ export function PsychPanel({ pillars, threats }: PsychPanelProps) {
         ))}
       </div>
 
-      {tab === "pillars" && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3
-                        animate-[fadeUp_0.25s_ease_both]">
+      <AnimatePresence mode="wait" initial={false}>
+        {tab === "pillars" && (
+          <motion.div
+            key="pillars"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+          >
+        <StaggerParent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {pillars.map((p) => {
             const colors = PILLAR_COLORS[p.colKey] ?? PILLAR_COLORS.gold;
             return (
+              <StaggerChild key={p.name}>
               <div
-                key={p.name}
                 className={`bg-void-1 border border-border-protocol rounded-[10px]
                              p-4.5 border-l-[3px] ${colors.border}`}
               >
@@ -103,63 +112,93 @@ export function PsychPanel({ pillars, threats }: PsychPanelProps) {
                   </div>
                 ))}
               </div>
+              </StaggerChild>
             );
           })}
-        </div>
-      )}
+        </StaggerParent>
+          </motion.div>
+        )}
 
-      {tab === "threats" && (
-        <div className="bg-void-1 border border-border-protocol rounded-[10px]
-                        overflow-hidden animate-[fadeUp_0.25s_ease_both]">
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr>
-                  {["Threat","Onset","Severity","Warning Signs","Ark Intervention"].map((h) => (
-                    <th key={h}
-                        className="text-left font-mono text-[9.5px] tracking-[.12em]
-                                   uppercase text-text-mute2 px-3.5 py-2.5
-                                   border-b border-border-bright whitespace-nowrap
-                                   bg-white/[0.03]">
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {threats.map((t) => (
-                  <tr key={t.threat}
-                      className="border-b border-white/[0.04] hover:bg-white/[0.018] transition-colors">
-                    <td className="px-3.5 py-2.5 font-semibold text-text-base
-                                   text-[12.5px] whitespace-nowrap">
-                      {t.threat}
-                    </td>
-                    <td className="px-3.5 py-2.5 font-mono text-[11px] text-text-dim">
-                      {t.onset}
-                    </td>
-                    <td className="px-3.5 py-2.5">
-                      <span className={`inline-block px-2 py-0.5 rounded font-mono
-                                        text-[9.5px] font-bold tracking-[.06em]
-                                        ${SEV_STYLES[t.sev]}`}>
-                        {SEV_LABELS[t.sev]}
-                      </span>
-                    </td>
-                    <td className="px-3.5 py-2.5 text-[12px] text-text-dim max-w-[200px]">
-                      {t.signs}
-                    </td>
-                    <td className="px-3.5 py-2.5 text-[12px] text-text-dim max-w-[240px]">
-                      {t.ark}
-                    </td>
+        {tab === "threats" && (
+          <motion.div
+            key="threats"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+          >
+          <div className="bg-void-1 border border-border-protocol rounded-[10px] overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr>
+                    {["Threat","Onset","Severity","Warning Signs","Ark Intervention"].map((h) => (
+                      <th key={h}
+                          className="text-left font-mono text-[9.5px] tracking-[.12em]
+                                     uppercase text-text-mute2 px-3.5 py-2.5
+                                     border-b border-border-bright whitespace-nowrap
+                                     bg-white/[0.03]">
+                        {h}
+                      </th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {threats.map((t) => (
+                    <tr key={t.threat}
+                        className="border-b border-white/[0.04] hover:bg-white/[0.018] transition-colors">
+                      <td className="px-3.5 py-2.5 font-semibold text-text-base
+                                     text-[12.5px] whitespace-nowrap">
+                        {t.threat}
+                      </td>
+                      <td className="px-3.5 py-2.5 font-mono text-[11px] text-text-dim">
+                        {t.onset}
+                      </td>
+                      <td className="px-3.5 py-2.5">
+                        <span className={`inline-block px-2 py-0.5 rounded font-mono
+                                          text-[9.5px] font-bold tracking-[.06em]
+                                          ${SEV_STYLES[t.sev]}`}>
+                          {SEV_LABELS[t.sev]}
+                        </span>
+                      </td>
+                      <td className="px-3.5 py-2.5 text-[12px] text-text-dim max-w-[200px]">
+                        {t.signs}
+                      </td>
+                      <td className="px-3.5 py-2.5 text-[12px] text-text-dim max-w-[240px]">
+                        {t.ark}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-      )}
+          </motion.div>
+        )}
 
-      {tab === "protocol" && <DailyProtocol />}
-      {tab === "crisis"   && <CrisisProtocols />}
+        {tab === "protocol" && (
+          <motion.div
+            key="protocol"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+          >
+            <DailyProtocol />
+          </motion.div>
+        )}
+        {tab === "crisis" && (
+          <motion.div
+            key="crisis"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+          >
+            <CrisisProtocols />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
@@ -176,16 +215,17 @@ const DAILY_BLOCKS = [
 
 function DailyProtocol() {
   return (
-    <div className="animate-[fadeUp_0.25s_ease_both]">
+    <div>
       <blockquote className="bg-void-2 border border-border-protocol rounded-lg
                               px-4 py-3 mb-4 text-[13px] text-text-dim italic leading-relaxed">
         &ldquo;In every documented long-duration survival scenario, communities that maintained
         structured daily rhythm had dramatically lower psychological deterioration rates — even
         when resources were identical.&rdquo;
       </blockquote>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <StaggerParent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {DAILY_BLOCKS.map((b) => (
-          <div key={b.title}
+          <StaggerChild key={b.title}>
+          <div
                className="bg-void-2 border border-border-protocol rounded-[10px] p-4">
             <div className="font-mono text-[9px] text-gold-protocol tracking-[.1em]
                             uppercase mb-1.5">{b.time}</div>
@@ -200,8 +240,9 @@ function DailyProtocol() {
               </div>
             ))}
           </div>
+          </StaggerChild>
         ))}
-      </div>
+      </StaggerParent>
     </div>
   );
 }
@@ -227,8 +268,7 @@ const CRISIS_PROTOCOLS = [
 
 function CrisisProtocols() {
   return (
-    <div className="bg-void-1 border border-border-protocol rounded-[10px]
-                    overflow-hidden animate-[fadeUp_0.25s_ease_both]">
+    <div className="bg-void-1 border border-border-protocol rounded-[10px] overflow-hidden">
       {CRISIS_PROTOCOLS.map((p, pi, arr) => (
         <div key={pi}
              className={pi < arr.length - 1 ? "border-b border-border-protocol" : ""}>

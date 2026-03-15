@@ -5,18 +5,22 @@ import {
 } from "react";
 import { useUser }             from "@clerk/nextjs";
 import { useSupabaseClient }   from "@/lib/supabase/client";
+import { motion } from "framer-motion";
+import { FadeUp, StaggerParent, StaggerChild } from "@/components/ui/motion";
+import { VaultLock } from "@/components/protocol/vault-lock";
 import {
   upsertEntry, getAllEntries, enqueue, getSyncQueue,
   removeSyncItem, markSynced,
+  storePinAuth, getPinAuth,
   type LedgerEntry, type LedgerCategory, type BlueprintData,
 } from "@/lib/idb/ledger-store";
 import {
-  encryptPayload, decryptPayload,
+  encryptPayload, decryptPayload, toB64, fromB64,
 } from "@/lib/crypto/vault";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
-type ViewState = "pin-gate" | "overview" | "add" | "view-entry";
+type ViewState = "pin-gate" | "pin-create" | "overview" | "add" | "view-entry";
 
 const CATEGORIES: { id: LedgerCategory; label: string; icon: string; encrypted: boolean }[] = [
   { id:"crypto_custody",         label:"Crypto Custody",       icon:"🔐", encrypted:true  },
@@ -79,8 +83,37 @@ export default function LedgerPage() {
   const [loading,   setLoading]  = useState(false);
   const [error,     setError]    = useState<string | null>(null);
 
+  // VaultLock + PIN gate state
+  const [unlocking,  setUnlocking]  = useState(false);
+  const [pinShake,   setPinShake]   = useState(false);
+  const [hasPinAuth, setHasPinAuth] = useState<boolean | null>(null);
+
   // PIN is held in a ref — never in React state (prevents accidental serialisation)
   const pinRef = useRef<string>("");
+
+  // ── Check for existing PIN hash on mount ───────────────────────────────
+  useEffect(() => {
+    getPinAuth().then((r) => setHasPinAuth(!!r));
+  }, []);
+
+  // ── PIN helpers ─────────────────────────────────────────────────────────
+  const validatePin = useCallback(async (pin: string): Promise<"valid" | "invalid"> => {
+    const stored = await getPinAuth();
+    if (!stored) return "invalid";
+    const saltBytes = fromB64(stored.salt);
+    const enc = new TextEncoder();
+    const combined = new Uint8Array([...saltBytes, ...enc.encode(pin)]);
+    const hashBuf = await crypto.subtle.digest("SHA-256", combined);
+    return toB64(hashBuf) === stored.hash ? "valid" : "invalid";
+  }, []);
+
+  const setupPin = useCallback(async (pin: string): Promise<void> => {
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const enc = new TextEncoder();
+    const combined = new Uint8Array([...salt, ...enc.encode(pin)]);
+    const hashBuf = await crypto.subtle.digest("SHA-256", combined);
+    await storePinAuth(salt, new Uint8Array(hashBuf));
+  }, []);
 
   // ── Network status ─────────────────────────────────────────────────────
   useEffect(() => {
@@ -179,24 +212,44 @@ export default function LedgerPage() {
     }
   }, [online, user, supabase]);
 
-  // ── PIN unlock ──────────────────────────────────────────────────────────
+  // ── PIN unlock (returning user) ─────────────────────────────────────────
   const handleUnlock = useCallback(async (pin: string) => {
+    setError(null);
+    const result = await validatePin(pin);
+    if (result === "invalid") {
+      setPinShake(true);
+      setTimeout(() => setPinShake(false), 500);
+      setError("Incorrect PIN");
+      return;
+    }
+    setUnlocking(true);
+    await new Promise((r) => setTimeout(r, 650)); // padlock spring animation
+    pinRef.current = pin;
+    await loadEntries();
+    setView("overview");
+  }, [validatePin, loadEntries]);
+
+  // ── PIN create (first-time user) ────────────────────────────────────────
+  const handleCreatePin = useCallback(async (pin: string, confirm: string) => {
+    setError(null);
     if (pin.length < 4) {
       setError("PIN must be at least 4 characters");
       return;
     }
-    setLoading(true);
-    setError(null);
-    try {
-      pinRef.current = pin;
-      await loadEntries();
-      setView("overview");
-    } catch {
-      setError("Failed to load ledger data");
-    } finally {
-      setLoading(false);
+    if (pin !== confirm) {
+      setPinShake(true);
+      setTimeout(() => setPinShake(false), 500);
+      setError("PINs do not match");
+      return;
     }
-  }, [loadEntries]);
+    await setupPin(pin);
+    setHasPinAuth(true);
+    setUnlocking(true);
+    await new Promise((r) => setTimeout(r, 650));
+    pinRef.current = pin;
+    await loadEntries();
+    setView("overview");
+  }, [setupPin, loadEntries]);
 
   // ── Lock (wipe in-memory PIN) ───────────────────────────────────────────
   const lock = useCallback(() => {
@@ -311,7 +364,16 @@ export default function LedgerPage() {
   // ── Render ──────────────────────────────────────────────────────────────
 
   if (view === "pin-gate") {
-    return <PinGate onUnlock={handleUnlock} loading={loading} error={error} />;
+    return (
+      <PinGate
+        hasPinAuth={hasPinAuth}
+        unlocking={unlocking}
+        pinShake={pinShake}
+        error={error}
+        onUnlock={handleUnlock}
+        onCreatePin={handleCreatePin}
+      />
+    );
   }
 
   if (view === "add") {
@@ -337,6 +399,7 @@ export default function LedgerPage() {
 
   // ── Overview ────────────────────────────────────────────────────────────
   return (
+    <FadeUp>
     <div className="max-w-4xl mx-auto px-6 py-10 space-y-8">
 
       {/* Header */}
@@ -374,10 +437,9 @@ export default function LedgerPage() {
           const cat = CATEGORIES.find((c) => c.id === id);
           return (
             <button key={id} onClick={() => setTab(id as typeof activeTab)}
-              className={`px-3.5 py-1.5 text-[11px] rounded-card transition-all
-                          duration-150 font-mono font-medium
+              className={`px-3.5 py-1.5 text-[11px] font-mono font-medium transition-all duration-150
                           ${activeTab === id
-                            ? "bg-void-3 text-text-base border border-border-hover"
+                            ? "border-b-2 border-cyan-DEFAULT text-cyan-DEFAULT"
                             : "text-text-mute2 hover:text-text-base"}`}>
               {cat ? `${cat.icon} ${cat.label}` : "All"}
             </button>
@@ -405,16 +467,16 @@ export default function LedgerPage() {
           </p>
         </div>
       ) : (
-        <div className="grid gap-3">
+        <StaggerParent className="grid gap-3">
           {visible.map((entry) => {
             const cat = CATEGORIES.find((c) => c.id === entry.category)!;
             return (
-              <button key={entry.id} onClick={() => void viewEntry(entry)}
-                className="w-full text-left bg-glass-protocol
-                           border border-border-protocol rounded-card-lg
-                           px-5 py-4 transition-all duration-200
-                           hover:border-border-hover hover:bg-glass-hover
-                           hover:shadow-card group">
+              <StaggerChild key={entry.id}>
+              <button onClick={() => void viewEntry(entry)}
+                className="w-full text-left border-l-2 border-cyan-DEFAULT/60 bg-void-1 rounded-lg
+                           px-4 py-3 mb-2 transition-all duration-200
+                           hover:-translate-y-px hover:shadow-[0_4px_16px_rgba(0,212,255,0.08)]
+                           group">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
                     <span className="text-xl flex-shrink-0">{cat.icon}</span>
@@ -443,69 +505,150 @@ export default function LedgerPage() {
                   </div>
                 </div>
               </button>
+              </StaggerChild>
             );
           })}
-        </div>
+        </StaggerParent>
       )}
     </div>
+    </FadeUp>
   );
 }
 
 // ── PIN Gate ────────────────────────────────────────────────────────────────
 
 function PinGate({
-  onUnlock, loading, error,
-}: { onUnlock: (pin: string) => void; loading: boolean; error: string | null }) {
-  const [pin, setPin] = useState("");
+  hasPinAuth, unlocking, pinShake, error, onUnlock, onCreatePin,
+}: {
+  hasPinAuth:   boolean | null;
+  unlocking:    boolean;
+  pinShake:     boolean;
+  error:        string | null;
+  onUnlock:     (pin: string) => void;
+  onCreatePin:  (pin: string, confirm: string) => void;
+}) {
+  const [mode,    setMode]    = useState<"unlock" | "create" | null>(null);
+  const [pin,     setPin]     = useState("");
+  const [confirm, setConfirm] = useState("");
+
+  // Once hasPinAuth resolves, set initial mode
+  useEffect(() => {
+    if (hasPinAuth === null) return;
+    setMode(hasPinAuth ? "unlock" : "create");
+  }, [hasPinAuth]);
+
+  if (hasPinAuth === null || mode === null) {
+    return (
+      <div className="min-h-[80vh] flex items-center justify-center">
+        <p className="font-mono text-[10px] text-text-mute2 tracking-[.2em] animate-pulse">
+          LOADING…
+        </p>
+      </div>
+    );
+  }
+
+  const isCreate = mode === "create";
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6 bg-void-3">
-      <div className="w-full max-w-sm space-y-6">
-        <div className="text-center">
-          <p className="font-mono text-[9.5px] text-gold-DEFAULT tracking-[.22em]
-                         uppercase mb-4">Continuity Ledger</p>
-          <h1 className="font-syne font-extrabold text-[28px] text-text-base mb-2">
-            Zero-Hour Access
-          </h1>
-          <p className="font-mono text-[11px] text-text-mute2 leading-relaxed">
-            Enter your Ledger PIN. Decryption happens locally — PIN never transmitted.
-          </p>
-        </div>
-
-        <div className="bg-glass-protocol border border-border-protocol
-                         rounded-card-xl p-6 space-y-4">
-          <input
-            type="password"
-            placeholder="Ledger PIN"
-            value={pin}
-            onChange={(e) => setPin(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && pin && onUnlock(pin)}
-            autoFocus
-            className="w-full bg-void-3 border border-border-protocol rounded-card
-                        px-4 py-3 font-mono text-[13px] text-text-base
-                        placeholder:text-text-mute2 focus:outline-none
-                        focus:border-gold-DEFAULT transition-colors"
+    <div className="min-h-[80vh] flex items-center justify-center px-6">
+      <FadeUp className="w-full max-w-sm">
+        <div
+          className="rounded-2xl border border-cyan-border bg-void-1 p-10 relative overflow-hidden"
+          style={{ boxShadow: "0 0 0 1px rgba(255,255,255,0.03) inset, 0 8px 40px rgba(0,212,255,0.08)" }}
+        >
+          {/* CYAN top accent line */}
+          <div
+            className="absolute top-0 left-0 right-0 h-px"
+            style={{ background: "linear-gradient(90deg,#00d4ff,transparent)" }}
           />
 
+          {/* VaultLock */}
+          <div className="w-20 h-24 mx-auto mb-6">
+            <VaultLock locked={!unlocking} />
+          </div>
+
+          <h2 className="font-syne font-bold text-[17px] text-cyan-DEFAULT text-center mb-1">
+            {isCreate ? "CREATE VAULT PIN" : "UNLOCK VAULT"}
+          </h2>
+          <p className="font-mono text-[9.5px] text-text-mute2 text-center mb-6">
+            {isCreate
+              ? "First-time setup · PIN never leaves your device"
+              : "Protocol · Continuity Ledger"}
+          </p>
+
+          {/* Shake wrapper */}
+          <motion.div
+            animate={pinShake ? { x: [0, -8, 8, -8, 8, 0] } : { x: 0 }}
+            transition={{ duration: 0.4 }}
+            className="space-y-3"
+          >
+            <input
+              type="password"
+              placeholder={isCreate ? "New PIN" : "· · · ·"}
+              value={pin}
+              onChange={(e) => setPin(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key !== "Enter") return;
+                if (isCreate) {
+                  onCreatePin(pin, confirm);
+                } else {
+                  onUnlock(pin);
+                }
+              }}
+              autoFocus
+              className="w-full bg-void-3 border border-cyan-border rounded-lg px-4 py-3
+                         font-mono text-center text-[18px] tracking-[.3em] text-text-base
+                         placeholder:text-text-mute2 focus:outline-none
+                         focus:border-cyan-DEFAULT transition-colors"
+            />
+
+            {isCreate && (
+              <input
+                type="password"
+                placeholder="Confirm PIN"
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && onCreatePin(pin, confirm)}
+                className="w-full bg-void-3 border border-cyan-border rounded-lg px-4 py-3
+                           font-mono text-center text-[18px] tracking-[.3em] text-text-base
+                           placeholder:text-text-mute2 focus:outline-none
+                           focus:border-cyan-DEFAULT transition-colors"
+              />
+            )}
+          </motion.div>
+
           {error && (
-            <p className="font-mono text-[10px] text-red-bright text-center">{error}</p>
+            <p className="font-mono text-[10px] text-red-bright text-center mt-3">{error}</p>
           )}
 
           <button
-            onClick={() => pin && onUnlock(pin)}
-            disabled={!pin || loading}
-            className="w-full bg-gold-DEFAULT text-void-0 font-mono font-bold
-                        text-[11px] tracking-[.1em] py-3 rounded-card
-                        hover:bg-gold-bright transition-colors
-                        disabled:opacity-40 disabled:cursor-not-allowed">
-            {loading ? "UNLOCKING…" : "UNLOCK LEDGER →"}
+            onClick={() => isCreate ? onCreatePin(pin, confirm) : onUnlock(pin)}
+            disabled={unlocking || !pin}
+            className="mt-4 w-full bg-cyan-DEFAULT/10 border border-cyan-border
+                       text-cyan-DEFAULT font-mono font-bold py-3 rounded-lg
+                       hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,212,255,0.2)]
+                       transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {unlocking ? "OPENING…" : isCreate ? "CREATE VAULT" : "UNLOCK VAULT"}
           </button>
-        </div>
 
-        <p className="text-center font-mono text-[9px] text-text-mute2 leading-relaxed">
-          Works offline — blueprints load from local cache.
-        </p>
-      </div>
+          {!isCreate && (
+            <button
+              onClick={() => { setMode("create"); setPin(""); setConfirm(""); }}
+              className="mt-3 w-full font-mono text-[10px] text-text-mute2
+                         hover:text-text-dim transition-colors text-center"
+            >
+              Create new vault ↗
+            </button>
+          )}
+
+          {isCreate && (
+            <p className="font-mono text-[9px] text-text-mute2 text-center mt-3">
+              There is no recovery method. Remember this PIN.
+            </p>
+          )}
+        </div>
+      </FadeUp>
     </div>
   );
 }

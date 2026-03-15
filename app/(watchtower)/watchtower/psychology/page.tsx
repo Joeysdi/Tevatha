@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import { PsychPanel }     from "@/components/watchtower/psych-panel";
 import { ProvisionerCta } from "@/components/watchtower/provisioner-cta";
+import { FadeUp }         from "@/components/ui/motion";
 import { PSYCH_PILLARS, PSYCH_THREATS } from "@/lib/watchtower/data";
 
 export const metadata: Metadata = { title: "Psychology" };
@@ -28,7 +29,9 @@ export default function PsychologyPage() {
       </header>
 
       {/* PsychPanel is client (sub-tabs). Data served from Server Component. */}
-      <PsychPanel pillars={PSYCH_PILLARS} threats={PSYCH_THREATS} />
+      <FadeUp delay={0.1}>
+        <PsychPanel pillars={PSYCH_PILLARS} threats={PSYCH_THREATS} />
+      </FadeUp>
 
       <ProvisionerCta
         headline="The mind is infrastructure. Build it before you need it."

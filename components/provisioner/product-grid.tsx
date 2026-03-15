@@ -2,6 +2,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { motion } from "framer-motion";
+import { StaggerParent, StaggerChild, FadeIn } from "@/components/ui/motion";
 import { GradeBadge }         from "./grade-badge";
 import { SolanaCheckout }     from "./solana-checkout";
 import type { Product, ProductCategory } from "@/lib/provisioner/catalog";
@@ -60,11 +62,11 @@ export function ProductGrid({ products }: ProductGridProps) {
             key={f}
             onClick={() => setActiveFilter(f)}
             className={`
-              px-4 py-1.5 text-[11.5px] rounded-lg transition-all duration-150
-              font-medium focus-visible:outline-none whitespace-nowrap
+              px-4 py-1.5 text-[11.5px] font-medium transition-all duration-150
+              focus-visible:outline-none whitespace-nowrap
               ${activeFilter === f
-                ? "bg-void-3 text-text-base font-semibold border border-border-hover shadow-[0_1px_4px_rgba(0,0,0,0.4)]"
-                : "text-text-mute2 hover:text-text-base hover:bg-white/[0.03]"
+                ? "rounded-full bg-gold-glow border border-gold-protocol text-gold-bright"
+                : "rounded-full border-transparent text-text-mute2 hover:bg-white/[0.03]"
               }
             `}
           >
@@ -82,16 +84,17 @@ export function ProductGrid({ products }: ProductGridProps) {
       </div>
 
       {/* Product grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      <StaggerParent className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {filtered.map((p) => (
-          <ProductCard
-            key={p.id}
-            product={p}
-            expanded={expandedId === p.id}
-            onToggle={() => setExpandedId(expandedId === p.id ? null : p.id)}
-          />
+          <StaggerChild key={p.id}>
+            <ProductCard
+              product={p}
+              expanded={expandedId === p.id}
+              onToggle={() => setExpandedId(expandedId === p.id ? null : p.id)}
+            />
+          </StaggerChild>
         ))}
-      </div>
+      </StaggerParent>
     </>
   );
 }
@@ -116,10 +119,12 @@ function ProductCard({
   const g = gradeMeta[p.grade];
 
   return (
-    <article
+    <motion.article
+      whileHover={{ y: -2 }}
+      transition={{ duration: 0.15 }}
       className={`bg-void-1 border rounded-xl overflow-hidden
-                  transition-all duration-200 ${g.border} ${g.glow}
-                  hover:-translate-y-0.5`}
+                  hover:shadow-[0_8px_24px_rgba(201,168,76,0.3)]
+                  transition-shadow duration-200 ${g.border}`}
     >
       {/* Card header */}
       <div className="p-5">
@@ -149,7 +154,7 @@ function ProductCard({
           <div className="text-right flex-shrink-0">
             <div className="font-syne font-bold text-[19px] text-gold-protocol
                             leading-none">
-              ${(p.priceUsd / 100).toFixed(2)}
+              <FadeIn>${(p.priceUsd / 100).toFixed(2)}</FadeIn>
             </div>
             <div className="font-mono text-[9px] text-text-mute2 mt-1">
               {p.priceUsdc} USDC
@@ -220,7 +225,7 @@ function ProductCard({
           </div>
         )}
       </div>
-    </article>
+    </motion.article>
   );
 }
 

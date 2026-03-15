@@ -4,6 +4,7 @@ import Link               from "next/link";
 import { ProductGrid }    from "@/components/provisioner/product-grid";
 import { GradeBadge }     from "@/components/provisioner/grade-badge";
 import { ProvisionerCta } from "@/components/watchtower/provisioner-cta";
+import { FadeUp, FadeIn, StaggerParent, StaggerChild } from "@/components/ui/motion";
 import { CATALOG, CATALOG_STATS } from "@/lib/provisioner/catalog";
 import { GRADE_META }              from "@/lib/provisioner/grading";
 import type { GradeLevel }         from "@/types/treasury";
@@ -36,22 +37,30 @@ export default function ShopPage() {
           style={{ background: "linear-gradient(90deg,transparent,#c9a84c,transparent)" }}
         />
 
-        <p className="font-mono text-[9.5px] text-gold-protocol
-                       tracking-[.22em] uppercase mb-3">
-          Provisioner Store · Tevatha-Certified Gear
-        </p>
-        <h1 className="font-syne font-extrabold text-[clamp(26px,5vw,34px)]
-                       leading-[1.12] text-text-base mb-2.5">
-          Gear That Works When{" "}
-          <span className="text-gold-protocol">Nothing Else Does</span>
-        </h1>
-        <p className="text-text-dim text-[13px] leading-relaxed max-w-xl mb-5">
-          No affiliate links. No sponsored placements. Every item earns its place
-          through the 5-Layer Grading System. Life Over Money.
-        </p>
+        <StaggerParent>
+          <StaggerChild>
+            <p className="font-mono text-[9.5px] text-gold-protocol
+                           tracking-[.22em] uppercase mb-3">
+              Provisioner Store · Tevatha-Certified Gear
+            </p>
+          </StaggerChild>
+          <StaggerChild>
+            <h1 className="font-syne font-extrabold text-[clamp(26px,5vw,34px)]
+                           leading-[1.12] text-text-base mb-2.5">
+              Gear That Works When{" "}
+              <span className="text-gold-protocol">Nothing Else Does</span>
+            </h1>
+          </StaggerChild>
+          <StaggerChild>
+            <p className="text-text-dim text-[13px] leading-relaxed max-w-xl mb-5">
+              No affiliate links. No sponsored placements. Every item earns its place
+              through the 5-Layer Grading System. Life Over Money.
+            </p>
+          </StaggerChild>
+        </StaggerParent>
 
         {/* Catalog stats */}
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+        <StaggerParent className="grid grid-cols-3 sm:grid-cols-6 gap-3" delayChildren={0.2}>
           {[
             { val:CATALOG_STATS.total,      label:"Total Items"    },
             { val:CATALOG_STATS.gradeA,     label:"Grade A"        },
@@ -60,33 +69,34 @@ export default function ShopPage() {
             { val:CATALOG_STATS.categories, label:"Categories"     },
             { val:CATALOG_STATS.highTicket, label:"USDC Rail"      },
           ].map((s) => (
-            <div
-              key={s.label}
-              className="text-center px-3 py-2.5 bg-void-2 rounded-lg
-                         border border-border-protocol"
-            >
-              <div className="font-syne font-extrabold text-[22px]
-                              text-gold-protocol leading-none">
-                {s.val}
+            <StaggerChild key={s.label}>
+              <div
+                className="text-center px-3 py-2.5 bg-void-1 rounded-lg
+                           border border-border-protocol"
+              >
+                <div className="font-syne font-extrabold text-[22px]
+                                text-gold-protocol leading-none">
+                  <FadeIn delay={0.3}>{s.val}</FadeIn>
+                </div>
+                <div className="font-mono text-[9px] text-text-mute2
+                                mt-1 leading-tight">
+                  {s.label.toUpperCase()}
+                </div>
               </div>
-              <div className="font-mono text-[9px] text-text-mute2
-                              mt-1 leading-tight">
-                {s.label.toUpperCase()}
-              </div>
-            </div>
+            </StaggerChild>
           ))}
-        </div>
+        </StaggerParent>
       </header>
 
       {/* ── 5-LAYER GRADING SYSTEM ─────────────────────────────────────── */}
       <section className="bg-void-1 border border-border-protocol
                            rounded-xl p-5 mb-6">
-        <h2 className="font-syne font-bold text-base text-text-base mb-4">
+        <h2 className="font-syne font-bold text-[17px] text-text-base mb-4">
           5-Layer Asset Grading System
         </h2>
 
         {/* Grading layers */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-5">
+        <StaggerParent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-5">
           {[
             { n:"L1", layer:"Durability",                w:"30%", desc:"Must function after 5+ years storage or hard use without degradation."          },
             { n:"L2", layer:"Grid Independence",          w:"30%", desc:"Must function without grid power, internet, or cellular connectivity."          },
@@ -94,10 +104,10 @@ export default function ShopPage() {
             { n:"L4", layer:"Value Density",              w:"10%", desc:"Must justify cost against caloric, survival, or protection value produced."     },
             { n:"L5", layer:"Supply Chain Resilience",    w:"10%", desc:"Must remain sourceable when primary supply chains are disrupted."               },
           ].map((l) => (
+            <StaggerChild key={l.n}>
             <div
-              key={l.n}
-              className="bg-void-2 border border-border-protocol rounded-lg
-                         p-3.5 border-l-2 border-l-gold-protocol"
+              className="bg-void-1 border border-border-protocol rounded-xl p-4
+                         border-l-2 border-l-gold-protocol"
             >
               <div className="flex items-center justify-between mb-2">
                 <span className="font-mono text-[10px] text-gold-protocol
@@ -113,10 +123,12 @@ export default function ShopPage() {
                 {l.desc}
               </p>
             </div>
+            </StaggerChild>
           ))}
-        </div>
+        </StaggerParent>
 
         {/* Grade scale */}
+        <FadeUp delay={0.25}>
         <div>
           <p className="font-mono text-[9.5px] text-text-mute2
                          tracking-[.1em] uppercase mb-2.5">
@@ -135,12 +147,19 @@ export default function ShopPage() {
             ))}
           </div>
         </div>
+        </FadeUp>
       </section>
 
       {/* ── PAYMENT RAILS ──────────────────────────────────────────────── */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+      <div className="mb-6">
+        <div className="flex items-center gap-3 mb-4">
+          <h2 className="font-syne font-bold text-[17px] text-text-base">Payment Rails</h2>
+          <div className="flex-1 h-px bg-border-protocol" />
+        </div>
+      <StaggerParent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Stripe rail */}
-        <div className="bg-void-1 border border-gold-protocol/22 rounded-xl p-5">
+        <StaggerChild>
+        <div className="rounded-xl bg-void-1 border border-gold-protocol/22 p-5">
           <div className="flex items-center gap-2 mb-3">
             <span className="font-mono text-[10px] text-gold-protocol
                              font-bold tracking-[.1em]">CARD RAIL</span>
@@ -157,9 +176,11 @@ export default function ShopPage() {
             <span className="font-mono text-[10px] text-green-bright">ACTIVE</span>
           </div>
         </div>
+        </StaggerChild>
 
         {/* Solana USDC rail */}
-        <div className="bg-void-1 border border-cyan-border rounded-xl p-5">
+        <StaggerChild>
+        <div className="rounded-xl bg-void-1 border border-cyan-border p-5">
           <div className="flex items-center gap-2 mb-3">
             <span className="font-mono text-[10px] text-cyan-DEFAULT
                              font-bold tracking-[.1em]">SOLANA USDC RAIL</span>
@@ -177,20 +198,22 @@ export default function ShopPage() {
             <span className="font-mono text-[10px] text-cyan-DEFAULT">ACTIVE</span>
           </div>
         </div>
-      </section>
+        </StaggerChild>
+      </StaggerParent>
+      </div>
 
       {/* ── PRODUCT GRID (client island) ───────────────────────────────── */}
       <section>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-syne font-bold text-base text-text-base">
+        <div className="flex items-center gap-3 mb-4">
+          <h2 className="font-syne font-bold text-[17px] text-text-base">
             Tevatha-Certified Catalog
           </h2>
-          {/* Prefetch link to tier assessment */}
+          <div className="flex-1 h-px bg-border-protocol" />
           <Link
             href="/provisioner/tiers"
             prefetch
             className="font-mono text-[10px] text-text-mute2
-                       hover:text-gold-protocol transition-colors"
+                       hover:text-gold-protocol transition-colors ml-auto"
           >
             Run Tier Assessment first →
           </Link>

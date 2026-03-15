@@ -81,6 +81,13 @@ interface SyncQueueItem {
 
 // ── IDB schema ─────────────────────────────────────────────────────────────
 
+// v2 addition — local PIN hash store (never synced to Supabase)
+interface PinAuth {
+  id:   "singleton";
+  salt: string;   // base64 16-byte random salt
+  hash: string;   // base64 SHA-256(salt_bytes || pin_bytes)
+}
+
 interface TevathaDB extends DBSchema {
   ledger_entries: {
     key:     string;
@@ -95,25 +102,36 @@ interface TevathaDB extends DBSchema {
     key:   string;
     value: SyncQueueItem;
   };
+  pin_auth: {
+    key:   string;
+    value: PinAuth;
+  };
 }
 
 let _db: IDBPDatabase<TevathaDB> | null = null;
 
 const DB_NAME    = "tevatha-ledger";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 export async function getDB(): Promise<IDBPDatabase<TevathaDB>> {
   if (_db) return _db;
 
   _db = await openDB<TevathaDB>(DB_NAME, DB_VERSION, {
-    upgrade(db) {
-      const store = db.createObjectStore("ledger_entries", { keyPath: "id" });
-      store.createIndex("by_category", "category");
-      store.createIndex("by_updated",  "updatedAt");
-      // Store boolean as 0/1 for IDB index compatibility
-      store.createIndex("by_synced",   "synced");
+    upgrade(db, oldVersion) {
+      if (oldVersion < 1) {
+        // v1 stores
+        const store = db.createObjectStore("ledger_entries", { keyPath: "id" });
+        store.createIndex("by_category", "category");
+        store.createIndex("by_updated",  "updatedAt");
+        // Store boolean as 0/1 for IDB index compatibility
+        store.createIndex("by_synced",   "synced");
 
-      db.createObjectStore("sync_queue", { keyPath: "id" });
+        db.createObjectStore("sync_queue", { keyPath: "id" });
+      }
+      if (oldVersion < 2) {
+        // v2 migration — safe for existing users, no data loss
+        db.createObjectStore("pin_auth", { keyPath: "id" });
+      }
     },
   });
 
@@ -185,4 +203,34 @@ export async function removeSyncItem(id: string): Promise<void> {
 export async function clearSyncQueue(): Promise<void> {
   const db = await getDB();
   await db.clear("sync_queue");
+}
+
+// ── PIN auth (v2) ───────────────────────────────────────────────────────────
+
+function toB64(buf: Uint8Array | ArrayBuffer): string {
+  const bytes = buf instanceof Uint8Array ? buf : new Uint8Array(buf);
+  return btoa(String.fromCharCode(...bytes));
+}
+
+export async function storePinAuth(
+  salt: Uint8Array,
+  hash: Uint8Array
+): Promise<void> {
+  const db = await getDB();
+  await db.put("pin_auth", {
+    id:   "singleton",
+    salt: toB64(salt),
+    hash: toB64(hash),
+  });
+}
+
+export async function getPinAuth(): Promise<{ salt: string; hash: string } | null> {
+  const db     = await getDB();
+  const record = await db.get("pin_auth", "singleton");
+  return record ?? null;
+}
+
+export async function clearPinAuth(): Promise<void> {
+  const db = await getDB();
+  await db.delete("pin_auth", "singleton");
 }

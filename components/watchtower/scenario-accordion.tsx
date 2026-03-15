@@ -2,6 +2,8 @@
 "use client";
 
 import { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { StaggerParent, StaggerChild } from "@/components/ui/motion";
 import type { Scenario, SevCode } from "@/lib/watchtower/data";
 
 const SEV_STYLES: Record<SevCode, string> = {
@@ -29,14 +31,16 @@ export function ScenarioAccordion({ scenarios }: ScenarioAccordionProps) {
     setExpanded((prev) => (prev === id ? null : id));
 
   return (
-    <div className="flex flex-col gap-2.5">
+    <StaggerParent className="flex flex-col gap-2.5">
       {scenarios.map((s) => {
         const isOpen = expanded === s.id;
         const barColor = s.prob >= 40 ? "#e84040" : "#f0a500";
 
         return (
-          <article
-            key={s.id}
+          <StaggerChild key={s.id}>
+          <motion.article
+            whileHover={{ backgroundColor: "rgba(255,255,255,0.012)" }}
+            transition={{ duration: 0.15 }}
             className="bg-void-1 border border-border-protocol rounded-[10px] overflow-hidden"
           >
             {/* Accordion header */}
@@ -92,20 +96,27 @@ export function ScenarioAccordion({ scenarios }: ScenarioAccordionProps) {
                 </div>
               </div>
 
-              <span
-                className="text-text-mute2 text-base flex-shrink-0 transition-transform duration-200"
-                style={{ transform: isOpen ? "rotate(180deg)" : "none" }}
+              <motion.span
+                className="text-text-mute2 text-base flex-shrink-0"
+                animate={{ rotate: isOpen ? 180 : 0 }}
+                transition={{ duration: 0.2 }}
               >
                 ▼
-              </span>
+              </motion.span>
             </button>
 
             {/* Accordion body */}
+            <AnimatePresence initial={false}>
             {isOpen && (
-              <div
-                className="border-t border-border-protocol px-4.5 py-4
-                           animate-[fadeUp_0.25s_ease_both]"
+              <motion.div
+                key="content"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
+                style={{ overflow: "hidden" }}
               >
+              <div className="border-t border-border-protocol px-4.5 py-4">
                 <p className="text-text-dim text-[13px] leading-relaxed mb-4">
                   {s.summary}
                 </p>
@@ -166,11 +177,14 @@ export function ScenarioAccordion({ scenarios }: ScenarioAccordionProps) {
                   </div>
                 </div>
               </div>
+              </motion.div>
             )}
-          </article>
+            </AnimatePresence>
+          </motion.article>
+          </StaggerChild>
         );
       })}
-    </div>
+    </StaggerParent>
   );
 }
 

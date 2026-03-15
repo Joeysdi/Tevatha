@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import { GearPanel }      from "@/components/watchtower/gear-panel";
 import { ProvisionerCta } from "@/components/watchtower/provisioner-cta";
+import { FadeUp }         from "@/components/ui/motion";
 import { GEAR }            from "@/lib/watchtower/data";
 
 export const metadata: Metadata = { title: "Gear Tables" };
@@ -27,7 +28,9 @@ export default function GearPage() {
       </header>
 
       {/* GearPanel is client (category tabs) but data is passed from server */}
-      <GearPanel categories={GEAR} />
+      <FadeUp delay={0.1}>
+        <GearPanel categories={GEAR} />
+      </FadeUp>
 
       <ProvisionerCta
         headline="Reading signals is step one. Step two is the store."
