@@ -1,6 +1,7 @@
 // components/watchtower/threat-grid.tsx
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { StaggerParent, StaggerChild } from "@/components/ui/motion";
 import type { ThreatDomain, ThreatLevel } from "@/lib/watchtower/data";
@@ -47,11 +48,12 @@ function DomainCard({ domain: d }: { domain: ThreatDomain }) {
   const borderColor = BORDER_COLORS[d.level];
 
   return (
+    <Link href={`/watchtower/threats/${d.id}`} className="block">
     <motion.article
       whileHover={{ y: -2 }}
       transition={{ duration: 0.15 }}
       className="rounded-xl px-5 py-4 border-l-[3px] bg-void-1
-                 transition-shadow duration-200 cursor-default
+                 transition-shadow duration-200 cursor-pointer
                  hover:shadow-[0_8px_24px_rgba(232,64,64,0.18)]"
       style={{
         borderLeftColor: borderColor,
@@ -109,6 +111,7 @@ function DomainCard({ domain: d }: { domain: ThreatDomain }) {
         />
       </div>
     </motion.article>
+    </Link>
   );
 }
 

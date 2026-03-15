@@ -1,6 +1,7 @@
 // app/(provisioner)/provisioner/scout/page.tsx  →  URL: /provisioner/scout
 import type { Metadata } from "next";
 import { FadeUp, StaggerParent, StaggerChild } from "@/components/ui/motion";
+import { ScoreForm } from "@/components/provisioner/score-form";
 
 export const metadata: Metadata = { title: "Safe Zone Analysis" };
 
@@ -87,10 +88,10 @@ export default function ScoutPage() {
             to produce an objective Zone Classification.
           </p>
           <div className="inline-flex items-center gap-2 font-mono text-[9px]
-                          text-amber-protocol border border-amber-DEFAULT/30
-                          bg-amber-dim px-3 py-1.5 rounded-lg tracking-[.1em]">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-protocol animate-pulse" />
-            SCORING ENGINE — ACTIVE DEVELOPMENT
+                          text-green-protocol border border-green-bright/30
+                          bg-green-dim px-3 py-1.5 rounded-lg tracking-[.1em]">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-bright animate-pulse" />
+            SCORING ENGINE — ACTIVE
           </div>
         </header>
       </FadeUp>
@@ -166,23 +167,19 @@ export default function ScoutPage() {
         </section>
       </FadeUp>
 
-      {/* CTA */}
+      {/* Interactive scoring */}
       <FadeUp delay={0.2}>
-        <div className="relative rounded-xl border border-gold-protocol/25 bg-void-1 p-6 sm:p-8
-                         text-center overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-px"
-               style={{ background:"linear-gradient(90deg,transparent,#c9a84c,transparent)" }} />
-          <p className="font-mono text-[9px] text-gold-protocol tracking-[.18em] uppercase mb-3">
-            Interactive Scoring · Coming Soon
+        <section>
+          <div className="flex items-center gap-3 mb-4">
+            <h2 className="font-syne font-bold text-[17px] text-text-base">Score Your Location</h2>
+            <div className="flex-1 h-px bg-border-protocol" />
+          </div>
+          <p className="font-mono text-[11px] text-text-mute2 mb-5 leading-relaxed">
+            Rate each factor 1 (none) → 5 (excellent) for your current or target location.
+            Score updates live and outputs your Zone Classification.
           </p>
-          <h3 className="font-syne font-bold text-[18px] sm:text-[20px] text-text-base mb-2">
-            Score Your Location
-          </h3>
-          <p className="font-mono text-[11px] text-text-mute2 leading-relaxed max-w-md mx-auto">
-            The interactive zone assessment tool is being built. Enter your address or
-            coordinates to receive a full 6-factor sanctuary score and zone classification.
-          </p>
-        </div>
+          <ScoreForm />
+        </section>
       </FadeUp>
     </div>
   );
