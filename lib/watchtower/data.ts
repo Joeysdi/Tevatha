@@ -7,12 +7,14 @@ export type SevCode     = "EX" | "CR" | "HI" | "EL" | "ME";
 export type TrendDir    = "↑" | "→" | "↓";
 
 export interface ThreatDomain {
-  id:     string;
-  label:  string;
-  score:  number;
-  level:  ThreatLevel;
-  icon:   string;
-  trend:  TrendDir;
+  id:      string;
+  label:   string;
+  score:   number;
+  level:   ThreatLevel;
+  icon:    string;
+  trend:   TrendDir;
+  summary: string;    // one-sentence current situation
+  drivers: string[];  // 3 scored sub-factors driving the Ark Score
 }
 
 export interface Signal {
@@ -23,11 +25,12 @@ export interface Signal {
 }
 
 export interface CollapseClass {
-  cls:  string;
-  name: string;
-  prob: number;
-  sev:  SevCode;
-  n:    number;
+  cls:   string;
+  name:  string;
+  prob:  number;
+  sev:   SevCode;
+  n:     number;
+  basis: string;  // two-line probability basis summary
 }
 
 export interface MitigationRow {
@@ -116,12 +119,60 @@ export interface AlarmCategory {
 // ─────────────────────────────────────────────────────────────────────
 
 export const DOMAINS: ThreatDomain[] = [
-  { id:"nuclear",  label:"Nuclear / EMP",    score:93, level:"CRITICAL",  icon:"☢️", trend:"↑" },
-  { id:"cyber",    label:"Cyber / Tech",     score:83, level:"CRITICAL",  icon:"🤖", trend:"↑" },
-  { id:"civil",    label:"Civil / Political",score:76, level:"HIGH",      icon:"🔥", trend:"↑" },
-  { id:"economic", label:"Economic",         score:74, level:"HIGH",      icon:"💸", trend:"↑" },
-  { id:"bio",      label:"Biological",       score:72, level:"HIGH",      icon:"🦠", trend:"↑" },
-  { id:"climate",  label:"Climate",          score:67, level:"ELEVATED",  icon:"🌊", trend:"↑" },
+  {
+    id:"nuclear", label:"Nuclear / EMP", score:93, level:"CRITICAL", icon:"☢️", trend:"↑",
+    summary:"New START expired Feb 5, 2026 — no nuclear arms control treaty in force for the first time in 50+ years. Doomsday Clock at 85s (all-time record). China racing to 1,000 warheads by 2030.",
+    drivers:[
+      "Treaty collapse: New START lapse removes all legal limits on US-Russia arsenals",
+      "China ICBM expansion: 600+ warheads now → 1,000+ by 2030 — largest build-up since Cold War",
+      "Russia doctrine: threshold lowered from 'state existence' to 'critical threat to sovereignty'",
+    ],
+  },
+  {
+    id:"cyber", label:"Cyber / Tech", score:83, level:"CRITICAL", icon:"🤖", trend:"↑",
+    summary:"Salt Typhoon (China MSS) confirmed inside 9+ US telecoms — FBI calls campaign 'still very much ongoing' (Feb 2026). Volt Typhoon pre-positioned in US power, water, and transport for wartime activation.",
+    drivers:[
+      "Salt Typhoon: 9+ US telecoms and 200+ orgs in 80 countries compromised — access active",
+      "Volt Typhoon: pre-positioned inside US grid, water systems, and transport for wartime use",
+      "AI kill-chain automation deployed in combat; UN autonomous weapons treaty rejected by US + Russia",
+    ],
+  },
+  {
+    id:"civil", label:"Civil / Political", score:76, level:"HIGH", icon:"🔥", trend:"↑",
+    summary:"China's most extensive Taiwan drills ever (Dec 29, 2025) simulated full blockade. CFR rates a 2026 Taiwan Strait crisis at even-money. NATO-US rift over Ukraine deepens as US pursues normalized Russia relations.",
+    drivers:[
+      "Taiwan: most extensive Chinese blockade drills ever — CFR rates 2026 crisis at 50% probability",
+      "Ukraine: no viable ceasefire — US severed direct aid, pushing burden to European NATO members",
+      "US domestic: CFR flags high-likelihood political violence and civil unrest in 2026",
+    ],
+  },
+  {
+    id:"economic", label:"Economic", score:74, level:"HIGH", icon:"💸", trend:"↑",
+    summary:"US debt reached $38.43T (~124% of GDP), growing $8B per day. Interest payments now consume ~20% of all federal revenue. CBO projects US will exceed the 1946 wartime debt peak by 2036.",
+    drivers:[
+      "Debt: $38.43T (~124% GDP, $8B/day) — interest at ~20% of revenue, structural fiscal trap",
+      "Banking: $306B unrealized losses in US banking system (FDIC Q4 2025) — commercial RE watch",
+      "CBDC: 137 nations exploring — EU Digital Euro targets 2029; China e-CNY at $986B in transactions",
+    ],
+  },
+  {
+    id:"bio", label:"Biological", score:72, level:"HIGH", icon:"🦠", trend:"↑",
+    summary:"Scientists describe H5N1 in animal reservoirs as 'completely out of control' (Jan 2026) — 70 US human cases, active in dairy herds. A novel recombinant MPXV strain (clade Ib+IIb, CFR 3–4%) was detected in India, January 13, 2026.",
+    drivers:[
+      "H5N1: 'completely out of control' in reservoirs — 70 US human cases, active dairy herd spread",
+      "MPXV recombinant: novel clade Ib+IIb strain detected India Jan 2026 — CFR 3–4% vs <1% prior",
+      "Pandemic infrastructure: no H5N1 vaccine stockpile for general population; WHO PHEIC capacity strained",
+    ],
+  },
+  {
+    id:"climate", label:"Climate", score:67, level:"ELEVATED", icon:"🌊", trend:"↑",
+    summary:"Arctic sea ice volume reached its lowest level on record (Mar 2026). WFP reports 96M facing acute food insecurity from weather extremes — a 3× increase since 2020. Argentina drought and Black Sea wheat winterkill are active now.",
+    drivers:[
+      "Arctic: sea ice volume at record low — 20% below 2024 levels, 2nd lowest extent ever recorded",
+      "Food: 96M facing weather-driven food insecurity (3× since 2020); climate-food prices rising 4× faster",
+      "Harvests: Argentina Pampas drought + Black Sea wheat winterkill threatening Q2 2026 supply",
+    ],
+  },
 ];
 
 // ─────────────────────────────────────────────────────────────────────
@@ -144,12 +195,30 @@ export const SIGNALS: Signal[] = [
 // ─────────────────────────────────────────────────────────────────────
 
 export const COLLAPSE_CLASSES: CollapseClass[] = [
-  { cls:"A", name:"Financial / Monetary",    prob:72, sev:"HI", n:15 },
-  { cls:"B", name:"Infrastructure Failure",  prob:65, sev:"CR", n:12 },
-  { cls:"C", name:"Civil / Societal Fracture",prob:58, sev:"CR",n:14 },
-  { cls:"D", name:"Pandemic / Biological",   prob:52, sev:"HI", n:8  },
-  { cls:"E", name:"Climate Cascade",         prob:48, sev:"HI", n:10 },
-  { cls:"F", name:"Nuclear / Existential",   prob:22, sev:"EX", n:6  },
+  {
+    cls:"A", name:"Financial / Monetary", prob:73, sev:"HI", n:15,
+    basis:"US debt $38.43T (124% GDP, $8B/day); $306B unrealized bank losses; 24 emerging markets face bond maturity cliff by 2027; structural fiscal dominance risk.",
+  },
+  {
+    cls:"B", name:"Infrastructure Failure", prob:68, sev:"CR", n:12,
+    basis:"Volt Typhoon pre-positioned inside US power/water/transport for wartime use; Salt Typhoon active in 9+ US telecoms; aging US grid with documented intrusion events.",
+  },
+  {
+    cls:"C", name:"Civil / Societal Fracture", prob:61, sev:"CR", n:14,
+    basis:"CFR rates US political violence high-likelihood 2026; Taiwan Strait crisis at even-money; multipolar power restructuring in 10–20 yr arc; Russia-Ukraine no ceasefire.",
+  },
+  {
+    cls:"D", name:"Pandemic / Biological", prob:54, sev:"HI", n:8,
+    basis:"H5N1 'completely out of control' in reservoirs; novel recombinant MPXV (CFR 3–4%) detected Jan 2026; historical H5N1 CFR ~48%; no general-population vaccine stockpile.",
+  },
+  {
+    cls:"E", name:"Climate Cascade", prob:51, sev:"HI", n:10,
+    basis:"Arctic ice volume at record low; 96M facing weather-driven food insecurity (3× since 2020); Argentina drought + Black Sea winterkill; La Niña active Q1–Q2 2026.",
+  },
+  {
+    cls:"F", name:"Nuclear / Existential", prob:24, sev:"EX", n:6,
+    basis:"Doomsday Clock 85s (all-time record); New START expired Feb 2026 — no arms control treaty in force; China racing to 1,000 warheads; Russia lowered use threshold.",
+  },
 ];
 
 // ─────────────────────────────────────────────────────────────────────

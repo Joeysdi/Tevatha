@@ -42,11 +42,12 @@ export function CollapseMatrixRow({ row }: MatrixRowProps) {
 
   return (
     <tr ref={ref} className="border-b border-white/[0.04] hover:bg-white/[0.018] transition-colors">
-      <td className="px-3.5 py-2.5">
+      <td className="px-3.5 py-2.5 align-top">
         <span className="font-mono text-gold-protocol font-bold">{row.cls}</span>
       </td>
-      <td className="px-3.5 py-2.5 font-medium text-text-base text-[12.5px]">
-        {row.name}
+      <td className="px-3.5 py-3 align-top">
+        <p className="font-medium text-text-base text-[12.5px] mb-1">{row.name}</p>
+        <p className="font-mono text-[9.5px] text-text-mute2 leading-relaxed max-w-xs">{row.basis}</p>
       </td>
       <td className="px-3.5 py-2.5">
         <div className="flex items-center gap-2.5">

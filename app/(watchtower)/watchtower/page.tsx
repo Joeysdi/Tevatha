@@ -103,6 +103,47 @@ export default function WatchtowerHubPage() {
       {/* ── THREAT DOMAIN GRID ──────────────────────────────────────── */}
       <section className="mb-7">
         <SectionHeader label="Active Threat Domains" />
+
+        {/* Ark Score methodology */}
+        <div className="bg-void-1 border border-border-protocol rounded-xl px-4 sm:px-5 py-4 mb-4 overflow-hidden relative">
+          <div
+            className="absolute top-0 left-0 right-0 h-px"
+            style={{ background: "linear-gradient(90deg,#e84040,transparent)" }}
+          />
+          <p className="font-mono text-[9px] text-red-bright tracking-[.16em] uppercase mb-3">
+            Ark Score Methodology — Composite Threat Index
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { weight:"40%", label:"Activation Probability", desc:"Probability of disruptive event in 24-month window — academic forecasting + expert consensus + active signal density" },
+              { weight:"35%", label:"Impact Severity",        desc:"Magnitude of harm if event occurs: societal collapse (100), infrastructure failure (70), economic disruption (50), localised (10)" },
+              { weight:"15%", label:"Trend Velocity",         desc:"Rate of change: accelerating ↑ adds to score, stable → neutral, de-escalating ↓ reduces score relative to baseline" },
+              { weight:"10%", label:"Cascade Factor",         desc:"Number of other threat domains the event simultaneously activates — higher cross-domain cascade = higher multiplier" },
+            ].map((f) => (
+              <div key={f.label} className="space-y-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-mono text-[11px] font-bold text-gold-protocol">{f.weight}</span>
+                  <span className="font-mono text-[9px] text-text-base font-bold">{f.label}</span>
+                </div>
+                <p className="font-mono text-[9px] text-text-mute2 leading-relaxed">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-3 mt-3 pt-3 border-t border-white/[0.05]">
+            {[
+              { range:"≥ 90", label:"CRITICAL", color:"text-red-bright" },
+              { range:"70–89", label:"HIGH",     color:"text-amber-protocol" },
+              { range:"50–69", label:"ELEVATED", color:"text-blue-DEFAULT" },
+              { range:"< 50",  label:"MODERATE", color:"text-green-protocol" },
+            ].map((b) => (
+              <div key={b.label} className="flex items-center gap-1.5">
+                <span className={`font-mono text-[10px] font-bold tabular-nums ${b.color}`}>{b.range}</span>
+                <span className={`font-mono text-[9px] tracking-[.08em] ${b.color}`}>{b.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <ThreatGrid domains={DOMAINS} />
       </section>
 
@@ -118,7 +159,7 @@ export default function WatchtowerHubPage() {
             Collapse Probability Matrix
           </h2>
           <p className="font-mono text-[10px] text-text-mute2 tracking-[.08em] mt-0.5">
-            5-YEAR FORWARD WINDOW
+            5-YEAR FORWARD WINDOW · 2026–2031 · 75 SCENARIOS MODELLED
           </p>
         </div>
         <div className="overflow-x-auto">
@@ -145,11 +186,26 @@ export default function WatchtowerHubPage() {
             </tbody>
           </table>
         </div>
-        <div className="px-6 py-3 border-t border-border-protocol bg-white/[0.01]">
-          <p className="font-mono text-[10px] text-text-mute2 leading-relaxed">
-            Methodology: probability of at least one class-qualifying event within
-            5-year window. Source: Tevatha Collapse Bible v3 scenario weighting model.
+        <div className="px-4 sm:px-6 py-4 border-t border-border-protocol bg-white/[0.01]">
+          <p className="font-mono text-[9px] text-gold-protocol tracking-[.14em] uppercase mb-2">
+            Probability Methodology
           </p>
+          <p className="font-mono text-[10px] text-text-dim leading-relaxed mb-3">
+            Each probability represents the likelihood of <strong className="text-text-base">at least one class-qualifying event</strong> within a 5-year forward window (2026–2031), not the probability of full societal collapse. Events are modelled independently.
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { label:"Historical Base Rate",    desc:"Equivalent-class events per decade since 1900, converted to 5-yr probability" },
+              { label:"Expert Consensus",         desc:"Aggregated from RAND, CSIS, CFR, Superforecasting panels — median estimate used" },
+              { label:"Signal Density",           desc:"Active precursor indicators per class, weighted by lead-time to event" },
+              { label:"Scenario Modelling",       desc:"Tevatha Collapse Bible v3 — 75 scenarios, 6 classes, probability-weighted cascade chains" },
+            ].map((m) => (
+              <div key={m.label}>
+                <p className="font-mono text-[9px] text-text-base font-bold mb-0.5">{m.label}</p>
+                <p className="font-mono text-[9px] text-text-mute2 leading-relaxed">{m.desc}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
       </FadeUp>
