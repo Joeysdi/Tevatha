@@ -149,7 +149,7 @@ export default function GearPage() {
       {/* Active domain info */}
       <FadeUp key={activeDomain.id}>
         <div
-          className="relative rounded-xl border p-5 overflow-hidden"
+          className="relative rounded-xl border p-4 sm:p-5 overflow-hidden"
           style={{
             borderColor: `${activeDomain.borderHex}30`,
             background: `linear-gradient(135deg,${activeDomain.borderHex}0d,rgba(11,13,24,1))`,

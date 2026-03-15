@@ -63,15 +63,15 @@ function DomainCard({ domain: d }: { domain: ThreatDomain }) {
       }}
     >
       {/* Header row */}
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-2.5">
-          <span className="text-[20px] leading-none">{d.icon}</span>
-          <span className="font-syne font-bold text-[15.5px] text-text-base">
+      <div className="flex items-start justify-between gap-2 mb-3">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-[20px] leading-none flex-shrink-0">{d.icon}</span>
+          <span className="font-syne font-bold text-[15px] text-text-base leading-tight">
             {d.label}
           </span>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <span
             className="font-mono text-[11px] font-bold"
             style={{ color: d.trend === "↑" ? "#e84040" : "rgba(100,116,139,0.7)" }}

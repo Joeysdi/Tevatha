@@ -172,18 +172,18 @@ export default function WatchtowerHubPage() {
           {SIGNALS.map((s, i) => (
             <StaggerChild key={i}>
               <div
-                className="grid grid-cols-[1fr_auto_auto] sm:grid-cols-[1fr_auto_auto_auto] gap-2 sm:gap-3
+                className="grid grid-cols-[1fr_auto_auto] sm:grid-cols-[1fr_auto_auto_auto] gap-3 sm:gap-4
                            items-center py-3 sm:py-3.5 px-4 sm:px-6
                            hover:bg-white/[0.025] transition-colors duration-150"
               >
-                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                <div className="flex items-center gap-2.5 min-w-0">
                   <span
                     className={`w-2 h-2 rounded-full flex-shrink-0 animate-pulse
                                  ${s.score >= 90
                                    ? "bg-red-bright shadow-[0_0_8px_#e84040]"
                                    : "bg-amber-protocol shadow-[0_0_8px_#f0a500]"}`}
                   />
-                  <span className="text-[12px] sm:text-[13px] text-text-base truncate">{s.sig}</span>
+                  <span className="text-[11.5px] sm:text-[13px] text-text-base truncate">{s.sig}</span>
                 </div>
 
                 {/* Domain hidden on mobile */}
@@ -192,15 +192,15 @@ export default function WatchtowerHubPage() {
                 </span>
 
                 <span
-                  className={`font-mono text-[12px] sm:text-[13px] font-bold tabular-nums
+                  className={`font-mono text-[12px] sm:text-[13px] font-bold tabular-nums min-w-[2ch] text-right
                                ${s.score >= 85 ? "text-red-bright" : "text-amber-protocol"}`}
                 >
                   {s.score}
                 </span>
 
                 <span
-                  className={`inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-md
-                               font-mono text-[9px] sm:text-[9.5px] font-bold
+                  className={`inline-flex items-center px-2 py-0.5 rounded-md
+                               font-mono text-[9px] font-bold whitespace-nowrap
                                ${TIER_STYLES[s.tier]}`}
                 >
                   {s.tier.toUpperCase()}

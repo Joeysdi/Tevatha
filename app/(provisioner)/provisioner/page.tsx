@@ -26,7 +26,7 @@ export default function ShopPage() {
   return (
     <div>
       {/* ── HERO ──────────────────────────────────────────────────────── */}
-      <header className="relative rounded-xl border p-7 mb-6 overflow-hidden"
+      <header className="relative rounded-xl border p-5 sm:p-7 mb-6 overflow-hidden"
         style={{
           background: "linear-gradient(135deg,rgba(201,168,76,0.07),rgba(11,13,24,1))",
           borderColor: "rgba(201,168,76,0.22)",
@@ -60,27 +60,28 @@ export default function ShopPage() {
         </StaggerParent>
 
         {/* Catalog stats */}
-        <StaggerParent className="grid grid-cols-3 sm:grid-cols-6 gap-3" delayChildren={0.2}>
+        <StaggerParent className="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-3" delayChildren={0.2}>
           {[
-            { val:CATALOG_STATS.total,      label:"Total Items"    },
-            { val:CATALOG_STATS.gradeA,     label:"Grade A"        },
-            { val:CATALOG_STATS.gradeB,     label:"Grade B"        },
-            { val:CATALOG_STATS.critical,   label:"Critical Items" },
-            { val:CATALOG_STATS.categories, label:"Categories"     },
-            { val:CATALOG_STATS.highTicket, label:"USDC Rail"      },
+            { val:CATALOG_STATS.total,      label:"Total",    labelFull:"Total Items"    },
+            { val:CATALOG_STATS.gradeA,     label:"Grade A",  labelFull:"Grade A"        },
+            { val:CATALOG_STATS.gradeB,     label:"Grade B",  labelFull:"Grade B"        },
+            { val:CATALOG_STATS.critical,   label:"Critical", labelFull:"Critical Items" },
+            { val:CATALOG_STATS.categories, label:"Cats",     labelFull:"Categories"     },
+            { val:CATALOG_STATS.highTicket, label:"USDC",     labelFull:"USDC Rail"      },
           ].map((s) => (
             <StaggerChild key={s.label}>
               <div
-                className="text-center px-3 py-2.5 bg-void-1 rounded-lg
+                className="text-center px-2 sm:px-3 py-2.5 bg-void-1 rounded-lg
                            border border-border-protocol"
               >
-                <div className="font-syne font-extrabold text-[22px]
+                <div className="font-syne font-extrabold text-[20px] sm:text-[22px]
                                 text-gold-protocol leading-none">
                   <FadeIn delay={0.3}>{s.val}</FadeIn>
                 </div>
-                <div className="font-mono text-[9px] text-text-mute2
+                <div className="font-mono text-[8px] sm:text-[9px] text-text-mute2
                                 mt-1 leading-tight">
-                  {s.label.toUpperCase()}
+                  <span className="sm:hidden">{s.label.toUpperCase()}</span>
+                  <span className="hidden sm:inline">{s.labelFull.toUpperCase()}</span>
                 </div>
               </div>
             </StaggerChild>
