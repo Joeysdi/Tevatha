@@ -7,35 +7,30 @@ const nextConfig: NextConfig = {
   eslint:     { ignoreDuringBuilds: true },
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  webpack: (cfg: any, { isServer }: { isServer: boolean }) => {
-    if (!isServer) {
-      cfg.resolve = {
-        ...cfg.resolve,
-        fallback: {
-          ...cfg.resolve?.fallback,
-          // Node built-ins unavailable in the browser bundle
-          fs:     false,
-          net:    false,
-          tls:    false,
-          // Buffer polyfill — required by @solana/web3.js and wallet adapters
-          // `buffer` package exposes the Node.js Buffer API for Webpack 5
-          buffer: require.resolve("buffer/"),
-        },
-      };
+  webpack: (config: any, { webpack }: { webpack: any }) => {
+    config.resolve = {
+      ...config.resolve,
+      fallback: {
+        ...config.resolve?.fallback,
+        // Node built-ins unavailable in the browser bundle
+        fs:     false,
+        net:    false,
+        tls:    false,
+        // Buffer polyfill — required by @solana/web3.js and wallet adapters
+        buffer: require.resolve("buffer/"),
+      },
+    };
 
-      // Automatically provide Buffer as a global so libraries that reference
-      // `Buffer` without importing it (e.g. @solana/web3.js internals) work
-      // without any import changes in application code.
-      const webpack = require("webpack");
-      cfg.plugins = [
-        ...(cfg.plugins ?? []),
-        new webpack.ProvidePlugin({
-          Buffer: ["buffer", "Buffer"],
-        }),
-      ];
-    }
+    // Automatically provide Buffer as a global so libraries that reference
+    // `Buffer` without importing it (e.g. @solana/web3.js internals) work
+    // without any import changes in application code.
+    config.plugins.push(
+      new webpack.ProvidePlugin({
+        Buffer: ["buffer", "Buffer"],
+      }),
+    );
 
-    return cfg;
+    return config;
   },
 
   images: {
