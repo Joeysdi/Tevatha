@@ -9,6 +9,11 @@ interface WatchtowerNavProps {
   links: readonly WatchtowerNavLink[];
 }
 
+const PILLAR_LINKS = [
+  { href: "/provisioner", label: "Provisioner" },
+  { href: "/protocol",    label: "Protocol"    },
+] as const;
+
 export function WatchtowerNav({ links }: WatchtowerNavProps) {
   const pathname = usePathname();
 
@@ -47,6 +52,22 @@ export function WatchtowerNav({ links }: WatchtowerNavProps) {
           </Link>
         );
       })}
+
+      {/* Separator + cross-pillar escape links */}
+      <div className="flex items-center ml-2 pl-2 border-l border-border-protocol/60 gap-0">
+        {PILLAR_LINKS.map((l) => (
+          <Link
+            key={l.href}
+            href={l.href}
+            prefetch
+            className="px-3 py-3 font-mono text-[10px] text-text-mute2
+                       border-b-2 border-transparent whitespace-nowrap
+                       hover:text-text-base transition-all duration-150"
+          >
+            {l.label} ↗
+          </Link>
+        ))}
+      </div>
     </nav>
   );
 }

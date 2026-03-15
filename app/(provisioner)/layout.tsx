@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default function ProvisionerLayout({ children }: { children: ReactNode }) {
   return (
     <div className="bg-void-0 min-h-screen flex flex-col">
-      <header className="bg-void-1 border-b border-border-bright/60 relative px-6 py-3.5 flex items-center justify-between">
+      <header className="bg-void-1 border-b border-border-bright/60 relative px-4 sm:px-6 py-3 sm:py-3.5 flex items-center justify-between">
         {/* Gold top accent line */}
         <div
           className="absolute top-0 left-0 right-0 h-px"
@@ -42,7 +42,7 @@ export default function ProvisionerLayout({ children }: { children: ReactNode })
         </Link>
       </header>
 
-      <main className="flex-1 max-w-5xl mx-auto px-6 py-8 w-full">
+      <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 w-full">
         {children}
       </main>
     </div>

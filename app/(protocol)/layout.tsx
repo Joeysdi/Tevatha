@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default function ProtocolLayout({ children }: { children: ReactNode }) {
   return (
     <div className="bg-void-3 min-h-screen flex flex-col">
-      <header className="bg-void-1 border-b border-border-bright/60 relative px-6 py-3.5
+      <header className="bg-void-1 border-b border-border-bright/60 relative px-4 sm:px-6 py-3 sm:py-3.5
                          flex items-center justify-between">
         {/* CYAN top accent line */}
         <div
@@ -36,7 +36,7 @@ export default function ProtocolLayout({ children }: { children: ReactNode }) {
         <ProtocolNav />
       </header>
 
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 px-0">{children}</main>
     </div>
   );
 }

@@ -47,9 +47,9 @@ export default function WatchtowerHubPage() {
         <div className="absolute top-0 left-0 right-0 h-px"
              style={{ background: "linear-gradient(90deg,transparent,rgba(232,64,64,0.6),rgba(201,168,76,0.4),transparent)" }} />
 
-        <div className="flex flex-wrap gap-10 items-center">
+        <div className="flex flex-wrap gap-6 sm:gap-10 items-center">
           {/* Left — copy */}
-          <div className="flex-1 min-w-[260px]">
+          <div className="flex-1 min-w-0">
             <StaggerParent>
               <StaggerChild>
                 <p className="font-mono text-[9.5px] text-gold-protocol
@@ -58,14 +58,14 @@ export default function WatchtowerHubPage() {
                 </p>
               </StaggerChild>
               <StaggerChild>
-                <h1 className="font-syne font-extrabold text-[clamp(28px,5vw,38px)]
+                <h1 className="font-syne font-extrabold text-[clamp(24px,5vw,38px)]
                                leading-[1.1] text-text-base mb-3">
                   Threat Intelligence{" "}
                   <span className="text-red-bright">Command Center</span>
                 </h1>
               </StaggerChild>
               <StaggerChild>
-                <p className="text-text-dim text-[13.5px] leading-relaxed max-w-[480px] mb-6">
+                <p className="text-text-dim text-[13px] sm:text-[13.5px] leading-relaxed max-w-[480px] mb-6">
                   The window between signal and collapse is measured in weeks, not years.
                   This is where you read the wall before the writing fades.
                 </p>
@@ -73,7 +73,7 @@ export default function WatchtowerHubPage() {
 
               {/* Nav quick-links with prefetch */}
               <StaggerChild>
-                <div className="flex gap-3 flex-wrap">
+                <div className="flex gap-2 sm:gap-3 flex-wrap">
                   {[
                     { href:"/watchtower/scenarios", label:"View Scenarios" },
                     { href:"/watchtower/signals",   label:"Signal Feed"    },
@@ -84,7 +84,7 @@ export default function WatchtowerHubPage() {
                       prefetch
                       className="inline-flex items-center gap-1.5 font-mono text-[11px]
                                  text-text-dim border border-border-bright/60 rounded-lg
-                                 px-4 py-2 hover:text-text-base hover:border-border-hover
+                                 px-3 sm:px-4 py-2 hover:text-text-base hover:border-border-hover
                                  hover:bg-white/[0.04] transition-all duration-200"
                     >
                       {l.label} <span className="text-text-mute2">→</span>
@@ -95,8 +95,8 @@ export default function WatchtowerHubPage() {
             </StaggerParent>
           </div>
 
-          {/* Right — doomsday clock (client island) */}
-          <DoomsdayClock className="flex-shrink-0" />
+          {/* Right — doomsday clock (hidden on small phones, shown sm+) */}
+          <DoomsdayClock className="flex-shrink-0 hidden sm:block" />
         </div>
       </section>
 
@@ -172,34 +172,35 @@ export default function WatchtowerHubPage() {
           {SIGNALS.map((s, i) => (
             <StaggerChild key={i}>
               <div
-                className="grid grid-cols-[1fr_auto_auto_auto] gap-3
-                           items-center py-3.5 px-6
+                className="grid grid-cols-[1fr_auto_auto] sm:grid-cols-[1fr_auto_auto_auto] gap-2 sm:gap-3
+                           items-center py-3 sm:py-3.5 px-4 sm:px-6
                            hover:bg-white/[0.025] transition-colors duration-150"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                   <span
                     className={`w-2 h-2 rounded-full flex-shrink-0 animate-pulse
                                  ${s.score >= 90
                                    ? "bg-red-bright shadow-[0_0_8px_#e84040]"
                                    : "bg-amber-protocol shadow-[0_0_8px_#f0a500]"}`}
                   />
-                  <span className="text-[13px] text-text-base">{s.sig}</span>
+                  <span className="text-[12px] sm:text-[13px] text-text-base truncate">{s.sig}</span>
                 </div>
 
-                <span className="font-mono text-[10px] text-text-mute2 whitespace-nowrap">
+                {/* Domain hidden on mobile */}
+                <span className="hidden sm:inline font-mono text-[10px] text-text-mute2 whitespace-nowrap">
                   {s.domain}
                 </span>
 
                 <span
-                  className={`font-mono text-[13px] font-bold tabular-nums
+                  className={`font-mono text-[12px] sm:text-[13px] font-bold tabular-nums
                                ${s.score >= 85 ? "text-red-bright" : "text-amber-protocol"}`}
                 >
                   {s.score}
                 </span>
 
                 <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-md
-                               font-mono text-[9.5px] font-bold
+                  className={`inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-md
+                               font-mono text-[9px] sm:text-[9.5px] font-bold
                                ${TIER_STYLES[s.tier]}`}
                 >
                   {s.tier.toUpperCase()}

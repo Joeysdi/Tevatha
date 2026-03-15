@@ -28,44 +28,45 @@ export type WatchtowerNavLink = (typeof NAV_LINKS)[number];
 
 export default function WatchtowerLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex flex-col h-screen bg-void-3 overflow-hidden">
+    <div className="flex flex-col h-screen bg-void-3 overflow-hidden"
+         style={{ height: "100dvh" }}>
 
       {/* ── TOPBAR (server — static chrome) ──────────────────────────── */}
       <header className="flex-shrink-0 bg-void-1 border-b border-border-bright/60
-                         px-6 py-3.5 flex items-center justify-between gap-4
-                         flex-wrap z-50"
+                         px-4 sm:px-6 py-3 sm:py-3.5 flex items-center justify-between gap-3
+                         z-50"
               style={{ boxShadow: "0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.4)" }}>
-        <div className="flex items-center gap-5 flex-wrap">
+        <div className="flex items-center gap-3 sm:gap-5 min-w-0">
           {/* Wordmark */}
-          <div className="flex items-center gap-3 leading-none">
-            <span className="font-syne font-extrabold text-[17px] tracking-tight
+          <div className="flex items-center gap-2 sm:gap-3 leading-none flex-shrink-0">
+            <span className="font-syne font-extrabold text-[15px] sm:text-[17px] tracking-tight
                              text-gold-protocol">
               ⚔ TEVATHA
             </span>
             <span className="w-px h-4 bg-border-bright opacity-40" />
-            <span className="font-mono text-[10px] text-text-mute2 tracking-[.18em] uppercase">
+            <span className="font-mono text-[9px] sm:text-[10px] text-text-mute2 tracking-[.18em] uppercase">
               Watchtower
             </span>
           </div>
 
-          {/* Status badges — static server render */}
-          <div className="flex gap-2 flex-wrap">
+          {/* Status badges — hidden on small screens to save space */}
+          <div className="hidden sm:flex gap-2">
             <ThreatBadge level="CRITICAL" label="NUCLEAR" dotClass="animate-pulse" />
             <ThreatBadge level="HIGH"     label="ECONOMIC" />
           </div>
         </div>
 
-        <div className="flex items-center gap-5 flex-wrap">
+        <div className="flex items-center gap-3 sm:gap-5 flex-shrink-0">
           {/* 85s counter */}
-          <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg
+          <div className="flex items-center gap-1.5 sm:gap-2.5 px-2.5 sm:px-3 py-1.5 rounded-lg
                           bg-red-protocol/10 border border-red-protocol/20">
             <span className="w-1.5 h-1.5 rounded-full bg-red-protocol
                              shadow-[0_0_8px_rgba(232,64,64,0.9)]
                              animate-pulse flex-shrink-0" />
-            <span className="font-syne font-bold text-[18px] text-red-protocol
+            <span className="font-syne font-bold text-[16px] sm:text-[18px] text-red-protocol
                              leading-none tabular-nums">85s</span>
-            <span className="font-mono text-[9.5px] text-text-mute2
-                             tracking-[.12em] uppercase">to midnight</span>
+            <span className="font-mono text-[9px] sm:text-[9.5px] text-text-mute2
+                             tracking-[.12em] uppercase hidden xs:inline">to midnight</span>
           </div>
 
           {/* Live UTC clock — isolated client island */}
@@ -81,7 +82,7 @@ export default function WatchtowerLayout({ children }: { children: ReactNode }) 
 
       {/* ── PAGE CONTENT ─────────────────────────────────────────────── */}
       <main className="flex-1 overflow-y-auto">
-        <div className="max-w-5xl mx-auto px-6 py-8 pb-24 w-full">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-24 w-full">
           {children}
         </div>
       </main>
