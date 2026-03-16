@@ -2,11 +2,28 @@
 // app/(provisioner)/provisioner/gear/page.tsx  →  URL: /provisioner/gear
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { GradeBadge } from "@/components/provisioner/grade-badge";
 import { CATALOG } from "@/lib/provisioner/catalog";
 import { FadeUp, StaggerParent, StaggerChild } from "@/components/ui/motion";
 import type { Product } from "@/lib/provisioner/catalog";
+
+const PRODUCT_IMAGES: Record<string, string> = {
+  "garmin-inreach-mini2": "/products/garmin-inreach-mini2.jpg",
+  "baofeng-uv5r":         "/products/baofeng-uv5r.jpg",
+  "nar-ifak":             "/products/nar-ifak.jpg",
+  "myfak-advanced":       "/products/myfak-advanced.png",
+  "quikclot":             "/products/quikclot.jpg",
+  "jackery-1000plus":     "/products/jackery-1000plus.png",
+  "ecoflow-delta-pro":    "/products/ecoflow-delta-pro.png",
+  "renogy-400w":          "/products/renogy-400w.jpg",
+  "noco-gb40":            "/products/noco-gb40.png",
+  "berkey-big":           "/products/berkey-big.jpg",
+  "sawyer-squeeze":       "/products/sawyer-squeeze.png",
+  "reolink-810a":         "/products/reolink-810a.png",
+  "faraday-xl":           "/products/faraday-xl.jpg",
+};
 
 // ── Domain definitions ───────────────────────────────────────────────────────
 
@@ -198,10 +215,36 @@ export default function GearPage() {
         {domainProducts.map((p) => (
           <StaggerChild key={p.id}>
             <div
-              className="bg-void-1 border border-border-protocol rounded-xl p-4
+              className="bg-void-1 border border-border-protocol rounded-xl overflow-hidden
                          hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(201,168,76,0.15)]
                          transition-all duration-200 flex flex-col h-full"
             >
+              {/* Product image */}
+              {(() => {
+                const imgSrc = PRODUCT_IMAGES[p.imageSlug];
+                return (
+                  <div className="relative h-36 bg-void-2 border-b border-border-protocol overflow-hidden flex-shrink-0">
+                    {imgSrc ? (
+                      <Image
+                        src={imgSrc}
+                        alt={p.name}
+                        fill
+                        className="object-contain p-4"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      />
+                    ) : (
+                      <div className="h-full flex flex-col items-center justify-center gap-1.5">
+                        <span className="font-mono text-[24px] opacity-20">📦</span>
+                        <span className="font-mono text-[8px] text-text-mute2/40 tracking-[.12em] uppercase">{p.brand}</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
+              {/* Content */}
+              <div className="p-4 flex flex-col flex-1">
+
               {/* Top row */}
               <div className="flex items-start justify-between gap-2 mb-3">
                 <div className="flex-1 min-w-0">
@@ -258,6 +301,7 @@ export default function GearPage() {
                   View →
                 </Link>
               </div>
+              </div>{/* /p-4 content wrapper */}
             </div>
           </StaggerChild>
         ))}

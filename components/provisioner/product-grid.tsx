@@ -2,12 +2,30 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { StaggerParent, StaggerChild, FadeIn } from "@/components/ui/motion";
 import { GradeBadge }         from "./grade-badge";
 import { SolanaCheckout }     from "./solana-checkout";
 import type { Product, ProductCategory } from "@/lib/provisioner/catalog";
 import type { GradeLevel }    from "@/types/treasury";
+
+// Maps imageSlug → local /public path for each product that has an image
+const PRODUCT_IMAGES: Record<string, string> = {
+  "garmin-inreach-mini2": "/products/garmin-inreach-mini2.jpg",
+  "baofeng-uv5r":         "/products/baofeng-uv5r.jpg",
+  "nar-ifak":             "/products/nar-ifak.jpg",
+  "myfak-advanced":       "/products/myfak-advanced.png",
+  "quikclot":             "/products/quikclot.jpg",
+  "jackery-1000plus":     "/products/jackery-1000plus.png",
+  "ecoflow-delta-pro":    "/products/ecoflow-delta-pro.png",
+  "renogy-400w":          "/products/renogy-400w.jpg",
+  "noco-gb40":            "/products/noco-gb40.png",
+  "berkey-big":           "/products/berkey-big.jpg",
+  "sawyer-squeeze":       "/products/sawyer-squeeze.png",
+  "reolink-810a":         "/products/reolink-810a.png",
+  "faraday-xl":           "/products/faraday-xl.jpg",
+};
 
 type FilterTab = "all" | ProductCategory | "critical";
 
@@ -118,6 +136,8 @@ function ProductCard({
 
   const g = gradeMeta[p.grade];
 
+  const imgSrc = PRODUCT_IMAGES[p.imageSlug];
+
   return (
     <motion.article
       whileHover={{ y: -2 }}
@@ -126,6 +146,24 @@ function ProductCard({
                   hover:shadow-[0_8px_24px_rgba(201,168,76,0.3)]
                   transition-shadow duration-200 ${g.border}`}
     >
+      {/* Product image */}
+      <div className="relative h-44 bg-void-2 border-b border-border-protocol overflow-hidden">
+        {imgSrc ? (
+          <Image
+            src={imgSrc}
+            alt={p.name}
+            fill
+            className="object-contain p-5"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
+        ) : (
+          <div className="h-full flex flex-col items-center justify-center gap-2">
+            <span className="font-mono text-[28px] opacity-20">📦</span>
+            <span className="font-mono text-[9px] text-text-mute2/40 tracking-[.14em] uppercase">{p.brand}</span>
+          </div>
+        )}
+      </div>
+
       {/* Card header */}
       <div className="p-5">
         <div className="flex items-start justify-between gap-3 mb-3">
