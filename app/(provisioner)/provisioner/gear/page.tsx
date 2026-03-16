@@ -3,10 +3,10 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { GradeBadge } from "@/components/provisioner/grade-badge";
 import { CATALOG } from "@/lib/provisioner/catalog";
 import { FadeUp, StaggerParent, StaggerChild } from "@/components/ui/motion";
+import { useCart } from "@/lib/cart/store";
 import type { Product } from "@/lib/provisioner/catalog";
 
 const PRODUCT_IMAGES: Record<string, string> = {
@@ -107,6 +107,7 @@ function fmtPrice(p: Product): string {
 
 export default function GearPage() {
   const [activeDomain, setActiveDomain] = useState(THREAT_DOMAINS[0]);
+  const { addItem, setOpen } = useCart();
 
   const domainProducts: Product[] = activeDomain.skus
     .map((sku) => CATALOG.find((p) => p.sku === sku))
@@ -294,14 +295,22 @@ export default function GearPage() {
                     {p.highTicket ? "USDC RAIL" : "CARD RAIL"}
                   </span>
                 </div>
-                <Link
-                  href="/provisioner"
+                <button
+                  onClick={() => {
+                    addItem({
+                      id: p.id, sku: p.sku, name: p.name, brand: p.brand,
+                      priceUsd: p.priceUsd, priceUsdc: p.priceUsdc,
+                      highTicket: p.highTicket, imageSlug: p.imageSlug,
+                      stripePriceId: p.stripePriceId,
+                    });
+                    setOpen(true);
+                  }}
                   className="font-mono text-[9.5px] font-bold text-void-0 bg-gold-protocol
                              px-3 py-1.5 rounded-lg hover:bg-gold-bright transition-colors
                              whitespace-nowrap flex-shrink-0"
                 >
-                  View →
-                </Link>
+                  Add to Cart
+                </button>
               </div>
               </div>{/* /p-4 content wrapper */}
             </div>

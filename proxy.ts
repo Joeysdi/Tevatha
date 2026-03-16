@@ -19,6 +19,12 @@ const isPublicApi = createRouteMatcher([
   "/api/health",
 ]);
 
+// ── Public UI routes (sign-in/sign-up pages) ──────────────────────────────
+const isPublicUi = createRouteMatcher([
+  "/sign-in(.*)",
+  "/sign-up(.*)",
+]);
+
 // ── Clerk Proxy Handler ───────────────────────────────────────────────────
 export default clerkMiddleware(
   async (auth, req: NextRequest) => {
@@ -36,8 +42,8 @@ export default clerkMiddleware(
       body: req.body,
     });
 
-    // ── SKIP PUBLIC API ROUTES ────────────────────────────────────────
-    if (isPublicApi(req)) {
+    // ── SKIP PUBLIC ROUTES ────────────────────────────────────────────
+    if (isPublicApi(req) || isPublicUi(req)) {
       return NextResponse.next({ request: sanitizedReq });
     }
 

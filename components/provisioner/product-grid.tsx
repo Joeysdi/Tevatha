@@ -5,10 +5,10 @@ import { useState, useMemo } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { StaggerParent, StaggerChild, FadeIn } from "@/components/ui/motion";
-import { GradeBadge }         from "./grade-badge";
-import { SolanaCheckout }     from "./solana-checkout";
+import { GradeBadge }  from "./grade-badge";
+import { useCart }     from "@/lib/cart/store";
 import type { Product, ProductCategory } from "@/lib/provisioner/catalog";
-import type { GradeLevel }    from "@/types/treasury";
+import type { GradeLevel } from "@/types/treasury";
 
 // Maps imageSlug → local /public path for each product that has an image
 const PRODUCT_IMAGES: Record<string, string> = {
@@ -56,7 +56,6 @@ interface ProductGridProps {
 
 export function ProductGrid({ products }: ProductGridProps) {
   const [activeFilter, setActiveFilter] = useState<FilterTab>("all");
-  const [expandedId,   setExpandedId]   = useState<string | null>(null);
 
   // Derive available filter tabs from actual catalog
   const availableFilters = useMemo<FilterTab[]>(() => {
@@ -107,11 +106,7 @@ export function ProductGrid({ products }: ProductGridProps) {
       <StaggerParent className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {filtered.map((p) => (
           <StaggerChild key={p.id}>
-            <ProductCard
-              product={p}
-              expanded={expandedId === p.id}
-              onToggle={() => setExpandedId(expandedId === p.id ? null : p.id)}
-            />
+            <ProductCard product={p} />
           </StaggerChild>
         ))}
       </StaggerParent>
@@ -119,15 +114,10 @@ export function ProductGrid({ products }: ProductGridProps) {
   );
 }
 
-function ProductCard({
-  product: p,
-  expanded,
-  onToggle,
-}: {
-  product:  Product;
-  expanded: boolean;
-  onToggle: () => void;
-}) {
+function ProductCard({ product: p }: { product: Product }) {
+  const { addItem, setOpen } = useCart();
+  const [added, setAdded] = useState(false);
+
   const gradeMeta = {
     A: { border: "border-[#1ae8a0]/25", glow: "hover:shadow-[0_0_24px_rgba(26,232,160,0.08)]" },
     B: { border: "border-gold-protocol/25", glow: "hover:shadow-[0_0_24px_rgba(201,168,76,0.08)]" },
@@ -137,8 +127,26 @@ function ProductCard({
   } satisfies Record<GradeLevel, { border: string; glow: string }>;
 
   const g = gradeMeta[p.grade];
-
   const imgSrc = PRODUCT_IMAGES[p.imageSlug];
+
+  const handleAddToCart = () => {
+    addItem({
+      id:           p.id,
+      sku:          p.sku,
+      name:         p.name,
+      brand:        p.brand,
+      priceUsd:     p.priceUsd,
+      priceUsdc:    p.priceUsdc,
+      highTicket:   p.highTicket,
+      imageSlug:    p.imageSlug,
+      stripePriceId: p.stripePriceId,
+    });
+    setAdded(true);
+    setTimeout(() => {
+      setAdded(false);
+      setOpen(true);
+    }, 600);
+  };
 
   return (
     <motion.article
@@ -192,12 +200,16 @@ function ProductCard({
           </div>
 
           <div className="text-right flex-shrink-0">
-            <div className="font-syne font-bold text-[19px] text-gold-protocol
-                            leading-none">
-              <FadeIn>${(p.priceUsd / 100).toFixed(2)}</FadeIn>
+            <div className={`font-syne font-bold text-[19px] leading-none
+              ${p.highTicket ? "text-cyan-DEFAULT" : "text-gold-protocol"}`}>
+              <FadeIn>
+                {p.highTicket
+                  ? `${p.priceUsdc.toFixed(2)}`
+                  : `$${(p.priceUsd / 100).toFixed(2)}`}
+              </FadeIn>
             </div>
             <div className="font-mono text-[9px] text-text-mute2 mt-1">
-              {p.priceUsdc} USDC
+              {p.highTicket ? "USDC" : "USD"}
             </div>
           </div>
         </div>
@@ -224,97 +236,30 @@ function ProductCard({
         </p>
       </div>
 
-      {/* Checkout toggle */}
+      {/* Add to cart */}
       <div className="p-5 border-t border-border-protocol">
-        {!expanded ? (
-          <div className="flex gap-2">
-            {!p.highTicket && p.stripePriceId ? (
-              <button
-                onClick={onToggle}
-                className="flex-1 bg-gold-protocol text-void-0 font-mono font-bold
-                           text-[11px] tracking-[.06em] px-4 py-2.5 rounded-lg
-                           transition-all duration-150
-                           hover:bg-gold-bright hover:-translate-y-0.5"
-              >
-                BUY NOW — CARD
-              </button>
-            ) : (
-              <button
-                onClick={onToggle}
-                className="flex-1 bg-cyan-DEFAULT/10 text-cyan-DEFAULT
-                           font-mono font-bold text-[11px] tracking-[.06em]
-                           px-4 py-2.5 rounded-lg border border-cyan-border
-                           transition-all duration-150 hover:bg-cyan-dim"
-              >
-                PAY {p.priceUsdc} USDC
-              </button>
-            )}
-          </div>
-        ) : (
-          <div className="animate-[fadeUp_0.2s_ease_both]">
-            {p.highTicket ? (
-              <SolanaCheckout
-                productId={p.id}
-                productName={p.name}
-                priceUsdc={p.priceUsdc}
-                onSuccess={() => console.info(`Invoice generated for ${p.id}`)}
-              />
-            ) : (
-              <StripeCheckoutButton product={p} onCancel={onToggle} />
-            )}
-          </div>
-        )}
+        <button
+          onClick={handleAddToCart}
+          disabled={!p.inStock}
+          className={`w-full font-mono font-bold text-[11px] tracking-[.06em]
+                     px-4 py-2.5 rounded-lg transition-all duration-150
+                     ${added
+                       ? "bg-green-bright/20 text-green-bright border border-green-bright/30"
+                       : p.highTicket
+                         ? "bg-cyan-DEFAULT/10 text-cyan-DEFAULT border border-cyan-border hover:bg-cyan-dim"
+                         : "bg-gold-protocol text-void-0 hover:bg-gold-bright hover:-translate-y-0.5"
+                     }
+                     disabled:opacity-40 disabled:cursor-not-allowed`}
+        >
+          {added
+            ? "✓ ADDED TO CART"
+            : p.inStock
+              ? p.highTicket
+                ? `ADD TO CART — ${p.priceUsdc.toFixed(2)} USDC`
+                : `ADD TO CART — $${(p.priceUsd / 100).toFixed(2)}`
+              : "OUT OF STOCK"}
+        </button>
       </div>
     </motion.article>
-  );
-}
-
-// Inline Stripe redirect button — card rail for sub-$500 items
-function StripeCheckoutButton({
-  product,
-  onCancel,
-}: {
-  product:  Product;
-  onCancel: () => void;
-}) {
-  const [loading, setLoading] = useState(false);
-
-  const handleStripeCheckout = async () => {
-    if (!product.stripePriceId) return;
-    setLoading(true);
-    try {
-      const res = await fetch("/api/stripe/checkout", {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ priceId: product.stripePriceId, qty: 1 }),
-      });
-      const { url } = await res.json();
-      if (url) window.location.href = url;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="space-y-2">
-      <button
-        onClick={handleStripeCheckout}
-        disabled={loading}
-        className="w-full bg-gold-protocol text-void-0 font-mono font-bold
-                   text-[11px] tracking-[.08em] px-4 py-2.5 rounded-lg
-                   transition-all duration-150
-                   hover:bg-gold-bright hover:-translate-y-0.5
-                   disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {loading ? "⟳ REDIRECTING…" : `CHECKOUT — $${(product.priceUsd / 100).toFixed(2)}`}
-      </button>
-      <button
-        onClick={onCancel}
-        className="w-full font-mono text-[10px] text-text-mute2
-                   hover:text-text-dim transition-colors"
-      >
-        ← Cancel
-      </button>
-    </div>
   );
 }

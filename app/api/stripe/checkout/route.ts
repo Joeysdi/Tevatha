@@ -1,9 +1,14 @@
 // app/api/stripe/checkout/route.ts
-import { auth }            from "@clerk/nextjs/server";
-import { NextResponse }    from "next/server";
-import { getStripe }       from "@/lib/stripe/client";
+import { auth }         from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
+import { getStripe }    from "@/lib/stripe/client";
 
 export const runtime = "nodejs";
+
+interface LineItem {
+  priceId: string;
+  qty:     number;
+}
 
 export async function POST(request: Request) {
   const { userId } = await auth();
@@ -11,17 +16,25 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let body: { priceId: string; qty?: number };
+  let body: { items?: LineItem[]; priceId?: string; qty?: number };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { priceId, qty = 1 } = body;
+  // Support both single-item (legacy) and cart (multi-item) formats
+  let lineItems: LineItem[];
+  if (body.items && Array.isArray(body.items) && body.items.length > 0) {
+    lineItems = body.items;
+  } else if (body.priceId) {
+    lineItems = [{ priceId: body.priceId, qty: body.qty ?? 1 }];
+  } else {
+    return NextResponse.json({ error: "items or priceId is required" }, { status: 400 });
+  }
 
-  if (!priceId || typeof priceId !== "string") {
-    return NextResponse.json({ error: "priceId is required" }, { status: 400 });
+  if (lineItems.some((i) => !i.priceId || typeof i.priceId !== "string")) {
+    return NextResponse.json({ error: "All items must have a valid priceId" }, { status: 400 });
   }
 
   const stripe = getStripe();
@@ -29,20 +42,18 @@ export async function POST(request: Request) {
 
   try {
     const session = await stripe.checkout.sessions.create({
-      mode:                "payment",
+      mode:                 "payment",
       payment_method_types: ["card"],
-      line_items: [
-        {
-          price:    priceId,
-          quantity: qty,
-        },
-      ],
+      line_items: lineItems.map((i) => ({
+        price:    i.priceId,
+        quantity: Math.max(1, Math.round(i.qty)),
+      })),
       metadata: {
         clerk_user_id: userId,
-        price_id:      priceId,
+        item_count:    String(lineItems.length),
       },
-      success_url: `${appUrl}/shop?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url:  `${appUrl}/shop?checkout=cancelled`,
+      success_url: `${appUrl}/provisioner?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url:  `${appUrl}/provisioner?checkout=cancelled`,
     });
 
     return NextResponse.json({ url: session.url });
