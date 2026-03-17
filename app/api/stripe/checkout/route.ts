@@ -2,6 +2,7 @@
 import { auth }         from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { getStripe }    from "@/lib/stripe/client";
+import { randomUUID }   from "crypto";
 
 export const runtime = "nodejs";
 
@@ -48,9 +49,13 @@ export async function POST(request: Request) {
         price:    i.priceId,
         quantity: Math.max(1, Math.round(i.qty)),
       })),
+      // Keys MUST match what webhook/handleCheckoutSessionCompleted reads:
+      //   session.metadata?.order_id  → "order_id"
+      //   session.metadata?.user_id   → "user_id"
       metadata: {
-        clerk_user_id: userId,
-        item_count:    String(lineItems.length),
+        order_id:   randomUUID(),
+        user_id:    userId,
+        item_count: String(lineItems.length),
       },
       success_url: `${appUrl}/provisioner?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url:  `${appUrl}/provisioner?checkout=cancelled`,
