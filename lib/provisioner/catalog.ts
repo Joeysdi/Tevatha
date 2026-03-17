@@ -43,7 +43,7 @@ export const CATALOG: Product[] = [
     criticalFlag:true,
     spec:"Two-way satellite messaging. Global SOS. No cell required. Rechargeable.",
     buildNote:"1 per adult. Monthly satellite plan required.",
-    stripePriceId:"price_garmin_inreach_mini2",
+    stripePriceId:"price_1TBxuw1Y6BosZk4JGumTOguu",
     imageSlug:"garmin-inreach-mini2",
   },
   {
@@ -53,7 +53,7 @@ export const CATALOG: Product[] = [
     criticalFlag:false,
     spec:"Dual-band VHF/UHF. 5W output. 400+ frequencies. Li-ion rechargeable.",
     buildNote:"Pre-program channels before crisis. HAM licence recommended.",
-    stripePriceId:"price_baofeng_uv5r_5pk",
+    stripePriceId:"price_1TBxv11Y6BosZk4JhDo2Pto6",
     imageSlug:"baofeng-uv5r",
   },
   {
@@ -74,7 +74,7 @@ export const CATALOG: Product[] = [
     criticalFlag:true,
     spec:"SOF-T Wide tourniquet, HyFin chest seal, compressed gauze. Military TCCC aligned.",
     buildNote:"1 per adult go-bag. Non-negotiable.",
-    stripePriceId:"price_nar_ifak",
+    stripePriceId:"price_1TBxv41Y6BosZk4J5LV8cuIz",
     imageSlug:"nar-ifak",
   },
   {
@@ -84,7 +84,7 @@ export const CATALOG: Product[] = [
     criticalFlag:true,
     spec:"150+ piece trauma + wound care + medication kit. First-tier household medical.",
     buildNote:"1 per household minimum.",
-    stripePriceId:"price_myfak_advanced",
+    stripePriceId:"price_1TBxv91Y6BosZk4JFpY6iXQF",
     imageSlug:"myfak-advanced",
   },
   {
@@ -94,7 +94,7 @@ export const CATALOG: Product[] = [
     criticalFlag:true,
     spec:"Hemostatic gauze. Controls life-threatening bleeding in 3–5 min. 3yr shelf.",
     buildNote:"Keep 6+ units total. Replace at 80% of shelf life.",
-    stripePriceId:"price_quikclot_3pk",
+    stripePriceId:"price_1TBxvD1Y6BosZk4JX2otuTq1",
     imageSlug:"quikclot",
   },
 
@@ -135,7 +135,7 @@ export const CATALOG: Product[] = [
     criticalFlag:true,
     spec:"UN-certified steel. Airtight. 5 gal each. Will not crack, leak, or explode.",
     buildNote:"Always kept full. Rotate fuel quarterly with PRI-G stabiliser.",
-    stripePriceId:"price_wavian_jerry_4pk",
+    stripePriceId:"price_1TBxvH1Y6BosZk4JLxgfXAFZ",
     imageSlug:"wavian-jerry",
   },
   {
@@ -145,7 +145,7 @@ export const CATALOG: Product[] = [
     criticalFlag:true,
     spec:"1,000A peak. Up to 6L gas / 3L diesel. Compact lithium. USB charge.",
     buildNote:"Keep in every vehicle. Charge quarterly.",
-    stripePriceId:"price_noco_gb40_2pk",
+    stripePriceId:"price_1TBxvL1Y6BosZk4J586qrwyG",
     imageSlug:"noco-gb40",
   },
 
@@ -157,7 +157,7 @@ export const CATALOG: Product[] = [
     criticalFlag:true,
     spec:"Gravity ceramic. 8.5L/hr. Removes viruses, bacteria, heavy metals. No power.",
     buildNote:"Primary household filter. Replace elements per manufacturer spec.",
-    stripePriceId:"price_berkey_big_berkey",
+    stripePriceId:"price_1TBxvP1Y6BosZk4JiHFVNsp7",
     imageSlug:"berkey-big",
   },
   {
@@ -167,7 +167,7 @@ export const CATALOG: Product[] = [
     criticalFlag:false,
     spec:"Hollow fiber. 100,000-gal lifetime. 0.1 micron. No power. Backflushable.",
     buildNote:"1 per go-bag. Does not remove viruses — pair with Steripen in bio zones.",
-    stripePriceId:"price_sawyer_squeeze",
+    stripePriceId:"price_1TBxvU1Y6BosZk4J3IC0FILo",
     imageSlug:"sawyer-squeeze",
   },
 
@@ -179,7 +179,7 @@ export const CATALOG: Product[] = [
     criticalFlag:false,
     spec:"4K PoE IP camera. 30m night vision. Local NVR — no cloud dependency.",
     buildNote:"4-camera perimeter minimum. Pair with local NVR (no cloud).",
-    stripePriceId:"price_reolink_4pk",
+    stripePriceId:"price_1TBxvY1Y6BosZk4JjcqG3FYl",
     imageSlug:"reolink-810a",
   },
   {
@@ -189,7 +189,7 @@ export const CATALOG: Product[] = [
     criticalFlag:false,
     spec:"EMP/HEMP/solar flare shielding. Fits tablet + radio + drives. Lab tested.",
     buildNote:"Grade C: effective for shielding only. Not a long-term storage solution.",
-    stripePriceId:"price_faraday_xl",
+    stripePriceId:"price_1TBxvb1Y6BosZk4JnB7u8kp0",
     imageSlug:"faraday-xl",
   },
 ];
