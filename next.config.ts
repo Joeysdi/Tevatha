@@ -36,6 +36,7 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "**.supabase.co" },
+      { protocol: "https", hostname: "chart.googleapis.com" }, // Solana Pay QR codes
     ],
   },
 

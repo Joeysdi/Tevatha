@@ -8,7 +8,7 @@ import {
   type TransferRequestURL,
 } from "@solana/pay";
 import BigNumber from "bignumber.js";
-import { getTreasuryAta, usdcToLamports, getUsdcMint } from "./treasury";
+import { getTreasuryAta, getUsdcMint } from "./treasury";
 import type { SolanaInvoice } from "@/types/treasury";
 import { randomUUID } from "crypto";
 
@@ -42,7 +42,7 @@ export function buildSolanaPayInvoice(params: CreateInvoiceParams): SolanaInvoic
   // Spec: solana:<recipient>?amount=<n>&spl-token=<mint>&reference=<key>&label=<l>&message=<m>&memo=<m>
   const transferRequest: TransferRequestURL = {
     recipient,
-    amount:    new BigNumber(usdcToLamports(amountUsdc).toString()),
+    amount:    new BigNumber(amountUsdc), // Solana Pay amount = token units (USDC), NOT microUSDC
     splToken:  usdcMint,
     reference: [reference],           // Array — wallet embeds all refs as account keys
     label,
