@@ -22,6 +22,7 @@ const NAV_LINKS = [
   { href: "/watchtower/signals",     label: "Signal Feed"   },
   { href: "/watchtower/gear",        label: "Gear Tables"   },
   { href: "/watchtower/psychology",  label: "Psychology"    },
+  { href: "/watchtower/world",       label: "World Risk"    },
 ] as const;
 
 export type WatchtowerNavLink = (typeof NAV_LINKS)[number];
