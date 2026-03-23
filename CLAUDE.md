@@ -51,6 +51,24 @@ Act as a premium UI engineer building a **high-tech vault management dashboard**
 - Add `WebWorker` to `tsconfig.json` lib array
 - Import the `Database` generic from `database.types.ts` into Supabase client/server files
 
+## 4. STRIPE ARCHITECTURAL RULES
+
+### Environment Variable Parity
+- `STRIPE_SECRET_KEY` must **NEVER** be prefixed with `NEXT_PUBLIC_`. It is a server-only secret. Exposing it to the browser would allow anyone to make arbitrary Stripe API calls with full account access.
+- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` is the only Stripe key safe for the browser. It is intentionally public.
+- Any code that imports `stripe` or calls `getStripe()` with the secret key must live in: API routes, Server Actions, or Server Components — never in `"use client"` files.
+
+### Vercel Runtime Enforcement
+- Every Next.js API route that uses the Stripe SDK or processes Stripe webhooks **must** declare the Node.js runtime explicitly at the top of the file:
+  ```ts
+  export const runtime = 'nodejs';
+  ```
+- **Never** use the Edge runtime (`export const runtime = 'edge'`) for Stripe routes. The Stripe Node.js SDK uses Node.js built-ins (`crypto`, `http`, `buffer`) that are unavailable in the Edge runtime and will cause silent failures or build errors on Vercel.
+- This applies to: `app/api/stripe/**`, `app/api/webhooks/stripe/**`, and any Server Action that instantiates the Stripe client.
+
+### Webhook Signature Verification
+- Stripe webhook routes must read the raw request body via `request.text()` (not `request.json()`) before calling `stripe.webhooks.constructEvent()`. Parsing JSON first destroys the raw bytes needed for HMAC verification, causing all webhook signature checks to fail.
+
 ## 3. PLANNING RULES
 
 When asked to plan a feature:
