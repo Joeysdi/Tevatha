@@ -132,7 +132,7 @@ export const COUNTRY_RISK: CountryRisk[] = [
     ],
   },
   {
-    iso:"4", name:"Afghanistan", level:"HIGH", score:83, domain:"Civil / Political", trend:"→", lat:33.9, lon:67.7,
+    iso:"004", name:"Afghanistan", level:"HIGH", score:83, domain:"Civil / Political", trend:"→", lat:33.9, lon:67.7,
     incidents:[
       "Taliban: women banned from all employment, education, and public spaces — UN calls 'gender apartheid'",
       "23M+ at acute food insecurity risk; 6.5M at emergency/famine levels (IPC 2025)",
@@ -353,7 +353,7 @@ export const COUNTRY_RISK: CountryRisk[] = [
     ],
   },
   {
-    iso:"76", name:"Brazil", level:"ELEVATED", score:53, domain:"Climate", trend:"→", lat:-10.0, lon:-55.0,
+    iso:"076", name:"Brazil", level:"ELEVATED", score:53, domain:"Climate", trend:"→", lat:-10.0, lon:-55.0,
     incidents:[
       "Amazon deforestation: 2025 fire season burned 22M hectares — largest since records began",
       "Lula survived Bolsonaro-linked coup attempt investigation; political polarization HIGH",
@@ -639,7 +639,7 @@ export const COUNTRY_RISK: CountryRisk[] = [
     ],
   },
   {
-    iso:"36", name:"Australia", level:"MODERATE", score:31, domain:"Climate", trend:"→", lat:-25.3, lon:133.8,
+    iso:"036", name:"Australia", level:"MODERATE", score:31, domain:"Climate", trend:"→", lat:-25.3, lon:133.8,
     incidents:[
       "Bushfire risk: 2025-26 season rated 'above normal' by BOM; Queensland already burning",
       "China trade tensions resumed: barley/wine tariffs lifted but rare earth export controls",
@@ -1402,6 +1402,88 @@ export const COUNTRY_RISK: CountryRisk[] = [
       "Cyclone Winston-scale risk annually; 2024 Cyclone Judy destroyed Efate infrastructure",
       "Political instability: 15 PMs in 10 years; no-confidence votes routine",
       "Citizenship by investment: controversial passport scheme funds budget",
+    ],
+  },
+
+  // ── Previously missing ────────────────────────────────────────────────────
+  {
+    iso:"024", name:"Angola", level:"MODERATE", score:32, domain:"Civil / Political", trend:"→", lat:-11.2, lon:17.9,
+    incidents:[
+      "MPLA in power since independence (1975); Lourenço anti-corruption drive stalling",
+      "Oil dependency: 95% of exports; revenue collapse when prices fall",
+      "1.6M internally displaced from civil war still unresolved; landmines cover 25% of territory",
+    ],
+  },
+  {
+    iso:"044", name:"Bahamas", level:"MODERATE", score:24, domain:"Climate", trend:"↑", lat:24.3, lon:-76.0,
+    incidents:[
+      "Hurricane Dorian (2019) destroyed Abaco and Grand Bahama — recovery still incomplete",
+      "Drug transshipment corridor: US DEA active operations; gang violence in Nassau rising",
+      "Sea level rise: 80% of land below 1m; entire island chains face uninhabitability by 2100",
+    ],
+  },
+  {
+    iso:"158", name:"Taiwan", level:"HIGH", score:81, domain:"Civil / Political", trend:"↑", lat:23.7, lon:121.0,
+    incidents:[
+      "PRC blockade exercises Dec 2025 encircled Taiwan with 90+ warships — most extensive ever",
+      "CFR rates 2026 cross-strait crisis probability at 50%; TSMC fabs are global supply chokepoint",
+      "US defence commitments ambiguous; AUKUS + Japan security frameworks accelerating",
+    ],
+  },
+  {
+    iso:"238", name:"Falkland Islands", level:"MODERATE", score:20, domain:"Civil / Political", trend:"→", lat:-51.8, lon:-59.5,
+    incidents:[
+      "Argentina sovereignty claim renewed under Milei government — UN resolutions cited",
+      "UK garrison and Mount Pleasant airbase maintained; defence spend increased post-Ukraine",
+      "Squid fishing economy threatened by Chinese fleet illegal fishing in surrounding EEZ",
+    ],
+  },
+  {
+    iso:"304", name:"Greenland", level:"MODERATE", score:30, domain:"Civil / Political", trend:"↑", lat:72.0, lon:-40.0,
+    incidents:[
+      "Trump annexation demands (Jan 2025) causing NATO-Denmark crisis; Greenland PM rejected outright",
+      "Independence movement: Inuit Ataqatigiit government pursuing full independence from Denmark",
+      "Arctic resources: rare earth deposits and ice-free shipping routes fuelling great power competition",
+    ],
+  },
+  {
+    iso:"442", name:"Luxembourg", level:"MODERATE", score:16, domain:"Economic", trend:"→", lat:49.8, lon:6.1,
+    incidents:[
+      "Financial centre: €3.5T in investment funds; FATF monitoring and EU tax haven pressure",
+      "NATO host nation: SHAPE facilities; increased defence spending commitments 2025",
+      "Housing crisis: world's most expensive real estate per m²; social inequality rising",
+    ],
+  },
+  {
+    iso:"540", name:"New Caledonia", level:"MODERATE", score:30, domain:"Civil / Political", trend:"↑", lat:-20.9, lon:165.6,
+    incidents:[
+      "Independence riots May 2024: 9 killed, €2.2B damage; Kanak uprising after electoral reform",
+      "France dissolved local assembly; constitutional status dispute unresolved",
+      "Nickel industry collapse: 3 smelters closed 2024; China undercutting on price",
+    ],
+  },
+  {
+    iso:"620", name:"Portugal", level:"MODERATE", score:26, domain:"Economic", trend:"→", lat:39.6, lon:-7.8,
+    incidents:[
+      "Centre-right AD minority government (2024); snap election risk if budget collapses",
+      "Housing crisis: Lisbon rents up 60% since 2019; golden visa scheme ended under EU pressure",
+      "Wildfire: 2024 season burned 120,000 hectares; climate change extending fire season",
+    ],
+  },
+  {
+    iso:"630", name:"Puerto Rico", level:"MODERATE", score:28, domain:"Economic", trend:"→", lat:18.2, lon:-66.6,
+    incidents:[
+      "Public debt: $70B restructuring under PROMESA oversight board since 2016; austerity ongoing",
+      "Hurricane Maria (2017) recovery incomplete; power grid still fragile in 2025",
+      "Population decline: 20% emigrated since 2010; fiscal spiral accelerating",
+    ],
+  },
+  {
+    iso:"732", name:"Western Sahara", level:"ELEVATED", score:48, domain:"Civil / Political", trend:"↑", lat:24.2, lon:-12.9,
+    incidents:[
+      "Morocco controls 80% of territory; Polisario Front (Algeria-backed) controls eastern strip",
+      "US recognized Moroccan sovereignty (2020); UN peace process paralysed since 2019",
+      "Phosphate wealth: world's largest reserves under Moroccan control — exports contested legally",
     ],
   },
 ];
