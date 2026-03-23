@@ -48,7 +48,7 @@ export function StripeEmbeddedCheckout({ items, onClose }: Props) {
             : err.message
           : "Checkout session could not be created.";
       setInitError(msg);
-      throw err; // rethrow so EmbeddedCheckoutProvider surfaces its own error state
+      return ""; // state update triggers re-render to error UI; no throw avoids React error boundary
     }
   }, [lineItems]);
 

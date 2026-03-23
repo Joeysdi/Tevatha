@@ -10,7 +10,7 @@ import { getStripe, getStripeWebhookSecret } from "@/lib/stripe/client";
 import { createServiceSupabaseClient }        from "@/lib/supabase/server";
 
 // ── Explicitly Node.js runtime — Stripe SDK requires Node crypto APIs ──
-export const runtime = undefined;
+export const runtime = 'nodejs';
 
 // Public route — Stripe cannot authenticate to Clerk
 // This route is excluded from proxy.ts auth guard via /api/webhooks/(.*)
