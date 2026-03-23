@@ -1,7 +1,7 @@
 // components/watchtower/world-risk-map.tsx
 "use client";
 
-import { useState, useCallback, memo } from "react";
+import { useState, useCallback, memo, useMemo } from "react";
 import {
   ComposableMap,
   Geographies,
@@ -13,6 +13,7 @@ import {
   COUNTRY_RISK,
   RISK_COLORS,
   NO_DATA_FILL,
+  riskByName,
   BORDER_COLOR,
   SEA_COLOR,
   riskByIso,
@@ -175,12 +176,6 @@ export const WorldRiskMap = memo(function WorldRiskMap() {
   const [hovered,  setHovered]    = useState<string | null>(null);
   const [position, setPosition]   = useState({ coordinates: [0, 20] as [number, number], zoom: 1 });
 
-  const handleCountryClick = useCallback((geo: { id: string }) => {
-    const risk = riskByIso[geo.id];
-    if (risk) setSelected(risk);
-    else setSelected(null);
-  }, []);
-
   const handleMoveEnd = useCallback((pos: { coordinates: [number, number]; zoom: number }) => {
     setPosition(pos);
   }, []);
@@ -214,9 +209,17 @@ export const WorldRiskMap = memo(function WorldRiskMap() {
           <Geographies geography={GEO_URL}>
             {({ geographies }) =>
               geographies.map((geo) => {
-                const risk   = riskByIso[geo.id];
-                const isHov  = hovered === geo.id;
-                const isSel  = selected?.iso === geo.id;
+                // geo.id is the ISO numeric string ("004", "840" …)
+                // Fall back to name lookup for features without a numeric id
+                // (Kosovo, N. Cyprus, Somaliland in world-110m.json)
+                const id     = geo.id ? String(geo.id) : null;
+                const name   = geo.properties?.name as string | undefined;
+                const risk   = (id ? riskByIso[id] : null) ?? (name ? riskByName[name] : null);
+                const hoverKey = id ?? name ?? geo.rsmKey;
+                const isHov  = hovered === hoverKey;
+                const isSel  = selected
+                  ? (id ? selected.iso === id : selected.name === name)
+                  : false;
                 const fill   = risk
                   ? isHov || isSel
                     ? RISK_COLORS[risk.level].hover
@@ -230,8 +233,8 @@ export const WorldRiskMap = memo(function WorldRiskMap() {
                     fill={fill}
                     stroke={BORDER_COLOR}
                     strokeWidth={0.4}
-                    onClick={() => handleCountryClick(geo)}
-                    onMouseEnter={() => setHovered(geo.id)}
+                    onClick={() => risk && setSelected(risk)}
+                    onMouseEnter={() => setHovered(hoverKey)}
                     onMouseLeave={() => setHovered(null)}
                     style={{
                       default:  { outline: "none", transition: "fill 0.15s ease" },
@@ -301,7 +304,7 @@ export const WorldRiskMap = memo(function WorldRiskMap() {
 
       {/* Hover tooltip — shows when hovering tracked country, no panel open */}
       {hovered && !selected && (() => {
-        const risk = riskByIso[hovered];
+        const risk = riskByIso[hovered] ?? riskByName[hovered];
         if (!risk) return null;
         return (
           <div className="absolute bottom-14 left-1/2 -translate-x-1/2 z-10

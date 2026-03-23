@@ -1486,6 +1486,32 @@ export const COUNTRY_RISK: CountryRisk[] = [
       "Phosphate wealth: world's largest reserves under Moroccan control — exports contested legally",
     ],
   },
+
+  // ── Name-only features (no ISO numeric ID in TopoJSON) ────────────────────
+  {
+    iso:"xk", name:"Kosovo", level:"ELEVATED", score:49, domain:"Civil / Political", trend:"↑", lat:42.6, lon:20.9,
+    incidents:[
+      "Serbia refuses to recognise independence; EU-brokered normalisation talks collapsed Sep 2025",
+      "KFOR (NATO) troops still required; Serb minority north Mitrovica flashpoint active",
+      "EU candidate status stalled; visa liberalisation only gained 2024",
+    ],
+  },
+  {
+    iso:"nc-cy", name:"N. Cyprus", level:"ELEVATED", score:45, domain:"Civil / Political", trend:"→", lat:35.2, lon:33.6,
+    incidents:[
+      "Turkey-backed TRNC recognised only by Ankara; UN buffer zone divides island since 1974",
+      "Reunification talks stalled; Tatar government hardening partition stance",
+      "Varosha ghost city: Turkey unilaterally reopened sealed zone — EU condemned",
+    ],
+  },
+  {
+    iso:"so-sl", name:"Somaliland", level:"HIGH", score:65, domain:"Civil / Political", trend:"→", lat:9.6, lon:45.1,
+    incidents:[
+      "Unrecognised state since 1991 — functioning democracy but no UN membership",
+      "Ethiopia-Somaliland port deal (Jan 2024) gave landlocked Ethiopia sea access — Somalia furious",
+      "Al-Shabaab pressure on eastern borders; Puntland territorial clashes ongoing",
+    ],
+  },
 ];
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
@@ -1493,6 +1519,14 @@ export const COUNTRY_RISK: CountryRisk[] = [
 export const riskByIso = Object.fromEntries(
   COUNTRY_RISK.map((c) => [c.iso, c])
 ) as Record<string, CountryRisk>;
+
+// Name-based lookup for TopoJSON features that have no ISO numeric id
+// Keys match the `properties.name` values used in world-110m.json
+export const riskByName: Record<string, CountryRisk> = {
+  "Kosovo":    COUNTRY_RISK.find((c) => c.iso === "xk")!,
+  "N. Cyprus": COUNTRY_RISK.find((c) => c.iso === "nc-cy")!,
+  "Somaliland":COUNTRY_RISK.find((c) => c.iso === "so-sl")!,
+};
 
 export const riskStats = {
   critical:  COUNTRY_RISK.filter((c) => c.level === "CRITICAL").length,
