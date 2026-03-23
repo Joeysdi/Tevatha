@@ -37,19 +37,12 @@ export function StripeEmbeddedCheckout({ items, onClose }: Props) {
 
   // EmbeddedCheckoutProvider calls this once to get the client_secret.
   const fetchClientSecret = useCallback(async (): Promise<string> => {
-    try {
-      const { clientSecret } = await createEmbeddedCheckoutSession(lineItems);
-      return clientSecret;
-    } catch (err) {
-      const msg =
-        err instanceof Error
-          ? err.message === "UNAUTHORIZED"
-            ? "Please sign in to complete your purchase."
-            : err.message
-          : "Checkout session could not be created.";
-      setInitError(msg);
-      return ""; // state update triggers re-render to error UI; no throw avoids React error boundary
+    const result = await createEmbeddedCheckoutSession(lineItems);
+    if ("error" in result) {
+      setInitError(result.error);
+      return ""; // state update triggers re-render to error UI
     }
+    return result.clientSecret;
   }, [lineItems]);
 
   // ── Error state ───────────────────────────────────────────────────────────
