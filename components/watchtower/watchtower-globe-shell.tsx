@@ -339,14 +339,6 @@ export function WatchtowerGlobeShell() {
         </button>
       </div>
 
-      {/* ── Timeline event brief — sits above timeline ──────────────────── */}
-      {timelineEvent && (
-        <TimelineEventBrief
-          event={timelineEvent}
-          onClose={() => { setTimelineEvent(null); setEraPhase("P4"); }}
-        />
-      )}
-
       {/* ── Timeline bar ─────────────────────────────────────────────────── */}
       <GlobeTimeline
         activePhase={eraPhase}
@@ -412,72 +404,3 @@ function KeyHint({ label, onClick }: { label: string; onClick: () => void }) {
   );
 }
 
-function TimelineEventBrief({
-  event,
-  onClose,
-}: {
-  event:   TimelineEvent;
-  onClose: () => void;
-}) {
-  const COL_MAP: Record<string, string> = { red:"#e84040", warn:"#f0a500", info:"#38bdf8", pink:"#ff0055" };
-  const col        = COL_MAP[event.colKey] ?? "#c9a84c";
-  const yearStr    = event.isNow ? "NOW" : event.year + (event.predicted ? "~" : "");
-  const isForecast = event.predicted === true;
-
-  return (
-    <div
-      className="flex-shrink-0 flex items-center gap-2.5 px-3 py-2"
-      style={{
-        background:  "rgba(6,7,13,0.98)",
-        borderTop:   `1px solid ${col}28`,
-        borderBottom: "1px solid rgba(255,255,255,0.03)",
-      }}
-    >
-      {/* Color dot */}
-      <div
-        className="flex-shrink-0 rounded-full"
-        style={{ width: 6, height: 6, background: col, boxShadow: `0 0 5px ${col}` }}
-      />
-
-      {/* Year */}
-      <span
-        className="flex-shrink-0 font-mono tabular-nums text-[8px] tracking-[.12em]"
-        style={{ color: col }}
-      >
-        {yearStr}
-      </span>
-
-      {/* Forecast badge */}
-      {isForecast && (
-        <span
-          className="flex-shrink-0 font-mono text-[5.5px] tracking-[.18em] px-1.5 py-0.5 rounded-full border"
-          style={{ color: `${col}bb`, borderColor: `${col}40`, background: `${col}10` }}
-        >
-          FORECAST
-        </span>
-      )}
-
-      {/* Divider */}
-      <div className="flex-shrink-0 w-px h-3 bg-border-protocol/50" />
-
-      {/* Event name */}
-      <span className="flex-shrink-0 font-syne font-bold text-[10px] text-text-base max-w-[160px] truncate">
-        {event.label}
-      </span>
-
-      {/* Signal text — desktop only */}
-      <span className="hidden sm:block font-mono text-[8px] text-text-mute2 truncate flex-1 min-w-0">
-        {event.signal}
-      </span>
-
-      {/* Close */}
-      <button
-        onClick={onClose}
-        className="flex-shrink-0 ml-auto font-mono text-[10px] text-text-mute2/40
-                   hover:text-text-mute2 transition-colors leading-none"
-      >
-        ✕
-      </button>
-    </div>
-  );
-}

@@ -7,13 +7,13 @@ import type { TimelineEvent, DecisionGate } from "@/lib/watchtower/data";
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
-const PX_PER_YEAR = 50;
+const PX_PER_YEAR = 28;   // ~14 years visible on a 390px phone screen
 const START_YEAR  = 1942;
 const END_YEAR    = 2038;
 const NOW_YEAR    = 2026;
-const AXIS_Y      = 46;   // horizontal axis position within 84px container
-const HEIGHT      = 84;
-const TOTAL_W     = (END_YEAR - START_YEAR) * PX_PER_YEAR + 120;
+const AXIS_Y      = 38;   // horizontal axis position within 68px container
+const HEIGHT      = 68;
+const TOTAL_W     = (END_YEAR - START_YEAR) * PX_PER_YEAR + 80;
 
 function yrToPx(y: number) { return (y - START_YEAR) * PX_PER_YEAR; }
 function parseYear(y: string) {
@@ -124,7 +124,7 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
     <div
       ref={containerRef}
       className="flex-shrink-0 relative overflow-hidden select-none"
-      style={{ height: HEIGHT, background: "rgba(4,5,10,0.98)", borderTop: "1px solid rgba(255,255,255,0.05)", touchAction: "pan-x" }}
+      style={{ height: HEIGHT, background: "rgba(4,5,10,0.98)", borderTop: "1px solid rgba(255,255,255,0.05)" }}
     >
       {/* ── Playhead line (fixed center marker) ── */}
       <div
@@ -324,7 +324,7 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
           {/* Gate tooltip */}
           {gateHov && (
             <div
-              className="fixed bottom-[92px] left-1/2 -translate-x-1/2 z-50
+              className="fixed bottom-[76px] left-1/2 -translate-x-1/2 z-50
                          rounded-xl px-3 py-2.5 pointer-events-none max-w-[260px]"
               style={{
                 background: "rgba(8,10,18,0.97)",
@@ -351,8 +351,8 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
 
             // Alternate above / below axis
             const above    = i % 2 === 0;
-            const stemLen  = isActive ? 20 : 13;
-            const dotR     = isActive ? 5 : 3;
+            const stemLen  = isActive ? 14 : 9;
+            const dotR     = isActive ? 4 : 3;
 
             // Dot center Y
             const dotCY = above
