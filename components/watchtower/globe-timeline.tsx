@@ -5,17 +5,21 @@ import { useRef, useEffect, useState, useCallback } from "react";
 import { TIMELINE_EVENTS, GATES } from "@/lib/watchtower/data";
 import type { TimelineEvent, DecisionGate } from "@/lib/watchtower/data";
 
-// ── Constants ─────────────────────────────────────────────────────────────────
+// ── Constants ──────────────────────────────────────────────────────────────────
 
-const PX_PER_YEAR = 40;
+const PX_PER_YEAR = 50;
 const START_YEAR  = 1942;
 const END_YEAR    = 2038;
 const NOW_YEAR    = 2026;
-const AXIS_TOP    = 62; // px from top of container — horizontal axis position
-const TOTAL_W     = (END_YEAR - START_YEAR) * PX_PER_YEAR + 80; // +80 right padding
+const AXIS_Y      = 46;   // horizontal axis position within 84px container
+const HEIGHT      = 84;
+const TOTAL_W     = (END_YEAR - START_YEAR) * PX_PER_YEAR + 120;
 
-function yrToPx(y: number): number {
-  return (y - START_YEAR) * PX_PER_YEAR;
+function yrToPx(y: number) { return (y - START_YEAR) * PX_PER_YEAR; }
+function parseYear(y: string) {
+  if (y.toLowerCase() === "now") return NOW_YEAR;
+  const n = parseInt(y, 10);
+  return isNaN(n) ? NOW_YEAR : n;
 }
 
 const PHASES = [
@@ -41,13 +45,7 @@ const TIER_HEX: Record<string, string> = {
   t1: "#1ae8a0",
 };
 
-function parseYear(y: string): number {
-  if (y.toLowerCase() === "now") return NOW_YEAR;
-  const n = parseInt(y, 10);
-  return isNaN(n) ? NOW_YEAR : n;
-}
-
-// ── Props ─────────────────────────────────────────────────────────────────────
+// ── Props ──────────────────────────────────────────────────────────────────────
 
 interface Props {
   activePhase:   string;
@@ -55,29 +53,27 @@ interface Props {
   onEventSelect: (event: TimelineEvent | null) => void;
 }
 
-// ── Component ─────────────────────────────────────────────────────────────────
+// ── Component ──────────────────────────────────────────────────────────────────
 
 export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Props) {
-  const scrollRef    = useRef<HTMLDivElement>(null);
-  const debounceRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const scrollRef   = useRef<HTMLDivElement>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [activeEvt,  setActiveEvt]  = useState<TimelineEvent | null>(null);
   const [gateHov,    setGateHov]    = useState<DecisionGate | null>(null);
   const [scrollYear, setScrollYear] = useState(NOW_YEAR);
 
-  // Scroll NOW into view on mount
+  // Scroll NOW into center on mount
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
-    const nowPx = yrToPx(NOW_YEAR);
-    el.scrollLeft = nowPx - el.clientWidth * 0.55;
+    el.scrollLeft = yrToPx(NOW_YEAR) - el.clientWidth * 0.5;
   }, []);
 
-  // Cleanup debounce on unmount
+  // Cleanup debounce
   useEffect(() => {
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, []);
 
-  // Scroll handler — instant year display, debounced globe update
   const handleScroll = useCallback(() => {
     const el = scrollRef.current;
     if (!el) return;
@@ -88,13 +84,9 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      // Update active phase
-      const phase = PHASES.find(
-        (p) => centerYear >= p.yearStart && centerYear < p.yearEnd,
-      );
+      const phase = PHASES.find(p => centerYear >= p.yearStart && centerYear < p.yearEnd);
       if (phase) onPhaseSelect(phase.id);
 
-      // Find nearest event within ±3.5 years of center
       let closest: TimelineEvent | null = null;
       let minDist = Infinity;
       for (const evt of TIMELINE_EVENTS) {
@@ -111,200 +103,221 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
     }, 180);
   }, [onPhaseSelect, onEventSelect]);
 
+  const activePhaseHex = PHASES.find(p => p.id === activePhase)?.hex ?? "#e84040";
+
   return (
     <div
-      className="flex-shrink-0 bg-void-1 border-t border-border-protocol relative overflow-hidden select-none"
-      style={{ height: 100 }}
+      className="flex-shrink-0 relative overflow-hidden select-none"
+      style={{ height: HEIGHT, background: "rgba(4,5,10,0.98)", borderTop: "1px solid rgba(255,255,255,0.05)" }}
     >
-      {/* Viewport center hairline — visual guide */}
+      {/* ── Playhead line (fixed center marker) ── */}
       <div
-        className="absolute top-0 bottom-0 left-1/2 w-px pointer-events-none z-10"
-        style={{ background: "rgba(255,255,255,0.035)" }}
+        className="absolute top-0 bottom-0 left-1/2 z-20 pointer-events-none"
+        style={{
+          width: 1,
+          transform: "translateX(-0.5px)",
+          background: `linear-gradient(to bottom, transparent 0%, ${activePhaseHex}55 30%, ${activePhaseHex}88 50%, ${activePhaseHex}55 70%, transparent 100%)`,
+          transition: "background 0.5s",
+        }}
       />
 
-      {/* Scroll year display — top center */}
-      <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
-        <p className="font-mono text-[7px] tabular-nums tracking-[.1em] text-text-mute2/45">
+      {/* Playhead top tick */}
+      <div
+        className="absolute top-0 left-1/2 z-20 pointer-events-none"
+        style={{ transform: "translateX(-50%)" }}
+      >
+        <div style={{
+          width: 0, height: 0,
+          borderLeft: "3px solid transparent",
+          borderRight: "3px solid transparent",
+          borderTop: `4px solid ${activePhaseHex}99`,
+          transition: "border-top-color 0.5s",
+        }} />
+      </div>
+
+      {/* ── Year readout — floats at playhead ── */}
+      <div className="absolute top-1 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
+        <p
+          className="font-mono tabular-nums"
+          style={{
+            fontSize: "7.5px",
+            letterSpacing: ".1em",
+            color: `${activePhaseHex}cc`,
+            transition: "color 0.5s",
+          }}
+        >
           {scrollYear > NOW_YEAR
-            ? `▶ ${scrollYear} FORECAST`
+            ? `${scrollYear} ▸ FORECAST`
             : scrollYear < NOW_YEAR
-            ? `◀ ${scrollYear}`
-            : "▶ NOW · 2026"}
+            ? `◂ ${scrollYear}`
+            : "▸ NOW 2026"}
         </p>
       </div>
 
-      {/* Scroll hint — top right */}
-      <div className="absolute top-2 right-3 z-20 pointer-events-none">
-        <p className="font-mono text-[6px] tracking-[.2em] uppercase text-text-mute2/25">
-          drag ←→
-        </p>
+      {/* ── Drag hint ── */}
+      <div className="absolute top-1 right-3 z-20 pointer-events-none">
+        <p className="font-mono text-[6px] tracking-[.18em] text-text-mute2/18">← drag →</p>
       </div>
 
-      {/* Scrollable canvas */}
+      {/* ── Scrollable canvas ── */}
       <div
         ref={scrollRef}
         onScroll={handleScroll}
         className="w-full h-full overflow-x-auto overflow-y-hidden scrollbar-none"
         style={{ WebkitOverflowScrolling: "touch" } as React.CSSProperties}
       >
-        <div className="relative h-full" style={{ width: TOTAL_W, minWidth: TOTAL_W }}>
+        <div className="relative" style={{ width: TOTAL_W, height: HEIGHT }}>
 
-          {/* ── Phase zone backgrounds ──────────────────────────────────── */}
+          {/* ── Axis line — multi-segment with phase color ── */}
           {PHASES.map((p) => {
-            const x      = yrToPx(p.yearStart);
-            const w      = yrToPx(p.yearEnd) - x;
-            const active = activePhase === p.id;
+            const x = yrToPx(p.yearStart);
+            const w = yrToPx(p.yearEnd) - x;
+            const isActive = activePhase === p.id;
             return (
               <div
-                key={p.id}
-                className="absolute top-0 bottom-0 transition-colors duration-500 pointer-events-none"
+                key={p.id + "-axis"}
+                className="absolute pointer-events-none"
                 style={{
-                  left:        x,
-                  width:       w,
-                  background:  active ? `${p.hex}12` : `${p.hex}06`,
-                  borderRight: `1px solid ${p.hex}18`,
+                  left: x, width: w,
+                  top: AXIS_Y,
+                  height: 1,
+                  background: isActive
+                    ? `linear-gradient(90deg, ${p.hex}22, ${p.hex}bb, ${p.hex}bb, ${p.hex}22)`
+                    : `${p.hex}28`,
+                  boxShadow: isActive ? `0 0 4px ${p.hex}66` : "none",
+                  transition: "background 0.6s, box-shadow 0.6s",
                 }}
-              >
-                {/* Top accent line */}
-                <div
-                  className="absolute top-0 left-0 right-0 transition-all duration-500"
+              />
+            );
+          })}
+
+          {/* ── Phase boundary marks + labels ── */}
+          {PHASES.map((p, i) => {
+            const x = yrToPx(p.yearStart);
+            const isActive = activePhase === p.id;
+            return (
+              <div key={p.id + "-mark"} className="absolute pointer-events-none" style={{ left: x }}>
+                {/* Boundary tick */}
+                {i > 0 && (
+                  <div style={{
+                    position: "absolute",
+                    top: AXIS_Y - 8,
+                    left: 0,
+                    width: 1,
+                    height: 16,
+                    background: `linear-gradient(to bottom, transparent, ${p.hex}${isActive ? "60" : "28"}, transparent)`,
+                    transition: "background 0.4s",
+                  }} />
+                )}
+                {/* Phase label — floats above axis */}
+                <p
+                  className="absolute font-mono whitespace-nowrap"
                   style={{
-                    height:     active ? 2 : 1,
-                    background: active ? p.hex : `${p.hex}30`,
-                    boxShadow:  active ? `0 0 8px ${p.hex}` : "none",
+                    fontSize: "5.5px",
+                    letterSpacing: ".18em",
+                    top: 6,
+                    left: i === 0 ? 2 : 4,
+                    color: isActive ? `${p.hex}cc` : `${p.hex}40`,
+                    transition: "color 0.4s",
                   }}
-                />
-                {/* Phase label */}
-                <div className="absolute left-2 top-[5px]">
-                  <p
-                    className="font-mono font-bold truncate transition-all duration-300"
-                    style={{
-                      fontSize:      "6.5px",
-                      letterSpacing: ".18em",
-                      color:         active ? p.hex : `${p.hex}50`,
-                    }}
-                  >
-                    {"isNow" in p && p.isNow ? "▶ " : ""}{p.label}
-                  </p>
-                  <p
-                    className="font-mono"
-                    style={{
-                      fontSize: "5.5px",
-                      color:    active ? `${p.hex}70` : `${p.hex}30`,
-                      letterSpacing: ".06em",
-                    }}
-                  >
-                    {p.yearStart}–{p.yearEnd}
-                  </p>
-                </div>
+                >
+                  {"isNow" in p && p.isNow ? "▶ " : ""}{p.label}
+                </p>
               </div>
             );
           })}
 
-          {/* ── Horizontal axis line ──────────────────────────────────── */}
-          <div
-            className="absolute left-0 right-0 pointer-events-none"
-            style={{
-              top:        AXIS_TOP,
-              height:     1,
-              background: "rgba(255,255,255,0.08)",
-            }}
-          />
-
-          {/* ── NOW vertical glow line ────────────────────────────────── */}
-          <div
-            className="absolute top-0 bottom-0 pointer-events-none z-10"
-            style={{
-              left:       yrToPx(NOW_YEAR),
-              width:      1,
-              background: "linear-gradient(to bottom,#e84040cc,#e8404022)",
-              boxShadow:  "0 0 6px rgba(232,64,64,0.5)",
-            }}
-          />
-
-          {/* ── Decade tick marks ─────────────────────────────────────── */}
+          {/* ── Decade tick marks ── */}
           {Array.from({ length: Math.ceil((END_YEAR - START_YEAR) / 10) }, (_, i) => {
             const yr = Math.ceil(START_YEAR / 10) * 10 + i * 10;
-            if (yr < START_YEAR || yr > END_YEAR) return null;
+            if (yr <= START_YEAR || yr >= END_YEAR) return null;
             return (
-              <div
-                key={yr}
-                className="absolute pointer-events-none"
-                style={{ left: yrToPx(yr), top: AXIS_TOP - 5 }}
-              >
-                <div style={{ width: 1, height: 10, background: "rgba(255,255,255,0.12)" }} />
-                <p
-                  className="font-mono absolute whitespace-nowrap"
-                  style={{
-                    fontSize:      "6px",
-                    color:         "rgba(120,140,160,0.35)",
-                    top:           12,
-                    left:          2,
-                    letterSpacing: ".04em",
-                  }}
-                >
+              <div key={yr} className="absolute pointer-events-none" style={{ left: yrToPx(yr) }}>
+                <div style={{
+                  position: "absolute",
+                  top: AXIS_Y - 3,
+                  width: 1, height: 6,
+                  background: "rgba(255,255,255,0.1)",
+                }} />
+                <p style={{
+                  position: "absolute",
+                  top: AXIS_Y + 5,
+                  left: 2,
+                  fontSize: "5px",
+                  fontFamily: "monospace",
+                  color: "rgba(90,110,130,0.38)",
+                  letterSpacing: ".03em",
+                  whiteSpace: "nowrap",
+                }}>
                   {yr}
                 </p>
               </div>
             );
           })}
 
-          {/* ── Decision gate markers ─────────────────────────────────── */}
+          {/* ── NOW vertical glow ── */}
+          <div
+            className="absolute pointer-events-none z-10"
+            style={{
+              left: yrToPx(NOW_YEAR),
+              top: AXIS_Y - 10,
+              width: 1, height: 20,
+              background: "linear-gradient(to bottom, transparent, #e84040dd, transparent)",
+              boxShadow: "0 0 6px rgba(232,64,64,0.55)",
+            }}
+          />
+
+          {/* ── Decision gate markers ── */}
           {GATES.map((gate, i) => {
             const gateYear = NOW_YEAR + 0.4 + i * 0.75;
-            const x        = yrToPx(gateYear);
-            const col      = TIER_HEX[gate.tier] ?? "#c9a84c";
+            const x = yrToPx(gateYear);
+            const col = TIER_HEX[gate.tier] ?? "#c9a84c";
             return (
               <div
                 key={gate.id}
                 className="absolute z-20 cursor-pointer"
-                style={{ left: x - 5, top: AXIS_TOP - 18 }}
+                style={{ left: x - 4, top: AXIS_Y - 15 }}
                 onMouseEnter={() => setGateHov(gate)}
                 onMouseLeave={() => setGateHov(null)}
               >
-                {/* Downward triangle */}
-                <div
-                  style={{
-                    width:  0,
-                    height: 0,
-                    borderLeft:  "5px solid transparent",
-                    borderRight: "5px solid transparent",
-                    borderTop:   `7px solid ${col}`,
-                    filter:      `drop-shadow(0 0 3px ${col}99)`,
-                  }}
-                />
-                <p
-                  className="font-mono absolute whitespace-nowrap text-center"
-                  style={{
-                    fontSize:  "5.5px",
-                    color:     col,
-                    opacity:   0.7,
-                    top:       -10,
-                    left:      "50%",
-                    transform: "translateX(-50%)",
-                  }}
-                >
+                <div style={{
+                  width: 0, height: 0,
+                  borderLeft: "4px solid transparent",
+                  borderRight: "4px solid transparent",
+                  borderTop: `6px solid ${col}`,
+                  filter: `drop-shadow(0 0 2px ${col}aa)`,
+                }} />
+                <p style={{
+                  position: "absolute",
+                  fontSize: "5px",
+                  fontFamily: "monospace",
+                  color: col,
+                  opacity: 0.7,
+                  top: -9,
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  whiteSpace: "nowrap",
+                  letterSpacing: ".1em",
+                }}>
                   {gate.id}
                 </p>
               </div>
             );
           })}
 
-          {/* Gate hover tooltip — fixed so it doesn't get clipped */}
+          {/* Gate tooltip */}
           {gateHov && (
             <div
-              className="fixed bottom-[108px] left-1/2 -translate-x-1/2 z-50
+              className="fixed bottom-[92px] left-1/2 -translate-x-1/2 z-50
                          rounded-xl px-3 py-2.5 pointer-events-none max-w-[260px]"
               style={{
-                background:  "rgba(8,10,18,0.97)",
-                border:      `1px solid ${TIER_HEX[gateHov.tier]}45`,
-                boxShadow:   "0 8px 32px rgba(0,0,0,0.7)",
+                background: "rgba(8,10,18,0.97)",
+                border: `1px solid ${TIER_HEX[gateHov.tier]}45`,
+                boxShadow: "0 8px 32px rgba(0,0,0,0.7)",
               }}
             >
-              <p
-                className="font-mono text-[8px] tracking-[.14em] uppercase mb-1"
-                style={{ color: TIER_HEX[gateHov.tier] }}
-              >
+              <p className="font-mono text-[8px] tracking-[.14em] uppercase mb-1"
+                 style={{ color: TIER_HEX[gateHov.tier] }}>
                 {gateHov.id} · {gateHov.tier.toUpperCase()} · {gateHov.window}
               </p>
               <p className="font-syne font-bold text-[11px] text-text-base mb-1">{gateHov.trigger}</p>
@@ -312,67 +325,123 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
             </div>
           )}
 
-          {/* ── Event dots ────────────────────────────────────────────── */}
+          {/* ── Event dots with stems — alternating above/below ── */}
           {TIMELINE_EVENTS.map((evt, i) => {
             const yr       = parseYear(evt.year);
             const x        = yrToPx(yr);
             const col      = EVENT_COLORS[evt.colKey] ?? "#c9a84c";
             const isActive = activeEvt === evt;
             const isPred   = evt.predicted === true;
-            const dotSize  = isActive ? 12 : 8;
-            const dotLeft  = x - dotSize / 2;
-            const dotTop   = AXIS_TOP - dotSize / 2;
+
+            // Alternate above / below axis
+            const above    = i % 2 === 0;
+            const stemLen  = isActive ? 20 : 13;
+            const dotR     = isActive ? 5 : 3;
+
+            // Dot center Y
+            const dotCY = above
+              ? AXIS_Y - stemLen - dotR
+              : AXIS_Y + stemLen + dotR;
+
+            // Stem span
+            const stemTop    = above ? dotCY + dotR : AXIS_Y;
+            const stemHeight = stemLen;
+
+            // Label Y (outer side of dot, away from axis)
+            const labelY = above ? dotCY - dotR - 8 : dotCY + dotR + 2;
 
             return (
-              <div
-                key={i}
-                className="absolute z-20 pointer-events-none"
-                style={{ left: dotLeft, top: dotTop }}
-              >
-                {/* NOW pulse ring */}
+              <div key={i} className="absolute pointer-events-none z-20" style={{ left: x }}>
+
+                {/* Stem */}
+                <div
+                  className="absolute transition-all duration-200"
+                  style={{
+                    left: 0,
+                    top: stemTop,
+                    width: 1,
+                    height: stemHeight,
+                    background: isPred
+                      ? `repeating-linear-gradient(to ${above ? "bottom" : "top"},
+                           ${col}${isActive ? "88" : "40"} 0px,
+                           ${col}${isActive ? "88" : "40"} 2px,
+                           transparent 2px, transparent 4px)`
+                      : `linear-gradient(to ${above ? "bottom" : "top"},
+                           ${col}${isActive ? "bb" : "55"},
+                           ${col}${isActive ? "44" : "18"})`,
+                  }}
+                />
+
+                {/* NOW pulse halo */}
                 {evt.isNow && (
                   <div
                     className="absolute rounded-full animate-ping"
                     style={{
-                      inset:      -4,
+                      left: -dotR * 2,
+                      top: dotCY - dotR * 2,
+                      width: dotR * 4,
+                      height: dotR * 4,
                       background: col,
-                      opacity:    0.25,
+                      opacity: 0.18,
                     }}
                   />
                 )}
 
                 {/* Dot */}
                 <div
-                  className="rounded-full transition-all duration-200"
+                  className="absolute rounded-full transition-all duration-200"
                   style={{
-                    width:       dotSize,
-                    height:      dotSize,
-                    background:  isPred ? "transparent" : isActive ? col : `${col}cc`,
-                    border:      isPred
-                      ? `1.5px dashed ${col}${isActive ? "ff" : "88"}`
-                      : `2px solid rgba(5,8,10,0.6)`,
-                    boxShadow:   isActive
-                      ? `0 0 12px ${col}, 0 0 24px ${col}55`
-                      : `0 0 4px ${col}55`,
-                    opacity:     isPred && !isActive ? 0.55 : 1,
+                    left: -dotR,
+                    top: dotCY - dotR,
+                    width: dotR * 2,
+                    height: dotR * 2,
+                    background: isPred ? "transparent" : isActive ? col : `${col}cc`,
+                    border: isPred
+                      ? `1.5px dashed ${col}${isActive ? "ee" : "55"}`
+                      : `1px solid rgba(4,5,10,0.5)`,
+                    boxShadow: isActive
+                      ? `0 0 8px ${col}, 0 0 18px ${col}44`
+                      : `0 0 3px ${col}44`,
+                    opacity: isPred && !isActive ? 0.48 : 1,
                   }}
                 />
 
-                {/* Year label — below dot */}
-                <p
-                  className="font-mono absolute whitespace-nowrap text-center transition-all duration-200"
-                  style={{
-                    fontSize:  "6px",
-                    color:     isActive ? col : `${col}70`,
-                    top:       dotSize + 5,
-                    left:      "50%",
-                    transform: "translateX(-50%)",
-                    fontWeight: isActive ? "bold" : "normal",
-                    letterSpacing: ".04em",
-                  }}
-                >
-                  {evt.isNow ? "NOW" : yr}{isPred ? "~" : ""}
-                </p>
+                {/* Year + name label — only when active or isNow */}
+                {(isActive || evt.isNow) && (
+                  <p
+                    className="absolute font-mono whitespace-nowrap text-center transition-all duration-200"
+                    style={{
+                      fontSize: "5.5px",
+                      color: col,
+                      fontWeight: "bold",
+                      top: labelY,
+                      left: "50%",
+                      transform: "translateX(-50%)",
+                      letterSpacing: ".07em",
+                      textShadow: `0 0 8px ${col}88`,
+                    }}
+                  >
+                    {evt.isNow ? "NOW" : `${yr}${isPred ? "~" : ""}`}
+                  </p>
+                )}
+
+                {/* Inactive predicted year (dimmed) */}
+                {isPred && !isActive && (
+                  <p
+                    className="absolute font-mono whitespace-nowrap text-center"
+                    style={{
+                      fontSize: "5px",
+                      color: `${col}40`,
+                      top: labelY,
+                      left: "50%",
+                      transform: "translateX(-50%)",
+                      letterSpacing: ".04em",
+                    }}
+                  >
+                    {yr}~
+                  </p>
+                )}
+
               </div>
             );
           })}

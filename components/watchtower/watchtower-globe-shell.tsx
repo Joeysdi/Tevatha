@@ -124,7 +124,7 @@ export function WatchtowerGlobeShell() {
           </div>
         )}
 
-        {/* ── Timeline event card overlay (shows above the globe) ─────────── */}
+        {/* ── Timeline event card — floats at top of globe as user scrolls ── */}
         {timelineEvent && !intelOpen && !provisionerOpen && (
           <TimelineEventOverlay
             event={timelineEvent}
@@ -352,10 +352,7 @@ export function WatchtowerGlobeShell() {
       {/* ── Timeline bar ─────────────────────────────────────────────────── */}
       <GlobeTimeline
         activePhase={eraPhase}
-        onPhaseSelect={(phase) => {
-          setEraPhase(phase);
-          if (phase !== "P4") setTimelineEvent(null);
-        }}
+        onPhaseSelect={setEraPhase}
         onEventSelect={setTimelineEvent}
       />
     </div>
@@ -431,35 +428,85 @@ function TimelineEventOverlay({
   event:   TimelineEvent;
   onClose: () => void;
 }) {
-  const col = EVENT_COLORS[event.colKey] ?? "#c9a84c";
+  const col     = EVENT_COLORS[event.colKey] ?? "#c9a84c";
+  const yearStr = event.isNow ? "NOW · 2026" : event.year;
+  const isForecast = event.predicted === true;
+
   return (
-    <div className="absolute bottom-4 sm:bottom-[100px] left-1/2 -translate-x-1/2 z-20 w-[320px] max-w-[92vw]">
+    // Desktop: top-right float. Mobile: bottom strip.
+    <div className="absolute top-3 right-3 sm:top-4 sm:right-14 z-25 w-[290px] max-w-[88vw]
+                    bottom-auto sm:bottom-auto left-auto">
       <div
-        className="rounded-xl overflow-hidden backdrop-blur-md"
+        className="rounded-2xl overflow-hidden backdrop-blur-md"
         style={{
-          background: "rgba(11,13,24,0.93)",
-          border:     `1px solid ${col}44`,
-          boxShadow:  `0 8px 40px rgba(0,0,0,0.7)`,
+          background: "rgba(7,9,16,0.94)",
+          border:     `1px solid ${col}38`,
+          boxShadow:  `0 0 0 1px rgba(255,255,255,0.03) inset, 0 12px 40px rgba(0,0,0,0.75), 0 0 24px ${col}14`,
         }}
       >
-        <div className="h-px w-full" style={{ background: `linear-gradient(90deg,${col},transparent)` }} />
-        <div className="px-4 py-3">
-          <div className="flex items-start justify-between gap-2 mb-1.5">
-            <p className="font-mono text-[8px] tracking-[.2em] uppercase" style={{ color: col }}>
-              {event.year === "2026" || event.isNow ? "NOW · 2026" : event.year}
-            </p>
+        {/* Color accent line */}
+        <div style={{ height: 2, background: `linear-gradient(90deg, ${col}, ${col}22, transparent)` }} />
+
+        <div className="px-4 pt-3 pb-3.5">
+          {/* Top row: year + badges + close */}
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <div className="flex items-center gap-2">
+              <span
+                className="font-mono tabular-nums text-[8px] tracking-[.18em] font-bold"
+                style={{ color: col }}
+              >
+                {yearStr}
+              </span>
+              {isForecast && (
+                <span
+                  className="font-mono text-[6px] tracking-[.16em] px-1.5 py-0.5 rounded-full border"
+                  style={{ color: `${col}cc`, borderColor: `${col}44`, background: `${col}12` }}
+                >
+                  FORECAST
+                </span>
+              )}
+              <span
+                className="font-mono text-[6px] tracking-[.12em] uppercase px-1.5 py-0.5 rounded"
+                style={{
+                  color: event.sev === "critical" ? "#e84040" : event.sev === "high" ? "#f0a500" : "#38bdf8",
+                  background: event.sev === "critical" ? "rgba(232,64,64,0.12)" : event.sev === "high" ? "rgba(240,165,0,0.1)" : "rgba(56,189,248,0.1)",
+                }}
+              >
+                {event.sev}
+              </span>
+            </div>
             <button
               onClick={onClose}
-              className="font-mono text-[9px] text-text-mute2 hover:text-text-base transition-colors"
+              className="flex-shrink-0 font-mono text-[10px] text-text-mute2/50
+                         hover:text-text-mute2 transition-colors leading-none"
             >
               ✕
             </button>
           </div>
-          <h3 className="font-syne font-bold text-[12px] text-text-base leading-snug mb-1.5">
+
+          {/* Event title */}
+          <h3
+            className="font-syne font-bold leading-snug mb-2"
+            style={{ fontSize: "13px", color: "rgba(220,225,235,0.95)" }}
+          >
             {event.label}
           </h3>
-          <p className="font-mono text-[9.5px] text-text-dim leading-relaxed">
+
+          {/* Signal text */}
+          <p className="font-mono text-[9px] text-text-dim leading-relaxed">
             {event.signal}
+          </p>
+
+          {/* Bottom connector line */}
+          <div
+            className="mt-3 h-px"
+            style={{ background: `linear-gradient(90deg, ${col}30, transparent)` }}
+          />
+          <p
+            className="font-mono text-[6px] tracking-[.14em] uppercase mt-1.5"
+            style={{ color: `${col}55` }}
+          >
+            ← scroll timeline to explore →
           </p>
         </div>
       </div>
