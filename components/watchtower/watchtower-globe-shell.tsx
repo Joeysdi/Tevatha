@@ -29,7 +29,7 @@ export function WatchtowerGlobeShell() {
   const [intelOpen,        setIntelOpen]        = useState(false);
   const [provisionerOpen,  setProvisionerOpen]  = useState(false);
   const [intelTab,         setIntelTab]         = useState<IntelTab>("hub");
-  const [provisionerTab,   setProvisionerTab]   = useState<ProvisionerTab>("gear");
+  const [provisionerTab,   setProvisionerTab]   = useState<ProvisionerTab>("products");
   const [eraPhase,         setEraPhase]         = useState("P4");
   const [timelineEvent,    setTimelineEvent]    = useState<TimelineEvent | null>(null);
 

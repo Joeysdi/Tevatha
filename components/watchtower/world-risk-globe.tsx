@@ -584,6 +584,17 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
           polygonStrokeColor={() => "#0a1520"}
           polygonAltitude={altitude}
           onPolygonHover={handleHover as (f: object | null, p: object | null) => void}
+          onPolygonClick={(feat: object) => {
+            const f    = feat as GeoFeature;
+            const name = f.properties?.name;
+            if (name) {
+              window.open(
+                `https://news.google.com/search?q=${encodeURIComponent(name)}`,
+                "_blank",
+                "noopener,noreferrer",
+              );
+            }
+          }}
           polygonsTransitionDuration={300}
 
           ringsData={activeRings}
@@ -709,6 +720,12 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
                   ))}
                 </div>
               </div>
+
+              <div className="mt-3 pt-2.5 border-t border-border-protocol/40">
+                <p className="font-mono text-[7.5px] text-text-mute2/50 text-center tracking-[.1em]">
+                  Click country · Latest news ↗
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -723,15 +740,40 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
       </div>
 
       {/* ── Loading veil ─────────────────────────────────────────────────── */}
-      {!globeReady && dims.w > 0 && (
+      {!globeReady && (
         <div className="absolute inset-0 flex items-center justify-center bg-void-0 z-30">
-          <div className="text-center space-y-4">
-            <p className="font-mono text-[10px] tracking-[.24em] text-text-mute2 animate-pulse">
-              INITIALIZING GLOBE...
+          {/* Radial glow */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{ background: "radial-gradient(circle at 50% 50%, rgba(232,64,64,0.05) 0%, transparent 65%)" }}
+          />
+          <div className="text-center relative">
+            {/* Concentric pulse rings */}
+            <div className="relative w-28 h-28 mx-auto mb-6">
+              <div className="absolute inset-0 rounded-full border border-red-protocol/18 animate-ping"
+                   style={{ animationDuration: "2.2s" }} />
+              <div className="absolute inset-3 rounded-full border border-red-protocol/14 animate-ping"
+                   style={{ animationDuration: "2.6s", animationDelay: "0.4s" }} />
+              <div className="absolute inset-6 rounded-full border border-red-bright/16 animate-ping"
+                   style={{ animationDuration: "1.9s", animationDelay: "0.8s" }} />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center">
+                  <span className="font-syne font-extrabold text-[11px] text-red-bright/40 tracking-[.3em] block">ARK</span>
+                  <span className="font-mono text-[7px] text-text-mute2/40 tracking-[.2em]">TEVATHA</span>
+                </div>
+              </div>
+            </div>
+
+            <p className="font-mono text-[7.5px] tracking-[.3em] uppercase text-text-mute2/60 mb-1">
+              Watchtower · Global Risk Map
             </p>
-            <div className="w-36 h-px bg-border-protocol mx-auto relative overflow-hidden">
+            <p className="font-mono text-[9.5px] tracking-[.18em] uppercase text-red-bright/60 animate-pulse mb-5">
+              Initializing Globe...
+            </p>
+
+            <div className="w-48 h-px bg-border-protocol/40 mx-auto relative overflow-hidden rounded-full">
               <div
-                className="absolute inset-y-0 w-20 bg-gradient-to-r from-transparent via-red-bright/70 to-transparent"
+                className="absolute inset-y-0 w-24 bg-gradient-to-r from-transparent via-red-bright/60 to-transparent"
                 style={{ animation: "slideRight 1.4s ease-in-out infinite" }}
               />
             </div>
