@@ -89,10 +89,10 @@ export function WatchtowerGlobeShell() {
           />
         </div>
 
-        {/* ── Keyboard shortcut hints (bottom-center, show on first load) ── */}
+        {/* ── Keyboard shortcut hints (desktop only) ──────────────────────── */}
         {!intelOpen && !provisionerOpen && (
-          <div className="absolute bottom-[8px] left-1/2 -translate-x-1/2 z-10
-                          flex items-center gap-3 pointer-events-none">
+          <div className="hidden sm:flex absolute bottom-[8px] left-1/2 -translate-x-1/2 z-10
+                          items-center gap-3 pointer-events-none">
             <KeyHint label="◄ INTEL" onClick={() => {}} />
             <KeyHint label="TIMELINE ▼" onClick={() => {}} />
             <KeyHint label="SHOP ►" onClick={() => {}} />
@@ -132,8 +132,8 @@ export function WatchtowerGlobeShell() {
           />
         )}
 
-        {/* ── Protocol trigger — bottom left ──────────────────────────────── */}
-        <div className="absolute bottom-[92px] left-3 z-20">
+        {/* ── Protocol trigger — bottom left (desktop only) ───────────────── */}
+        <div className="hidden sm:block absolute bottom-[92px] left-3 z-20">
           <button
             onClick={() => setProtocolOpen(!protocolOpen)}
             className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg
@@ -149,8 +149,8 @@ export function WatchtowerGlobeShell() {
           </button>
         </div>
 
-        {/* ── Globe mode controls — scenario + psychology + signals ─────────── */}
-        <div className="absolute top-4 left-4 z-20 flex flex-col gap-1.5" style={{ top: "48px" }}>
+        {/* ── Globe mode controls — desktop only ───────────────────────────── */}
+        <div className="hidden sm:flex absolute left-4 z-20 flex-col gap-1.5" style={{ top: "48px" }}>
           {/* Scenario selector */}
           <div
             className="rounded-xl overflow-hidden backdrop-blur-sm"
@@ -214,7 +214,7 @@ export function WatchtowerGlobeShell() {
 
         {/* ── Signal info overlay (shown when signal pin clicked) ────────────── */}
         {selectedSignalIdx !== null && SIGNALS[selectedSignalIdx] && (
-          <div className="absolute bottom-[100px] left-1/2 -translate-x-1/2 z-20 w-[340px] max-w-[90vw]">
+          <div className="absolute bottom-4 sm:bottom-[100px] left-1/2 -translate-x-1/2 z-20 w-[340px] max-w-[92vw]">
             <div
               className="rounded-xl overflow-hidden backdrop-blur-md"
               style={{
@@ -261,8 +261,10 @@ export function WatchtowerGlobeShell() {
           </div>
         )}
 
-        {/* ── UTC clock overlay — top-right of globe ──────────────────────── */}
-        <LiveClock />
+        {/* ── UTC clock overlay — desktop only ────────────────────────────── */}
+        <div className="hidden sm:block">
+          <LiveClock />
+        </div>
 
         {/* ── Panels ──────────────────────────────────────────────────────── */}
         <GlobeIntelPanel
@@ -278,6 +280,70 @@ export function WatchtowerGlobeShell() {
           onTabChange={setProvisionerTab}
         />
         <GlobeProtocolPanel open={protocolOpen} onClose={() => setProtocolOpen(false)} />
+      </div>
+
+      {/* ── Mobile control bar (hidden sm+) ─────────────────────────────── */}
+      <div className="flex sm:hidden flex-shrink-0 items-center gap-1.5 px-2 py-1.5
+                      bg-void-1 border-t border-border-protocol/60 overflow-x-auto scrollbar-none"
+           // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           style={{ WebkitOverflowScrolling: "touch" } as any}>
+
+        {/* Protocol */}
+        <button
+          onClick={() => setProtocolOpen(!protocolOpen)}
+          className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg border font-mono text-[9px] transition-all
+                      ${protocolOpen
+                        ? "bg-cyan-DEFAULT/12 border-cyan-border text-cyan-DEFAULT"
+                        : "bg-void-3 border-border-protocol text-text-mute2"}`}
+        >
+          <span className={`w-1 h-1 rounded-full flex-shrink-0 ${protocolOpen ? "bg-cyan-DEFAULT animate-pulse" : "bg-text-mute2/40"}`} />
+          Protocol
+        </button>
+
+        <div className="w-px h-4 bg-border-protocol/60 flex-shrink-0" />
+
+        {/* Scenario chips */}
+        {SCENARIO_IMPACTS.map((s) => {
+          const active = scenarioId === s.id;
+          return (
+            <button
+              key={s.id}
+              onClick={() => setScenarioId(active ? null : s.id)}
+              className={`flex-shrink-0 px-2.5 py-1.5 rounded-lg border font-mono text-[9px] transition-all
+                          ${active
+                            ? "bg-red-protocol/20 border-red-protocol/40 text-red-bright"
+                            : "bg-void-3 border-border-protocol text-text-mute2"}`}
+            >
+              {s.id}
+            </button>
+          );
+        })}
+
+        <div className="w-px h-4 bg-border-protocol/60 flex-shrink-0" />
+
+        {/* Psychology */}
+        <button
+          onClick={() => setPsychologyMode(!psychologyMode)}
+          className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg border font-mono text-[9px] transition-all
+                      ${psychologyMode
+                        ? "border-purple-500/50 text-purple-300"
+                        : "bg-void-3 border-border-protocol text-text-mute2"}`}
+          style={{ background: psychologyMode ? "rgba(138,43,226,0.15)" : undefined }}
+        >
+          🧠 Psych
+        </button>
+
+        {/* Signals */}
+        <button
+          onClick={() => setShowSignals(!showSignals)}
+          className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg border font-mono text-[9px] transition-all
+                      ${showSignals
+                        ? "border-red-protocol/50 text-red-bright"
+                        : "bg-void-3 border-border-protocol text-text-mute2"}`}
+          style={{ background: showSignals ? "rgba(232,64,64,0.12)" : undefined }}
+        >
+          📡 Signals
+        </button>
       </div>
 
       {/* ── Signal ticker strip (above timeline) ────────────────────────── */}
@@ -326,7 +392,7 @@ function PanelTrigger({
   return (
     <button
       onClick={onClick}
-      className={`py-5 px-2.5 ${rounded} flex flex-col items-center gap-1.5
+      className={`py-3 sm:py-5 px-2.5 ${rounded} flex flex-col items-center gap-1.5
                   transition-all duration-200 backdrop-blur-sm
                   ${open ? cls.active : cls.idle}`}
     >
@@ -367,7 +433,7 @@ function TimelineEventOverlay({
 }) {
   const col = EVENT_COLORS[event.colKey] ?? "#c9a84c";
   return (
-    <div className="absolute bottom-[100px] left-1/2 -translate-x-1/2 z-20 w-[320px] max-w-[90vw]">
+    <div className="absolute bottom-4 sm:bottom-[100px] left-1/2 -translate-x-1/2 z-20 w-[320px] max-w-[92vw]">
       <div
         className="rounded-xl overflow-hidden backdrop-blur-md"
         style={{

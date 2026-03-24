@@ -83,7 +83,7 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
   };
 
   return (
-    <div className="h-[86px] flex-shrink-0 bg-void-1 border-t border-border-protocol relative overflow-hidden select-none">
+    <div className="h-[72px] sm:h-[86px] flex-shrink-0 bg-void-1 border-t border-border-protocol relative overflow-hidden select-none">
 
       {/* Label */}
       <div className="absolute top-1.5 left-3 z-10 pointer-events-none">
