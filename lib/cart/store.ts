@@ -73,13 +73,9 @@ export const useCart = create<CartStore>()(
 );
 
 export function cartTotal(items: CartItem[]): number {
-  return items
-    .filter((i) => !i.highTicket)
-    .reduce((sum, i) => sum + i.priceUsd * i.qty, 0);
+  return items.reduce((sum, i) => sum + i.priceUsd * i.qty, 0);
 }
 
 export function cartTotalUsdc(items: CartItem[]): number {
-  return items
-    .filter((i) => i.highTicket)
-    .reduce((sum, i) => sum + i.priceUsdc * i.qty, 0);
+  return items.reduce((sum, i) => sum + i.priceUsdc * i.qty, 0);
 }

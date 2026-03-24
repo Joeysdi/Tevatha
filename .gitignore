@@ -22,3 +22,10 @@ yarn-error.log*
 .DS_Store
 *.pem
 .vercel
+
+# Prevent product images accidentally committed to repo root
+/*.jpg
+/*.jpeg
+/*.png
+/*.webp
+/*.gif

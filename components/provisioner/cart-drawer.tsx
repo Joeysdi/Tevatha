@@ -26,33 +26,46 @@ const PRODUCT_IMAGES: Record<string, string> = {
   "faraday-xl":           "/products/faraday-xl.jpg",
 };
 
+type CheckoutMode = "cart" | "stripe" | "usdc";
+
 export function CartDrawer() {
   const { items, open, setOpen, removeItem, updateQty, clearCart } = useCart();
   const overlayRef = useRef<HTMLDivElement>(null);
-  const [checkingOut, setCheckingOut] = useState(false);
+  const [mode, setMode] = useState<CheckoutMode>("cart");
+  // Which item's USDC checkout is expanded (null = none)
+  const [usdcItem, setUsdcItem] = useState<string | null>(null);
 
-  const cardItems = items.filter((i) => !i.highTicket);
-  const usdcItems = items.filter((i) => i.highTicket);
   const totalUsd  = cartTotal(items);
   const totalUsdc = cartTotalUsdc(items);
 
-  // Reset checkout view when drawer closes
+  // Reset to cart view when drawer closes
   useEffect(() => {
-    if (!open) setCheckingOut(false);
+    if (!open) { setMode("cart"); setUsdcItem(null); }
   }, [open]);
 
-  // Close on Escape (but not when Stripe form is open — let Stripe handle Escape)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !checkingOut) setOpen(false);
+      if (e.key === "Escape" && mode === "cart") setOpen(false);
     };
     if (open) document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [open, checkingOut, setOpen]);
+  }, [open, mode, setOpen]);
 
   const handleOverlayClick = (e: React.MouseEvent) => {
-    if (e.target === overlayRef.current && !checkingOut) setOpen(false);
+    if (e.target === overlayRef.current && mode === "cart") setOpen(false);
   };
+
+  const headerLabel = mode === "stripe"
+    ? "Secure Card Checkout"
+    : mode === "usdc"
+      ? "USDC / Solana Checkout"
+      : "Cart";
+
+  const headerSub = mode === "stripe"
+    ? "Powered by Stripe · TLS encrypted"
+    : mode === "usdc"
+      ? "Solana Pay · No counterparty risk"
+      : `${items.length} ${items.length === 1 ? "item" : "items"}`;
 
   return (
     <AnimatePresence>
@@ -89,143 +102,158 @@ export function CartDrawer() {
             <div className="flex items-center justify-between px-5 py-4 border-b border-border-protocol flex-shrink-0">
               <div>
                 <h2 className="font-syne font-bold text-[16px] text-text-base">
-                  {checkingOut ? "Secure Payment" : "Cart"}
+                  {headerLabel}
                 </h2>
                 <p className="font-mono text-[9px] text-text-mute2 tracking-[.14em] uppercase mt-0.5">
-                  {checkingOut
-                    ? "Powered by Stripe · TLS encrypted"
-                    : `${items.length} ${items.length === 1 ? "item" : "items"}`}
+                  {headerSub}
                 </p>
               </div>
               <button
-                onClick={() => (checkingOut ? setCheckingOut(false) : setOpen(false))}
+                onClick={() => mode !== "cart" ? setMode("cart") : setOpen(false)}
                 className="w-8 h-8 flex items-center justify-center rounded-lg
                            border border-border-protocol text-text-mute2
                            hover:text-text-base hover:border-border-bright/40 transition-colors"
-                aria-label={checkingOut ? "Back to cart" : "Close cart"}
+                aria-label={mode !== "cart" ? "Back to cart" : "Close cart"}
               >
-                {checkingOut ? "←" : "✕"}
+                {mode !== "cart" ? "←" : "✕"}
               </button>
             </div>
 
             {/* ── Body ────────────────────────────────────────────────────── */}
-            {checkingOut ? (
-              // ── EMBEDDED CHECKOUT VIEW ──────────────────────────────────
+            {mode === "stripe" ? (
               <div className="flex-1 overflow-y-auto px-5 py-4">
                 <StripeEmbeddedCheckout
-                  items={cardItems}
-                  onClose={() => setCheckingOut(false)}
+                  items={items}
+                  onClose={() => setMode("cart")}
                 />
               </div>
-            ) : (
-              // ── CART ITEMS VIEW ─────────────────────────────────────────
-              <>
-                <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
-                  {items.length === 0 && (
-                    <div className="flex flex-col items-center justify-center h-40 gap-3">
-                      <span className="font-mono text-[28px] opacity-20">🛒</span>
-                      <p className="font-mono text-[10px] text-text-mute2 tracking-[.08em]">
-                        YOUR CART IS EMPTY
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Card rail items */}
-                  {cardItems.length > 0 && (
-                    <div>
-                      {usdcItems.length > 0 && (
-                        <p className="font-mono text-[9px] text-gold-protocol tracking-[.14em] uppercase mb-2">
-                          Card Rail
+            ) : mode === "usdc" ? (
+              // ── USDC checkout view ─────────────────────────────────────
+              <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+                <p className="font-mono text-[10px] text-text-mute2 leading-relaxed">
+                  Each item generates a unique Solana Pay invoice. Scan the QR code
+                  or open in your wallet. Settle in USDC on Solana.
+                </p>
+                {items.map((item) => (
+                  <div key={item.id}
+                       className="rounded-xl border border-cyan-border/40 bg-void-2 p-4 space-y-3">
+                    {/* Item header */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="font-syne font-bold text-[12px] text-text-base truncate">
+                          {item.name}
                         </p>
-                      )}
-                      <div className="space-y-2">
-                        {cardItems.map((item) => (
-                          <CartItemRow
-                            key={item.id}
-                            item={item}
-                            onRemove={() => removeItem(item.id)}
-                            onQtyChange={(q) => updateQty(item.id, q)}
-                          />
-                        ))}
+                        <p className="font-mono text-[9px] text-text-mute2">{item.sku}</p>
                       </div>
-                    </div>
-                  )}
-
-                  {/* USDC rail items */}
-                  {usdcItems.length > 0 && (
-                    <div>
-                      {cardItems.length > 0 && (
-                        <p className="font-mono text-[9px] text-cyan-DEFAULT tracking-[.14em] uppercase mb-2 mt-4">
-                          USDC Rail
-                        </p>
-                      )}
-                      <div className="space-y-2">
-                        {usdcItems.map((item) => (
-                          <CartItemRow
-                            key={item.id}
-                            item={item}
-                            onRemove={() => removeItem(item.id)}
-                            onQtyChange={(q) => updateQty(item.id, q)}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* ── Footer ────────────────────────────────────────────── */}
-                {items.length > 0 && (
-                  <div className="flex-shrink-0 px-5 py-4 border-t border-border-protocol space-y-3">
-                    {/* Totals */}
-                    <div className="space-y-1.5">
-                      {totalUsd > 0 && (
-                        <div className="flex items-center justify-between">
-                          <span className="font-mono text-[10px] text-text-mute2">Card total</span>
-                          <span className="font-mono text-[14px] font-bold text-gold-bright">
-                            ${(totalUsd / 100).toFixed(2)}
-                          </span>
-                        </div>
-                      )}
-                      {totalUsdc > 0 && (
-                        <div className="flex items-center justify-between">
-                          <span className="font-mono text-[10px] text-text-mute2">USDC total</span>
-                          <span className="font-mono text-[14px] font-bold text-cyan-DEFAULT">
-                            {totalUsdc.toFixed(2)} USDC
-                          </span>
-                        </div>
-                      )}
+                      <span className="font-mono text-[13px] font-bold text-cyan-DEFAULT flex-shrink-0">
+                        {(item.priceUsdc * item.qty).toFixed(2)} USDC
+                      </span>
                     </div>
 
-                    {/* Card checkout — opens embedded Stripe form in-drawer */}
-                    {cardItems.length > 0 && (
-                      <button
-                        onClick={() => setCheckingOut(true)}
-                        className="w-full bg-gold-protocol text-void-0 font-mono font-bold
-                                   text-[11px] tracking-[.06em] px-4 py-2.5 rounded-lg
-                                   transition-all duration-150 hover:bg-gold-bright hover:-translate-y-0.5
-                                   hover:shadow-[0_8px_24px_rgba(201,168,76,0.3)]"
-                      >
-                        CHECKOUT — CARD ${(totalUsd / 100).toFixed(2)}
-                      </button>
-                    )}
-
-                    {/* USDC checkout — per item (Solana Pay) */}
-                    {usdcItems.map((item) => (
-                      <div key={item.id} className="rounded-xl border border-cyan-border/40 p-3 space-y-2">
-                        <p className="font-mono text-[9px] text-cyan-DEFAULT tracking-[.1em] uppercase">
-                          {item.name} — USDC checkout
-                        </p>
+                    {/* Expand / collapse USDC form */}
+                    {usdcItem === item.id ? (
+                      <>
                         <SolanaCheckout
                           productId={item.id}
                           productName={item.name}
                           priceUsdc={item.priceUsdc * item.qty}
                           onSuccess={() => {
                             removeItem(item.id);
+                            setUsdcItem(null);
                             if (items.length <= 1) setOpen(false);
                           }}
                         />
+                        <button
+                          onClick={() => setUsdcItem(null)}
+                          className="w-full font-mono text-[10px] text-text-mute2
+                                     hover:text-text-dim transition-colors text-center"
+                        >
+                          ← collapse
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={() => setUsdcItem(item.id)}
+                        className="w-full bg-cyan-DEFAULT/10 text-cyan-DEFAULT font-mono
+                                   font-bold text-[11px] tracking-[.06em] px-4 py-2.5
+                                   rounded-lg border border-cyan-border
+                                   hover:bg-cyan-dim transition-all duration-150"
+                      >
+                        ◎ PAY {(item.priceUsdc * item.qty).toFixed(2)} USDC
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              // ── Cart items view ─────────────────────────────────────────
+              <>
+                <div className="flex-1 overflow-y-auto px-5 py-4 space-y-2">
+                  {items.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-40 gap-3">
+                      <span className="font-mono text-[28px] opacity-20">🛒</span>
+                      <p className="font-mono text-[10px] text-text-mute2 tracking-[.08em]">
+                        YOUR CART IS EMPTY
+                      </p>
+                    </div>
+                  ) : (
+                    items.map((item) => (
+                      <CartItemRow
+                        key={item.id}
+                        item={item}
+                        onRemove={() => removeItem(item.id)}
+                        onQtyChange={(q) => updateQty(item.id, q)}
+                      />
+                    ))
+                  )}
+                </div>
+
+                {/* ── Footer ────────────────────────────────────────────── */}
+                {items.length > 0 && (
+                  <div className="flex-shrink-0 px-5 py-4 border-t border-border-protocol space-y-3">
+                    {/* Totals row */}
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-[10px] text-text-mute2">
+                        {items.reduce((s, i) => s + i.qty, 0)} item{items.reduce((s, i) => s + i.qty, 0) !== 1 ? "s" : ""}
+                      </span>
+                      <div className="flex items-center gap-3">
+                        <span className="font-mono text-[13px] font-bold text-gold-bright">
+                          ${(totalUsd / 100).toFixed(2)}
+                        </span>
+                        <span className="font-mono text-[9px] text-text-mute2">or</span>
+                        <span className="font-mono text-[13px] font-bold text-cyan-DEFAULT">
+                          {totalUsdc.toFixed(2)} USDC
+                        </span>
                       </div>
-                    ))}
+                    </div>
+
+                    {/* Rail label */}
+                    <p className="font-mono text-[9px] text-text-mute2 text-center tracking-[.1em] uppercase">
+                      Choose your payment rail
+                    </p>
+
+                    {/* Card checkout */}
+                    <button
+                      onClick={() => setMode("stripe")}
+                      className="w-full bg-gold-protocol text-void-0 font-mono font-bold
+                                 text-[11px] tracking-[.06em] px-4 py-2.5 rounded-lg
+                                 transition-all duration-150 hover:bg-gold-bright hover:-translate-y-0.5
+                                 hover:shadow-[0_8px_24px_rgba(201,168,76,0.3)]"
+                    >
+                      💳 PAY WITH CARD — ${(totalUsd / 100).toFixed(2)}
+                    </button>
+
+                    {/* USDC checkout */}
+                    <button
+                      onClick={() => setMode("usdc")}
+                      className="w-full bg-cyan-DEFAULT/10 text-cyan-DEFAULT font-mono font-bold
+                                 text-[11px] tracking-[.06em] px-4 py-2.5 rounded-lg
+                                 border border-cyan-border
+                                 transition-all duration-150 hover:bg-cyan-dim hover:-translate-y-0.5
+                                 hover:shadow-[0_8px_24px_rgba(0,212,255,0.2)]"
+                    >
+                      ◎ PAY WITH USDC — {totalUsdc.toFixed(2)} USDC
+                    </button>
 
                     {/* Clear */}
                     <button
@@ -258,9 +286,6 @@ function CartItemRow({
   onQtyChange: (qty: number) => void;
 }) {
   const imgSrc = PRODUCT_IMAGES[item.imageSlug];
-  const price  = item.highTicket
-    ? `${(item.priceUsdc * item.qty).toFixed(2)} USDC`
-    : `$${((item.priceUsd * item.qty) / 100).toFixed(2)}`;
 
   return (
     <div className="flex items-center gap-3 bg-void-2 border border-border-protocol
@@ -280,13 +305,15 @@ function CartItemRow({
           {item.name}
         </p>
         <p className="font-mono text-[9px] text-text-mute2">{item.sku}</p>
+        {/* Both prices */}
+        <p className="font-mono text-[9px] text-text-mute2 mt-0.5">
+          <span className="text-gold-protocol">${((item.priceUsd * item.qty) / 100).toFixed(2)}</span>
+          <span className="mx-1 opacity-40">·</span>
+          <span className="text-cyan-DEFAULT">{(item.priceUsdc * item.qty).toFixed(2)} USDC</span>
+        </p>
       </div>
 
       <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-        <span className={`font-mono text-[11px] font-bold
-          ${item.highTicket ? "text-cyan-DEFAULT" : "text-gold-bright"}`}>
-          {price}
-        </span>
         <div className="flex items-center gap-1">
           <button
             onClick={() => onQtyChange(item.qty - 1)}

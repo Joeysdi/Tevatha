@@ -63,6 +63,7 @@ export const CATALOG: Product[] = [
     criticalFlag:false,
     spec:"100Mbps+. 1kg portable dish. Powers Ark coordination from anywhere.",
     buildNote:"Tier 2 community backbone. Requires active Starlink subscription.",
+    stripePriceId:"price_1TETh3AQV21Gk5RwbSTJCVzr",
     imageSlug:"starlink-mini",
   },
 
@@ -106,6 +107,7 @@ export const CATALOG: Product[] = [
     criticalFlag:false,
     spec:"1,264Wh LFP. Powers fridge 4h, CPAP 14h. 2-hour recharge. 2,000-cycle life.",
     buildNote:"Tier 1 go-bag power station. Add Nomad 100 for solar input.",
+    stripePriceId:"price_1TEUHCAQV21Gk5RwrTg0OO0i",
     imageSlug:"jackery-1000plus",
   },
   {
@@ -115,6 +117,7 @@ export const CATALOG: Product[] = [
     criticalFlag:false,
     spec:"3,600Wh LFP. 2,400W AC output. Expandable to 25kWh. 3,500-cycle life.",
     buildNote:"Tier 2 sanctuary essential. Pair with Renogy 400W array.",
+    stripePriceId:"price_1TEUHEAQV21Gk5RwQ7lnNsGR",
     imageSlug:"ecoflow-delta-pro",
   },
   {
@@ -124,6 +127,7 @@ export const CATALOG: Product[] = [
     criticalFlag:false,
     spec:"4×100W mono panels + 40A MPPT controller. 1.6kWh/day moderate sun.",
     buildNote:"Starting point for off-grid solar. Scales to 2kW array.",
+    stripePriceId:"price_1TEUHGAQV21Gk5RwU6Kj9KXD",
     imageSlug:"renogy-400w",
   },
 

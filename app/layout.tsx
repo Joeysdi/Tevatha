@@ -1,6 +1,4 @@
 // app/layout.tsx
-export const dynamic = "force-dynamic";
-
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { cinzel, inter, jetbrains, syne } from "@/lib/fonts";

@@ -200,16 +200,11 @@ function ProductCard({ product: p }: { product: Product }) {
           </div>
 
           <div className="text-right flex-shrink-0">
-            <div className={`font-syne font-bold text-[19px] leading-none
-              ${p.highTicket ? "text-cyan-DEFAULT" : "text-gold-protocol"}`}>
-              <FadeIn>
-                {p.highTicket
-                  ? `${p.priceUsdc.toFixed(2)}`
-                  : `$${(p.priceUsd / 100).toFixed(2)}`}
-              </FadeIn>
+            <div className="font-syne font-bold text-[19px] leading-none text-gold-protocol">
+              <FadeIn>${(p.priceUsd / 100).toFixed(2)}</FadeIn>
             </div>
-            <div className="font-mono text-[9px] text-text-mute2 mt-1">
-              {p.highTicket ? "USDC" : "USD"}
+            <div className="font-mono text-[9px] text-cyan-DEFAULT mt-0.5">
+              <FadeIn delay={0.05}>◎ {p.priceUsdc.toFixed(2)} USDC</FadeIn>
             </div>
           </div>
         </div>
@@ -245,18 +240,14 @@ function ProductCard({ product: p }: { product: Product }) {
                      px-4 py-2.5 rounded-lg transition-all duration-150
                      ${added
                        ? "bg-green-bright/20 text-green-bright border border-green-bright/30"
-                       : p.highTicket
-                         ? "bg-cyan-DEFAULT/10 text-cyan-DEFAULT border border-cyan-border hover:bg-cyan-dim"
-                         : "bg-gold-protocol text-void-0 hover:bg-gold-bright hover:-translate-y-0.5"
+                       : "bg-gold-protocol text-void-0 hover:bg-gold-bright hover:-translate-y-0.5"
                      }
                      disabled:opacity-40 disabled:cursor-not-allowed`}
         >
           {added
             ? "✓ ADDED TO CART"
             : p.inStock
-              ? p.highTicket
-                ? `ADD TO CART — ${p.priceUsdc.toFixed(2)} USDC`
-                : `ADD TO CART — $${(p.priceUsd / 100).toFixed(2)}`
+              ? `ADD TO CART — $${(p.priceUsd / 100).toFixed(2)}`
               : "OUT OF STOCK"}
         </button>
       </div>

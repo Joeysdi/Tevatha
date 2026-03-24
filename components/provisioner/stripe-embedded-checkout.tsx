@@ -29,7 +29,7 @@ export function StripeEmbeddedCheckout({ items, onClose }: Props) {
   const lineItems = useMemo(
     () =>
       items
-        .filter((i) => !i.highTicket && !!i.stripePriceId)
+        .filter((i) => !!i.stripePriceId)
         .map((i) => ({ priceId: i.stripePriceId!, qty: i.qty })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [] // intentionally empty — snapshot on mount, do not recreate session on re-render
