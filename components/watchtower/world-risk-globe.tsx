@@ -164,8 +164,9 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
   const globeRef     = useRef<GlobeMethods | undefined>(undefined);
   const [dims,       setDims]       = useState({ w: 0, h: 0 });
   const [countries,  setCountries]  = useState<GeoFeature[]>([]);
-  const [hovered,    setHovered]    = useState<GeoFeature | null>(null);
-  const [globeReady, setGlobeReady] = useState(false);
+  const [hovered,      setHovered]      = useState<GeoFeature | null>(null);
+  const [selectedFeat, setSelectedFeat] = useState<GeoFeature | null>(null);
+  const [globeReady,   setGlobeReady]   = useState(false);
 
   const isHistorical = eraPhase !== "P4";
 
@@ -563,6 +564,41 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
     return risk;
   }, [hovered, eraByIso, scenarioMap]);
 
+  // ── Selected (clicked) card ───────────────────────────────────────────────
+  const selectedCard = useMemo(() => {
+    if (!selectedFeat) return null;
+    const iso = String(parseInt(String(selectedFeat.id ?? "0"), 10));
+
+    if (scenarioMap) {
+      const impact = scenarioMap[iso];
+      if (!impact) return null;
+      const level: RiskLevel = impact.role === "primary" ? "CRITICAL" : "HIGH";
+      return {
+        name:      selectedFeat.properties?.name ?? `ISO ${iso}`,
+        level,
+        score:     level === "CRITICAL" ? 95 : 72,
+        domain:    impact.role === "primary" ? "PRIMARY TARGET" : "CASCADE IMPACT",
+        trend:     "↑" as const,
+        incidents: [impact.note],
+      };
+    }
+
+    if (eraByIso) {
+      const eraC = eraByIso[iso];
+      if (!eraC) return null;
+      return {
+        name:      selectedFeat.properties?.name ?? `ISO ${iso}`,
+        level:     eraC.level as RiskLevel,
+        score:     eraC.score,
+        domain:    "Historical",
+        trend:     "→" as const,
+        incidents: [eraC.note],
+      };
+    }
+
+    return lookupRisk(selectedFeat);
+  }, [selectedFeat, eraByIso, scenarioMap]);
+
   return (
     <div ref={containerRef} className="w-full h-full relative bg-void-0 overflow-hidden select-none">
 
@@ -585,14 +621,10 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
           polygonAltitude={altitude}
           onPolygonHover={handleHover as (f: object | null, p: object | null) => void}
           onPolygonClick={(feat: object) => {
-            const f    = feat as GeoFeature;
-            const name = f.properties?.name;
-            if (name) {
-              window.open(
-                `https://news.google.com/search?q=${encodeURIComponent(name)}`,
-                "_blank",
-                "noopener,noreferrer",
-              );
+            const f = feat as GeoFeature;
+            setSelectedFeat((prev) => (prev?.id === f.id ? null : f));
+            if (globeRef.current) {
+              (globeRef.current.controls() as { autoRotate: boolean }).autoRotate = false;
             }
           }}
           polygonsTransitionDuration={300}
@@ -654,9 +686,9 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
         </div>
       )}
 
-      {/* ── Hover info overlay ───────────────────────────────────────────── */}
-      {hoveredCard && (
-        <div className="absolute top-4 right-4 w-[288px] z-20 pointer-events-none">
+      {/* ── Hover info overlay (desktop preview — hidden when country selected) ── */}
+      {hoveredCard && !selectedFeat && (
+        <div className="absolute top-4 right-4 w-[288px] z-20 pointer-events-none hidden sm:block">
           <div
             className="rounded-xl overflow-hidden backdrop-blur-md"
             style={{
@@ -722,9 +754,143 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
               </div>
 
               <div className="mt-3 pt-2.5 border-t border-border-protocol/40">
-                <p className="font-mono text-[7.5px] text-text-mute2/50 text-center tracking-[.1em]">
-                  Click country · Latest news ↗
+                <p className="font-mono text-[7.5px] text-text-mute2/40 text-center tracking-[.1em]">
+                  Click to open full report + news
                 </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Selected country card (click-locked, with news links) ────────── */}
+      {selectedCard && (
+        <div className="absolute bottom-4 sm:top-4 sm:bottom-auto
+                        left-3 right-3 sm:left-auto sm:right-4 sm:w-[308px] z-25">
+          <div
+            className="rounded-xl overflow-hidden backdrop-blur-md"
+            style={{
+              background: "rgba(8,10,18,0.97)",
+              border:     `1px solid ${RISK_COLORS[selectedCard.level].fill}70`,
+              boxShadow:  `0 12px 48px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.04) inset`,
+            }}
+          >
+            {/* Accent line */}
+            <div className="h-px w-full"
+                 style={{ background: `linear-gradient(90deg,${RISK_COLORS[selectedCard.level].hover},transparent)` }} />
+
+            <div className="p-4">
+              {/* Header row */}
+              <div className="flex items-start justify-between gap-2 mb-3">
+                <div className="min-w-0 flex-1">
+                  <p className="font-mono text-[8px] tracking-[.22em] uppercase mb-0.5"
+                     style={{ color: RISK_COLORS[selectedCard.level].hover }}>
+                    {selectedCard.level} · {selectedCard.domain}
+                  </p>
+                  <h3 className="font-syne font-bold text-[16px] text-text-base leading-snug">
+                    {selectedCard.name}
+                  </h3>
+                </div>
+                <div className="flex items-start gap-2 flex-shrink-0">
+                  <div className="text-right">
+                    <div className="font-syne font-extrabold text-[28px] leading-none tabular-nums"
+                         style={{ color: RISK_COLORS[selectedCard.level].hover }}>
+                      {selectedCard.score}
+                    </div>
+                    <div className="font-mono text-[8px] text-text-mute2">/100</div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setSelectedFeat(null);
+                      if (globeRef.current) {
+                        (globeRef.current.controls() as { autoRotate: boolean }).autoRotate = true;
+                      }
+                    }}
+                    className="w-6 h-6 mt-0.5 rounded-md border border-border-protocol/60
+                               text-text-mute2 hover:text-text-base hover:border-border-bright/40
+                               font-mono text-[10px] flex items-center justify-center transition-colors"
+                  >✕</button>
+                </div>
+              </div>
+
+              {/* Score bar */}
+              <div className="flex items-center gap-2 mb-3">
+                <div className="flex-1 h-1 rounded-full bg-void-3 overflow-hidden">
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width:      `${selectedCard.score}%`,
+                      background:  RISK_COLORS[selectedCard.level].hover,
+                      boxShadow:  `0 0 8px ${RISK_COLORS[selectedCard.level].glow}`,
+                    }}
+                  />
+                </div>
+                <span className="font-mono text-[10px] flex-shrink-0"
+                      style={{ color: RISK_COLORS[selectedCard.level].fill }}>
+                  {selectedCard.trend}
+                </span>
+              </div>
+
+              {/* Incidents */}
+              <div className="mb-3">
+                <p className="font-mono text-[7.5px] tracking-[.18em] uppercase text-text-mute2 mb-2">
+                  {scenarioId ? "Scenario Impact" : isHistorical ? "Historical Context" : "Active Incidents"}
+                </p>
+                <div className="space-y-1.5">
+                  {selectedCard.incidents.map((inc, i) => (
+                    <div key={i} className="flex items-start gap-1.5">
+                      <span className="font-mono text-[9px] mt-[2px] flex-shrink-0"
+                            style={{ color: RISK_COLORS[selectedCard.level].fill }}>▸</span>
+                      <p className="font-mono text-[9px] text-text-dim leading-relaxed">{inc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* News buttons */}
+              <div className="border-t border-border-protocol/40 pt-3 space-y-2">
+                <p className="font-mono text-[7px] tracking-[.2em] uppercase text-text-mute2/60 mb-2">
+                  Latest News
+                </p>
+                <a
+                  href={`https://news.google.com/search?q=${encodeURIComponent(selectedCard.name + " security military threat")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between w-full px-3 py-2 rounded-lg
+                             border border-red-protocol/30 bg-red-protocol/8
+                             text-red-bright font-mono text-[9px] font-bold
+                             hover:border-red-protocol/55 hover:bg-red-protocol/14
+                             transition-all duration-150"
+                >
+                  <span>☢ Threat &amp; Security</span>
+                  <span className="text-[10px] opacity-70">↗</span>
+                </a>
+                <a
+                  href={`https://news.google.com/search?q=${encodeURIComponent(selectedCard.name + " economy finance sanctions")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between w-full px-3 py-2 rounded-lg
+                             border border-gold-protocol/30 bg-gold-glow/50
+                             text-gold-protocol font-mono text-[9px] font-bold
+                             hover:border-gold-protocol/55 hover:bg-gold-glow
+                             transition-all duration-150"
+                >
+                  <span>💰 Economy &amp; Finance</span>
+                  <span className="text-[10px] opacity-70">↗</span>
+                </a>
+                <a
+                  href={`https://news.google.com/search?q=${encodeURIComponent(selectedCard.name)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between w-full px-3 py-2 rounded-lg
+                             border border-border-protocol bg-void-3/60
+                             text-text-mute2 font-mono text-[9px]
+                             hover:border-border-bright/40 hover:text-text-base
+                             transition-all duration-150"
+                >
+                  <span>🌐 All Latest News</span>
+                  <span className="text-[10px] opacity-60">↗</span>
+                </a>
               </div>
             </div>
           </div>
