@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { GradeBadge } from "@/components/provisioner/grade-badge";
 import { CATALOG } from "@/lib/provisioner/catalog";
 import { FadeUp, StaggerParent, StaggerChild } from "@/components/ui/motion";
@@ -96,12 +97,10 @@ const THREAT_DOMAINS: ThreatDomainDef[] = [
   },
 ];
 
-// ── Price formatter ───────────────────────────────────────────────────────────
+// ── Price formatters ──────────────────────────────────────────────────────────
 
-function fmtPrice(p: Product): string {
-  if (p.highTicket) return `${p.priceUsdc.toFixed(2)} USDC`;
-  return `$${(p.priceUsd / 100).toFixed(2)}`;
-}
+function fmtUsd(p: Product): string  { return `$${(p.priceUsd / 100).toFixed(2)}`; }
+function fmtUsdc(p: Product): string { return `${p.priceUsdc.toFixed(2)} USDC`; }
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
@@ -287,12 +286,11 @@ export default function GearPage() {
               {/* Price + rail */}
               <div className="flex items-center justify-between gap-2 mt-auto">
                 <div>
-                  <span className={`font-mono text-[15px] font-bold
-                    ${p.highTicket ? "text-cyan-DEFAULT" : "text-gold-bright"}`}>
-                    {fmtPrice(p)}
+                  <span className="font-mono text-[15px] font-bold text-gold-bright">
+                    {fmtUsd(p)}
                   </span>
-                  <span className="font-mono text-[9px] text-text-mute2 ml-1.5">
-                    {p.highTicket ? "USDC RAIL" : "CARD RAIL"}
+                  <span className="font-mono text-[9px] text-cyan-DEFAULT ml-2">
+                    ◎ {fmtUsdc(p)}
                   </span>
                 </div>
                 <button

@@ -52,9 +52,12 @@ export default function TimelinePage() {
       {/* Phase bar — purely decorative, static server render */}
       <section className="bg-void-1 border border-border-protocol rounded-[10px]
                            p-4.5 mb-5">
-        <h2 className="font-syne font-bold text-base text-text-base mb-3">
-          Phase Overview — 1945 to Resolution
-        </h2>
+        <div className="flex items-center gap-3 mb-3">
+          <h2 className="font-syne font-bold text-[17px] text-text-base whitespace-nowrap">
+            Phase Overview — 1945 to Resolution
+          </h2>
+          <div className="flex-1 h-px bg-border-protocol" />
+        </div>
         <div className="flex rounded-lg overflow-hidden border border-border-protocol">
           {PHASE_COLORS.map((p) => (
             <div
@@ -78,9 +81,12 @@ export default function TimelinePage() {
       {/* Timeline events */}
       <section className="bg-void-1 border border-border-protocol rounded-[10px]
                            p-4.5 mb-5">
-        <h2 className="font-syne font-bold text-base text-text-base mb-4">
-          Key Event Nodes
-        </h2>
+        <div className="flex items-center gap-3 mb-4">
+          <h2 className="font-syne font-bold text-[17px] text-text-base whitespace-nowrap">
+            Key Event Nodes
+          </h2>
+          <div className="flex-1 h-px bg-border-protocol" />
+        </div>
         <div className="relative pl-0">
           {/* Spine */}
           <div

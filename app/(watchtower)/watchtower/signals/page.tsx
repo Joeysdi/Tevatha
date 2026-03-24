@@ -52,9 +52,12 @@ export default function SignalsPage() {
       {/* Daily schedule — static server render */}
       <section className="bg-void-1 border border-border-protocol rounded-[10px]
                            p-4.5 mb-5">
-        <h2 className="font-syne font-bold text-base text-text-base mb-3.5">
-          Daily Monitoring Schedule
-        </h2>
+        <div className="flex items-center gap-3 mb-3.5">
+          <h2 className="font-syne font-bold text-[17px] text-text-base whitespace-nowrap">
+            Daily Monitoring Schedule
+          </h2>
+          <div className="flex-1 h-px bg-border-protocol" />
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
             <thead>
@@ -102,9 +105,12 @@ export default function SignalsPage() {
           className="bg-void-1 border border-border-protocol rounded-[10px]
                       p-4.5 mb-4"
         >
-          <h2 className="font-syne font-bold text-base text-text-base mb-3.5">
-            {cat.cat} — Alarm Conditions
-          </h2>
+          <div className="flex items-center gap-3 mb-3.5">
+            <h2 className="font-syne font-bold text-[17px] text-text-base whitespace-nowrap">
+              {cat.cat} — Alarm Conditions
+            </h2>
+            <div className="flex-1 h-px bg-border-protocol" />
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
