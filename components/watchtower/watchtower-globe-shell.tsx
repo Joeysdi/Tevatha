@@ -2,13 +2,15 @@
 "use client";
 
 import { useState } from "react";
-import { WorldRiskGlobe }   from "./world-risk-globe";
-import { GlobeIntelPanel }  from "./globe-intel-panel";
-import { GlobePrepPanel }   from "./globe-prep-panel";
-import { GlobeTimeline }    from "./globe-timeline";
-import type { IntelTab }    from "./globe-intel-panel";
-import type { PrepTab }     from "./globe-prep-panel";
-import type { TimelineEvent } from "@/lib/watchtower/data";
+import { WorldRiskGlobe }      from "./world-risk-globe";
+import { GlobeIntelPanel }     from "./globe-intel-panel";
+import { GlobePrepPanel }      from "./globe-prep-panel";
+import { GlobeTimeline }       from "./globe-timeline";
+import { GlobeProtocolPanel }  from "./globe-protocol-panel";
+import { GlobeEnvoyPanel }     from "./globe-envoy-panel";
+import type { IntelTab }       from "./globe-intel-panel";
+import type { PrepTab }        from "./globe-prep-panel";
+import type { TimelineEvent }  from "@/lib/watchtower/data";
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -27,6 +29,12 @@ export function WatchtowerGlobeShell() {
   const [prepTab,   setPrepTab]   = useState<PrepTab>("gear");
   const [eraPhase,  setEraPhase]  = useState("P4");
   const [timelineEvent, setTimelineEvent] = useState<TimelineEvent | null>(null);
+
+  // New state for scenario mode, signal pins, and bottom panels
+  const [scenarioId,   setScenarioId]   = useState<string | null>(null);
+  const [showSignals,  setShowSignals]  = useState(false);
+  const [protocolOpen, setProtocolOpen] = useState(false);
+  const [envoyOpen,    setEnvoyOpen]    = useState(false);
 
   const openIntel = (tab?: IntelTab) => {
     if (tab) setIntelTab(tab);
@@ -59,7 +67,12 @@ export function WatchtowerGlobeShell() {
       <div className="flex-1 relative overflow-hidden min-h-0">
 
         {/* Globe itself */}
-        <WorldRiskGlobe eraPhase={eraPhase} timelineEvent={timelineEvent} />
+        <WorldRiskGlobe
+          eraPhase={eraPhase}
+          timelineEvent={timelineEvent}
+          scenarioId={scenarioId}
+          showSignals={showSignals}
+        />
 
         {/* ── Intel (left) panel trigger ─────────────────────────────────── */}
         <div className="absolute left-0 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-0.5">
@@ -94,7 +107,7 @@ export function WatchtowerGlobeShell() {
         )}
 
         {/* ── Historical era badge (top-center when not P4) ──────────────── */}
-        {isHistorical && (
+        {isHistorical && !scenarioId && (
           <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
             <div
               className="flex items-center gap-2 rounded-full px-3.5 py-1.5 backdrop-blur-sm"
@@ -126,12 +139,50 @@ export function WatchtowerGlobeShell() {
           />
         )}
 
+        {/* ── Protocol trigger — bottom left ──────────────────────────────── */}
+        <div className="absolute bottom-[92px] left-3 z-20">
+          <button
+            onClick={() => { setProtocolOpen(!protocolOpen); setEnvoyOpen(false); }}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg
+                        border font-mono text-[8px] tracking-[.1em] uppercase
+                        transition-all duration-200 backdrop-blur-sm
+                        ${protocolOpen
+                          ? "bg-cyan-DEFAULT/12 border-cyan-border text-cyan-DEFAULT"
+                          : "bg-void-1/78 border-border-protocol text-text-mute2 hover:border-cyan-border/40 hover:text-text-base"
+                        }`}
+          >
+            <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${protocolOpen ? "bg-cyan-DEFAULT animate-pulse" : "bg-text-mute2/40"}`} />
+            Protocol
+          </button>
+        </div>
+
+        {/* ── Envoy trigger — bottom right ────────────────────────────────── */}
+        <div className="absolute bottom-[92px] right-3 z-20">
+          <button
+            onClick={() => { setEnvoyOpen(!envoyOpen); setProtocolOpen(false); }}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg
+                        border font-mono text-[8px] tracking-[.1em] uppercase
+                        transition-all duration-200 backdrop-blur-sm
+                        ${envoyOpen
+                          ? "bg-gold-glow border-gold-dim text-gold-bright"
+                          : "bg-void-1/78 border-border-protocol text-text-mute2 hover:border-gold-dim/40 hover:text-text-base"
+                        }`}
+          >
+            <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${envoyOpen ? "bg-gold-protocol animate-pulse" : "bg-text-mute2/40"}`} />
+            Envoy
+          </button>
+        </div>
+
         {/* ── Panels ──────────────────────────────────────────────────────── */}
         <GlobeIntelPanel
           open={intelOpen}
           onClose={() => setIntelOpen(false)}
           activeTab={intelTab}
           onTabChange={setIntelTab}
+          onScenarioSelect={setScenarioId}
+          activeScenarioId={scenarioId}
+          onSignalToggle={setShowSignals}
+          showSignals={showSignals}
         />
         <GlobePrepPanel
           open={prepOpen}
@@ -139,6 +190,8 @@ export function WatchtowerGlobeShell() {
           activeTab={prepTab}
           onTabChange={setPrepTab}
         />
+        <GlobeProtocolPanel open={protocolOpen} onClose={() => setProtocolOpen(false)} />
+        <GlobeEnvoyPanel    open={envoyOpen}    onClose={() => setEnvoyOpen(false)} />
       </div>
 
       {/* ── Timeline bar ─────────────────────────────────────────────────── */}

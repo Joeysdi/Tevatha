@@ -16,6 +16,9 @@ import {
 } from "@/lib/watchtower/era-risk";
 import type { EraPhase, EraCountry } from "@/lib/watchtower/era-risk";
 import type { TimelineEvent } from "@/lib/watchtower/data";
+import { SCENARIO_IMPACTS } from "@/lib/watchtower/scenario-impacts";
+import type { ScenarioCountryImpact } from "@/lib/watchtower/scenario-impacts";
+import { SIGNAL_PINS } from "@/lib/watchtower/signal-pins";
 
 // ─── Dynamic import — WebGL requires browser environment ──────────────────────
 const Globe = dynamic(() => import("react-globe.gl"), {
@@ -105,6 +108,13 @@ const CITY_HOTSPOTS: HeatPoint[] = [
 
 const ALL_HEAT_POINTS_P4 = [...HEAT_POINTS_P4, ...CITY_HOTSPOTS];
 
+// ─── Signal pin color map ──────────────────────────────────────────────────────
+const SIGNAL_PIN_COLORS = {
+  red:  "#e84040",
+  warn: "#f0a500",
+  info: "#38bdf8",
+} as const;
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface HeatPoint {
   lat:    number;
@@ -122,10 +132,12 @@ interface GeoFeature {
 interface Props {
   eraPhase:      string;
   timelineEvent: TimelineEvent | null;
+  scenarioId:    string | null;
+  showSignals:   boolean;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
-export function WorldRiskGlobe({ eraPhase, timelineEvent }: Props) {
+export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignals }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const globeRef     = useRef<GlobeMethods | undefined>(undefined);
   const [dims,       setDims]       = useState({ w: 0, h: 0 });
@@ -135,18 +147,51 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent }: Props) {
 
   const isHistorical = eraPhase !== "P4";
 
+  // ── Scenario map ──────────────────────────────────────────────────────────
+  const scenarioMap = useMemo<Record<string, ScenarioCountryImpact> | null>(() => {
+    if (!scenarioId) return null;
+    const scenario = SCENARIO_IMPACTS.find(s => s.id === scenarioId);
+    if (!scenario) return null;
+    const map: Record<string, ScenarioCountryImpact> = {};
+    for (const c of scenario.countries) map[c.iso] = c;
+    return map;
+  }, [scenarioId]);
+
   // ── Era lookup map ────────────────────────────────────────────────────────
   const eraByIso = useMemo<Record<string, EraCountry> | null>(() => {
+    if (scenarioId) return null; // scenario takes priority
     if (!isHistorical) return null;
     const map: Record<string, EraCountry> = {};
     for (const c of ERA_OVERRIDES[eraPhase as EraPhase] ?? []) {
       map[c.iso] = c;
     }
     return map;
-  }, [eraPhase, isHistorical]);
+  }, [eraPhase, isHistorical, scenarioId]);
 
-  // ── Era rings ─────────────────────────────────────────────────────────────
+  // ── Active rings ──────────────────────────────────────────────────────────
   const activeRings = useMemo(() => {
+    if (scenarioId) {
+      // Scenario rings: primary = CRITICAL glow, cascade = HIGH glow
+      const scenario = SCENARIO_IMPACTS.find(s => s.id === scenarioId);
+      if (!scenario) return [];
+      return scenario.countries
+        .filter(c => c.role === "primary" || c.role === "cascade")
+        .map(c => {
+          const risk = riskByIso[c.iso];
+          const lat  = risk?.lat ?? 0;
+          const lng  = risk?.lon ?? 0;
+          return {
+            lat,
+            lng,
+            maxR:             c.role === "primary" ? 4.5 : 2.8,
+            propagationSpeed: c.role === "primary" ? 2.0 : 1.3,
+            repeatPeriod:     c.role === "primary" ? 800  : 1200,
+            colFn:            () => c.role === "primary"
+              ? RISK_COLORS.CRITICAL.glow
+              : RISK_COLORS.HIGH.glow,
+          };
+        });
+    }
     if (!isHistorical) return PULSE_RINGS_P4;
     return (ERA_OVERRIDES[eraPhase as EraPhase] ?? [])
       .filter((c) => c.level === "CRITICAL" || c.level === "HIGH")
@@ -158,17 +203,49 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent }: Props) {
         repeatPeriod:     c.level === "CRITICAL" ? 800 : 1200,
         colFn:            () => RISK_COLORS[c.level as RiskLevel].glow,
       }));
-  }, [eraPhase, isHistorical]);
+  }, [eraPhase, isHistorical, scenarioId]);
 
-  // ── Era heatmap ───────────────────────────────────────────────────────────
+  // ── Active heatmap ────────────────────────────────────────────────────────
   const activeHeatPoints = useMemo(() => {
+    if (scenarioId) {
+      const scenario = SCENARIO_IMPACTS.find(s => s.id === scenarioId);
+      if (!scenario) return [];
+      return scenario.heatPoints;
+    }
     if (!isHistorical) return ALL_HEAT_POINTS_P4;
     return (ERA_OVERRIDES[eraPhase as EraPhase] ?? []).map((c) => ({
       lat:    c.lat,
       lng:    c.lon,
       weight: c.score / 100,
     }));
-  }, [eraPhase, isHistorical]);
+  }, [eraPhase, isHistorical, scenarioId]);
+
+  // ── Signal pin HTML elements ──────────────────────────────────────────────
+  const signalPinsData = useMemo(() => {
+    if (!showSignals) return [];
+    return SIGNAL_PINS.map(pin => ({
+      lat:    pin.lat,
+      lng:    pin.lng,
+      label:  pin.label,
+      colKey: pin.colKey,
+    }));
+  }, [showSignals]);
+
+  const htmlElement = useCallback((d: object) => {
+    const pin = d as { lat: number; lng: number; label: string; colKey: "red" | "warn" | "info" };
+    const colHex = SIGNAL_PIN_COLORS[pin.colKey];
+    const el = document.createElement("div");
+    el.style.cssText = `
+      width: 8px; height: 8px; border-radius: 50%;
+      background: ${colHex};
+      box-shadow: 0 0 8px ${colHex};
+      border: 1.5px solid rgba(255,255,255,0.4);
+      cursor: pointer;
+      animation: pulse 2s infinite;
+    `;
+    el.title = pin.label;
+    return el;
+  }, []);
 
   // ── Container sizing ─────────────────────────────────────────────────────
   useEffect(() => {
@@ -188,7 +265,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent }: Props) {
 
   // ── Load + parse TopoJSON ─────────────────────────────────────────────────
   useEffect(() => {
-    fetch("/world-110m.json")
+    fetch("/world-50m.json")
       .then((r) => r.json())
       .then(async (world) => {
         const { feature } = await import("topojson-client");
@@ -252,6 +329,14 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent }: Props) {
       const iso = String(parseInt(String(f.id ?? "0"), 10));
       const isHov = hovered && String(f.id) === String(hovered.id);
 
+      // Scenario mode takes priority over era mode
+      if (scenarioMap) {
+        const impact = scenarioMap[iso];
+        if (!impact) return ERA_NEUTRAL_FILL;
+        const level: RiskLevel = impact.role === "primary" ? "CRITICAL" : "HIGH";
+        return isHov ? RISK_COLORS[level].hover : RISK_COLORS[level].fill;
+      }
+
       if (eraByIso) {
         const eraC = eraByIso[iso];
         if (!eraC) return ERA_NEUTRAL_FILL;
@@ -262,7 +347,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent }: Props) {
       if (!risk) return NO_DATA_FILL;
       return isHov ? RISK_COLORS[risk.level].hover : RISK_COLORS[risk.level].fill;
     },
-    [hovered, eraByIso],
+    [hovered, eraByIso, scenarioMap],
   );
 
   const altitude = useCallback(
@@ -271,6 +356,11 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent }: Props) {
       const iso = String(parseInt(String(f.id ?? "0"), 10));
 
       const level: RiskLevel | null = (() => {
+        if (scenarioMap) {
+          const impact = scenarioMap[iso];
+          if (!impact) return null;
+          return impact.role === "primary" ? "CRITICAL" : "HIGH";
+        }
         if (eraByIso) return (eraByIso[iso]?.level as RiskLevel) ?? null;
         return lookupRisk(f)?.level ?? null;
       })();
@@ -281,13 +371,28 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent }: Props) {
       if (level === "ELEVATED") return 0.008;
       return 0.003;
     },
-    [eraByIso],
+    [eraByIso, scenarioMap],
   );
 
-  // ── Hover card data (era-aware) ───────────────────────────────────────────
+  // ── Hover card data ───────────────────────────────────────────────────────
   const hoveredCard = useMemo(() => {
     if (!hovered) return null;
     const iso = String(parseInt(String(hovered.id ?? "0"), 10));
+
+    // Scenario mode
+    if (scenarioMap) {
+      const impact = scenarioMap[iso];
+      if (!impact) return null;
+      const level: RiskLevel = impact.role === "primary" ? "CRITICAL" : "HIGH";
+      return {
+        name:      hovered.properties?.name ?? `ISO ${iso}`,
+        level,
+        score:     level === "CRITICAL" ? 95 : 72,
+        domain:    impact.role === "primary" ? "PRIMARY TARGET" : "CASCADE IMPACT",
+        trend:     "↑" as const,
+        incidents: [impact.note],
+      };
+    }
 
     if (eraByIso) {
       const eraC = eraByIso[iso];
@@ -304,7 +409,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent }: Props) {
 
     const risk = lookupRisk(hovered);
     return risk;
-  }, [hovered, eraByIso]);
+  }, [hovered, eraByIso, scenarioMap]);
 
   return (
     <div ref={containerRef} className="w-full h-full relative bg-void-0 overflow-hidden select-none">
@@ -346,7 +451,30 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent }: Props) {
             if (t < 0.55) return `rgba(232,64,64,${0.35 + ((t - 0.2) / 0.35) * 0.45})`;
             return        `rgba(255,20,60,${Math.min(0.92, 0.8 + (t - 0.55) * 0.27)})`;
           }}
+
+          htmlElementsData={signalPinsData}
+          htmlLat="lat"
+          htmlLng="lng"
+          htmlElement={htmlElement}
         />
+      )}
+
+      {/* ── Scenario mode badge ───────────────────────────────────────────── */}
+      {scenarioId && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
+          <div
+            className="flex items-center gap-2 rounded-full px-3.5 py-1.5 backdrop-blur-sm"
+            style={{
+              background: "rgba(11,13,24,0.88)",
+              border:     "1px solid rgba(232,64,64,0.4)",
+            }}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-red-bright animate-pulse" />
+            <p className="font-mono text-[8.5px] tracking-[.14em] uppercase text-red-bright">
+              Scenario · {SCENARIO_IMPACTS.find(s => s.id === scenarioId)?.title ?? scenarioId}
+            </p>
+          </div>
+        </div>
       )}
 
       {/* ── Hover info overlay ───────────────────────────────────────────── */}
@@ -403,7 +531,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent }: Props) {
 
               <div>
                 <p className="font-mono text-[7.5px] tracking-[.18em] uppercase text-text-mute2 mb-2">
-                  {isHistorical ? "Historical Context" : "Active Incidents"}
+                  {scenarioId ? "Scenario Impact" : isHistorical ? "Historical Context" : "Active Incidents"}
                 </p>
                 <div className="space-y-2">
                   {hoveredCard.incidents.map((inc, i) => (

@@ -1512,6 +1512,72 @@ export const COUNTRY_RISK: CountryRisk[] = [
       "Al-Shabaab pressure on eastern borders; Puntland territorial clashes ongoing",
     ],
   },
+
+  // ── Pacific & Polar Territories ────────
+  {
+    iso:"010", name:"Antarctica", level:"MODERATE", score:15, domain:"Climate", trend:"↑", lat:-80.0, lon:0.0,
+    incidents:[
+      "2026 record ice loss: West Antarctic Ice Sheet melt accelerating beyond IPCC worst-case",
+      "7 nations claim overlapping territorial sovereignty — treaty system under strain",
+      "96 research stations from 30 nations; climate data suggests 1.5°C threshold crossed",
+    ],
+  },
+  {
+    iso:"316", name:"Guam", level:"HIGH", score:72, domain:"Civil / Political", trend:"↑", lat:13.5, lon:144.8,
+    incidents:[
+      "Anderson AFB and Naval Base Guam: primary US forward strike position vs North Korea/China",
+      "China DF-26 'Guam killer' IRBM specifically designed to strike island — range confirmed",
+      "PLA targeting doctrine names Guam as priority strike in Taiwan Strait scenario",
+    ],
+  },
+  {
+    iso:"258", name:"French Polynesia", level:"MODERATE", score:25, domain:"Civil / Political", trend:"→", lat:-17.6, lon:-149.4,
+    incidents:[
+      "Nuclear test legacy: 193 French nuclear tests 1966–1996 — compensation law still contested",
+      "Independence movement gaining strength; Tavini party won 2023 elections",
+      "Rising sea levels threatening low-lying atolls; 3 islands already uninhabitable",
+    ],
+  },
+  {
+    iso:"584", name:"Marshall Islands", level:"HIGH", score:68, domain:"Climate", trend:"↑", lat:7.1, lon:171.1,
+    incidents:[
+      "Existential climate risk: highest point 2m above sea level — entire nation faces inundation",
+      "Bikini Atoll nuclear test legacy: radiation still above safe levels; islanders not resettled",
+      "Compact of Free Association renewal (2023) with US secured military basing rights",
+    ],
+  },
+  {
+    iso:"585", name:"Micronesia", level:"MODERATE", score:32, domain:"Climate", trend:"↑", lat:7.4, lon:150.6,
+    incidents:[
+      "Rising sea levels threatening freshwater lens on low-lying islands",
+      "Compact of Free Association with US: military exclusion zone; strategic Pacific position",
+      "Chinese fishing fleet IUU activities in EEZ despite bilateral agreements",
+    ],
+  },
+  {
+    iso:"520", name:"Nauru", level:"MODERATE", score:22, domain:"Climate", trend:"↑", lat:-0.5, lon:166.9,
+    incidents:[
+      "World's smallest island nation: 21km² — entire territory vulnerable to storm surge",
+      "Phosphate reserves exhausted 1990s; nation near-bankrupt until Australian detention deal",
+      "Taiwan recognition vs China pressure: foreign policy leverage disproportionate to size",
+    ],
+  },
+  {
+    iso:"798", name:"Tuvalu", level:"HIGH", score:70, domain:"Climate", trend:"↑", lat:-8.5, lon:179.2,
+    incidents:[
+      "First nation formally offered relocation: Falepili Union with Australia (2023) — climate refugee precedent",
+      "Maximum elevation 5m; king tides now regularly flood main island of Funafuti",
+      "Digital nation strategy: claim sovereignty even after physical inundation",
+    ],
+  },
+  {
+    iso:"598", name:"Papua New Guinea", level:"HIGH", score:67, domain:"Civil / Political", trend:"↑", lat:-6.3, lon:143.9,
+    incidents:[
+      "Highlands tribal warfare: 50+ killed in Enga Province Feb 2024 — worst in 40 years",
+      "LNG exports critical for Australia energy security; China infrastructure deals accelerating",
+      "UN: 2.3M food insecure; El Niño drought + conflict combining for humanitarian crisis",
+    ],
+  },
 ];
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
@@ -1526,6 +1592,14 @@ export const riskByName: Record<string, CountryRisk> = {
   "Kosovo":    COUNTRY_RISK.find((c) => c.iso === "xk")!,
   "N. Cyprus": COUNTRY_RISK.find((c) => c.iso === "nc-cy")!,
   "Somaliland":COUNTRY_RISK.find((c) => c.iso === "so-sl")!,
+  "Antarctica":       COUNTRY_RISK.find((c) => c.iso === "010")!,
+  "Guam":             COUNTRY_RISK.find((c) => c.iso === "316")!,
+  "French Polynesia": COUNTRY_RISK.find((c) => c.iso === "258")!,
+  "Marshall Is.":     COUNTRY_RISK.find((c) => c.iso === "584")!,
+  "Micronesia":       COUNTRY_RISK.find((c) => c.iso === "585")!,
+  "Nauru":            COUNTRY_RISK.find((c) => c.iso === "520")!,
+  "Tuvalu":           COUNTRY_RISK.find((c) => c.iso === "798")!,
+  "Papua New Guinea": COUNTRY_RISK.find((c) => c.iso === "598")!,
 };
 
 export const riskStats = {
