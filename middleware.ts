@@ -7,8 +7,6 @@ import { NextResponse, NextRequest } from "next/server";
 
 // ── Protected route groups ────────────────────────────────────────────────
 const isProtected = createRouteMatcher([
-  "/(watchtower)(.*)",
-  "/(provisioner)(.*)",
   "/(protocol)(.*)",
   "/api/protected(.*)",
 ]);
