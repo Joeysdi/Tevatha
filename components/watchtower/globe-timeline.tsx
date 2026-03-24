@@ -69,6 +69,21 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
     el.scrollLeft = yrToPx(NOW_YEAR) - el.clientWidth * 0.5;
   }, []);
 
+  // Mouse wheel → horizontal scroll (passive:false needed to preventDefault)
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        // Only hijack vertical scroll; if user is already scrolling horizontally let it pass
+        e.preventDefault();
+        el.scrollLeft += e.deltaY;
+      }
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, []);
+
   // Cleanup debounce
   useEffect(() => {
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
