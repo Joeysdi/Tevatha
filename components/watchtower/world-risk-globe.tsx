@@ -1,7 +1,7 @@
 // components/watchtower/world-risk-globe.tsx
 "use client";
 
-import { useRef, useEffect, useState, useCallback } from "react";
+import { useRef, useEffect, useState, useCallback, useMemo } from "react";
 import dynamic from "next/dynamic";
 import type { GlobeMethods } from "react-globe.gl";
 import {
@@ -10,6 +10,12 @@ import {
   NO_DATA_FILL,
 } from "@/lib/watchtower/geo-risk";
 import type { CountryRisk, RiskLevel } from "@/lib/watchtower/geo-risk";
+import {
+  ERA_OVERRIDES,
+  ERA_NEUTRAL_FILL,
+} from "@/lib/watchtower/era-risk";
+import type { EraPhase, EraCountry } from "@/lib/watchtower/era-risk";
+import type { TimelineEvent } from "@/lib/watchtower/data";
 
 // ─── Dynamic import — WebGL requires browser environment ──────────────────────
 const Globe = dynamic(() => import("react-globe.gl"), {
@@ -21,7 +27,7 @@ const Globe = dynamic(() => import("react-globe.gl"), {
           LOADING GLOBE...
         </p>
         <div className="w-40 h-px bg-border-protocol mx-auto relative overflow-hidden">
-          <div className="absolute inset-y-0 w-24 bg-gradient-to-r from-transparent via-red-bright/60 to-transparent animate-[shimmer_1.4s_ease-in-out_infinite]"
+          <div className="absolute inset-y-0 w-24 bg-gradient-to-r from-transparent via-red-bright/60 to-transparent"
                style={{ animation: "slideRight 1.4s ease-in-out infinite" }} />
         </div>
       </div>
@@ -46,8 +52,8 @@ function lookupRisk(feat: GeoFeature | null): CountryRisk | null {
   return riskByName[name] ?? null;
 }
 
-// ─── Animated ring data — pulsing on CRITICAL + HIGH ─────────────────────────
-const PULSE_RINGS = COUNTRY_RISK
+// ─── Base ring data (P4 / current) ───────────────────────────────────────────
+const PULSE_RINGS_P4 = COUNTRY_RISK
   .filter((c) => c.level === "CRITICAL" || c.level === "HIGH")
   .map((c) => ({
     lat:              c.lat,
@@ -58,14 +64,13 @@ const PULSE_RINGS = COUNTRY_RISK
     colFn:            () => RISK_COLORS[c.level].glow,
   }));
 
-// ─── Heatmap point data — all countries weighted by score ─────────────────────
-const HEAT_POINTS: HeatPoint[] = COUNTRY_RISK.map((c) => ({
+// ─── Base heatmap (P4 / current) ─────────────────────────────────────────────
+const HEAT_POINTS_P4: HeatPoint[] = COUNTRY_RISK.map((c) => ({
   lat:    c.lat,
   lng:    c.lon,
   weight: c.score / 100,
 }));
 
-// ─── City-level conflict hotspots (supplement country centroids) ──────────────
 const CITY_HOTSPOTS: HeatPoint[] = [
   { lat: 31.35, lng: 34.30, weight: 1.0   },  // Gaza City
   { lat: 33.51, lng: 36.29, weight: 0.90  },  // Damascus
@@ -98,7 +103,7 @@ const CITY_HOTSPOTS: HeatPoint[] = [
   { lat: 23.10, lng:113.25, weight: 0.58  },  // Guangdong
 ];
 
-const ALL_HEAT_POINTS = [...HEAT_POINTS, ...CITY_HOTSPOTS];
+const ALL_HEAT_POINTS_P4 = [...HEAT_POINTS_P4, ...CITY_HOTSPOTS];
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface HeatPoint {
@@ -113,15 +118,57 @@ interface GeoFeature {
   geometry?:   unknown;
 }
 
+// ─── Props ────────────────────────────────────────────────────────────────────
+interface Props {
+  eraPhase:      string;
+  timelineEvent: TimelineEvent | null;
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
-export function WorldRiskGlobe() {
+export function WorldRiskGlobe({ eraPhase, timelineEvent }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const globeRef     = useRef<GlobeMethods | undefined>(undefined);
   const [dims,       setDims]       = useState({ w: 0, h: 0 });
   const [countries,  setCountries]  = useState<GeoFeature[]>([]);
   const [hovered,    setHovered]    = useState<GeoFeature | null>(null);
   const [globeReady, setGlobeReady] = useState(false);
-  const hoveredRisk = lookupRisk(hovered);
+
+  const isHistorical = eraPhase !== "P4";
+
+  // ── Era lookup map ────────────────────────────────────────────────────────
+  const eraByIso = useMemo<Record<string, EraCountry> | null>(() => {
+    if (!isHistorical) return null;
+    const map: Record<string, EraCountry> = {};
+    for (const c of ERA_OVERRIDES[eraPhase as EraPhase] ?? []) {
+      map[c.iso] = c;
+    }
+    return map;
+  }, [eraPhase, isHistorical]);
+
+  // ── Era rings ─────────────────────────────────────────────────────────────
+  const activeRings = useMemo(() => {
+    if (!isHistorical) return PULSE_RINGS_P4;
+    return (ERA_OVERRIDES[eraPhase as EraPhase] ?? [])
+      .filter((c) => c.level === "CRITICAL" || c.level === "HIGH")
+      .map((c) => ({
+        lat:              c.lat,
+        lng:              c.lon,
+        maxR:             c.level === "CRITICAL" ? 4.5 : 2.8,
+        propagationSpeed: c.level === "CRITICAL" ? 2.0 : 1.3,
+        repeatPeriod:     c.level === "CRITICAL" ? 800 : 1200,
+        colFn:            () => RISK_COLORS[c.level as RiskLevel].glow,
+      }));
+  }, [eraPhase, isHistorical]);
+
+  // ── Era heatmap ───────────────────────────────────────────────────────────
+  const activeHeatPoints = useMemo(() => {
+    if (!isHistorical) return ALL_HEAT_POINTS_P4;
+    return (ERA_OVERRIDES[eraPhase as EraPhase] ?? []).map((c) => ({
+      lat:    c.lat,
+      lng:    c.lon,
+      weight: c.score / 100,
+    }));
+  }, [eraPhase, isHistorical]);
 
   // ── Container sizing ─────────────────────────────────────────────────────
   useEffect(() => {
@@ -175,6 +222,21 @@ export function WorldRiskGlobe() {
     }
   }, []);
 
+  // ── Fly to timeline event region when selected ────────────────────────────
+  useEffect(() => {
+    if (!globeRef.current || !timelineEvent) return;
+    // Find associated era country for lat/lon
+    const phase = eraPhase as EraPhase;
+    const overrides = ERA_OVERRIDES[phase] ?? [];
+    const match = overrides[0]; // fly to first notable country in this era
+    if (match) {
+      globeRef.current.pointOfView(
+        { lat: match.lat, lng: match.lon, altitude: 2.0 },
+        900,
+      );
+    }
+  }, [timelineEvent, eraPhase]);
+
   // ── Hover handler ─────────────────────────────────────────────────────────
   const handleHover = useCallback((feat: GeoFeature | null) => {
     setHovered(feat ?? null);
@@ -186,23 +248,63 @@ export function WorldRiskGlobe() {
   // ── Color + altitude accessors ────────────────────────────────────────────
   const capColor = useCallback(
     (feat: object): string => {
-      const f = feat as GeoFeature;
+      const f   = feat as GeoFeature;
+      const iso = String(parseInt(String(f.id ?? "0"), 10));
+      const isHov = hovered && String(f.id) === String(hovered.id);
+
+      if (eraByIso) {
+        const eraC = eraByIso[iso];
+        if (!eraC) return ERA_NEUTRAL_FILL;
+        return isHov ? RISK_COLORS[eraC.level as RiskLevel].hover : RISK_COLORS[eraC.level as RiskLevel].fill;
+      }
+
       const risk = lookupRisk(f);
       if (!risk) return NO_DATA_FILL;
-      const isHovered = hovered && String(f.id) === String(hovered.id);
-      return isHovered ? RISK_COLORS[risk.level].hover : RISK_COLORS[risk.level].fill;
+      return isHov ? RISK_COLORS[risk.level].hover : RISK_COLORS[risk.level].fill;
     },
-    [hovered],
+    [hovered, eraByIso],
   );
 
-  const altitude = useCallback((feat: object): number => {
-    const risk = lookupRisk(feat as GeoFeature);
-    if (!risk) return 0.001;
-    if (risk.level === "CRITICAL") return 0.032;
-    if (risk.level === "HIGH")     return 0.018;
-    if (risk.level === "ELEVATED") return 0.008;
-    return 0.003;
-  }, []);
+  const altitude = useCallback(
+    (feat: object): number => {
+      const f   = feat as GeoFeature;
+      const iso = String(parseInt(String(f.id ?? "0"), 10));
+
+      const level: RiskLevel | null = (() => {
+        if (eraByIso) return (eraByIso[iso]?.level as RiskLevel) ?? null;
+        return lookupRisk(f)?.level ?? null;
+      })();
+
+      if (!level) return 0.001;
+      if (level === "CRITICAL") return 0.032;
+      if (level === "HIGH")     return 0.018;
+      if (level === "ELEVATED") return 0.008;
+      return 0.003;
+    },
+    [eraByIso],
+  );
+
+  // ── Hover card data (era-aware) ───────────────────────────────────────────
+  const hoveredCard = useMemo(() => {
+    if (!hovered) return null;
+    const iso = String(parseInt(String(hovered.id ?? "0"), 10));
+
+    if (eraByIso) {
+      const eraC = eraByIso[iso];
+      if (!eraC) return null;
+      return {
+        name:      hovered.properties?.name ?? `ISO ${iso}`,
+        level:     eraC.level as RiskLevel,
+        score:     eraC.score,
+        domain:    "Historical",
+        trend:     "→" as const,
+        incidents: [eraC.note],
+      };
+    }
+
+    const risk = lookupRisk(hovered);
+    return risk;
+  }, [hovered, eraByIso]);
 
   return (
     <div ref={containerRef} className="w-full h-full relative bg-void-0 overflow-hidden select-none">
@@ -225,15 +327,15 @@ export function WorldRiskGlobe() {
           polygonStrokeColor={() => "#0a1520"}
           polygonAltitude={altitude}
           onPolygonHover={handleHover as (f: object | null, p: object | null) => void}
-          polygonsTransitionDuration={180}
+          polygonsTransitionDuration={300}
 
-          ringsData={PULSE_RINGS}
+          ringsData={activeRings}
           ringColor="colFn"
           ringMaxRadius="maxR"
           ringPropagationSpeed="propagationSpeed"
           ringRepeatPeriod="repeatPeriod"
 
-          heatmapsData={[ALL_HEAT_POINTS]}
+          heatmapsData={[activeHeatPoints]}
           heatmapPointLat="lat"
           heatmapPointLng="lng"
           heatmapPointWeight="weight"
@@ -248,82 +350,67 @@ export function WorldRiskGlobe() {
       )}
 
       {/* ── Hover info overlay ───────────────────────────────────────────── */}
-      {hoveredRisk && (
+      {hoveredCard && (
         <div className="absolute top-4 right-4 w-[288px] z-20 pointer-events-none">
           <div
             className="rounded-xl overflow-hidden backdrop-blur-md"
             style={{
               background: "rgba(11,13,24,0.94)",
-              border:     `1px solid ${RISK_COLORS[hoveredRisk.level].fill}55`,
+              border:     `1px solid ${RISK_COLORS[hoveredCard.level].fill}55`,
               boxShadow:  `0 8px 40px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.03) inset`,
             }}
           >
-            {/* Accent line */}
             <div
               className="h-px w-full"
-              style={{
-                background: `linear-gradient(90deg,${RISK_COLORS[hoveredRisk.level].hover},transparent)`,
-              }}
+              style={{ background: `linear-gradient(90deg,${RISK_COLORS[hoveredCard.level].hover},transparent)` }}
             />
             <div className="p-4">
-              {/* Country name + score */}
               <div className="flex items-start justify-between gap-3 mb-3">
                 <div className="min-w-0">
-                  <p
-                    className="font-mono text-[8px] tracking-[.22em] uppercase mb-1"
-                    style={{ color: RISK_COLORS[hoveredRisk.level].hover }}
-                  >
-                    {hoveredRisk.level} · {hoveredRisk.domain}
+                  <p className="font-mono text-[8px] tracking-[.22em] uppercase mb-1"
+                     style={{ color: RISK_COLORS[hoveredCard.level].hover }}>
+                    {hoveredCard.level} · {hoveredCard.domain}
                   </p>
                   <h3 className="font-syne font-bold text-[15px] text-text-base leading-snug">
-                    {hoveredRisk.name}
+                    {hoveredCard.name}
                   </h3>
                 </div>
                 <div className="flex-shrink-0 text-right">
-                  <div
-                    className="font-syne font-extrabold text-[28px] leading-none tabular-nums"
-                    style={{ color: RISK_COLORS[hoveredRisk.level].hover }}
-                  >
-                    {hoveredRisk.score}
+                  <div className="font-syne font-extrabold text-[28px] leading-none tabular-nums"
+                       style={{ color: RISK_COLORS[hoveredCard.level].hover }}>
+                    {hoveredCard.score}
                   </div>
                   <div className="font-mono text-[8px] text-text-mute2 text-right">/100</div>
                 </div>
               </div>
 
-              {/* Risk score bar */}
               <div className="flex items-center gap-2 mb-3.5">
                 <div className="flex-1 h-1 rounded-full bg-void-3 overflow-hidden">
                   <div
                     className="h-full rounded-full"
                     style={{
-                      width:     `${hoveredRisk.score}%`,
-                      background: RISK_COLORS[hoveredRisk.level].hover,
-                      boxShadow: `0 0 8px ${RISK_COLORS[hoveredRisk.level].glow}`,
+                      width:     `${hoveredCard.score}%`,
+                      background: RISK_COLORS[hoveredCard.level].hover,
+                      boxShadow: `0 0 8px ${RISK_COLORS[hoveredCard.level].glow}`,
                     }}
                   />
                 </div>
-                <span className="font-mono text-[10px] flex-shrink-0" style={{ color: RISK_COLORS[hoveredRisk.level].fill }}>
-                  {hoveredRisk.trend}
+                <span className="font-mono text-[10px] flex-shrink-0"
+                      style={{ color: RISK_COLORS[hoveredCard.level].fill }}>
+                  {hoveredCard.trend}
                 </span>
               </div>
 
-              {/* Incident feed */}
               <div>
                 <p className="font-mono text-[7.5px] tracking-[.18em] uppercase text-text-mute2 mb-2">
-                  Active Incidents
+                  {isHistorical ? "Historical Context" : "Active Incidents"}
                 </p>
                 <div className="space-y-2">
-                  {hoveredRisk.incidents.map((inc, i) => (
+                  {hoveredCard.incidents.map((inc, i) => (
                     <div key={i} className="flex items-start gap-1.5">
-                      <span
-                        className="font-mono text-[9px] mt-[2px] flex-shrink-0"
-                        style={{ color: RISK_COLORS[hoveredRisk.level].fill }}
-                      >
-                        ▸
-                      </span>
-                      <p className="font-mono text-[9.5px] text-text-dim leading-relaxed">
-                        {inc}
-                      </p>
+                      <span className="font-mono text-[9px] mt-[2px] flex-shrink-0"
+                            style={{ color: RISK_COLORS[hoveredCard.level].fill }}>▸</span>
+                      <p className="font-mono text-[9.5px] text-text-dim leading-relaxed">{inc}</p>
                     </div>
                   ))}
                 </div>
@@ -333,76 +420,9 @@ export function WorldRiskGlobe() {
         </div>
       )}
 
-      {/* ── Stats — top left ─────────────────────────────────────────────── */}
-      <div className="absolute top-4 left-4 z-20 flex flex-wrap gap-1.5 pointer-events-none">
-        {(["CRITICAL", "HIGH", "ELEVATED", "MODERATE"] as RiskLevel[]).map((level) => {
-          const count = COUNTRY_RISK.filter((c) => c.level === level).length;
-          return (
-            <div
-              key={level}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg backdrop-blur-sm"
-              style={{
-                background:  "rgba(11,13,24,0.88)",
-                border:      `1px solid ${RISK_COLORS[level].fill}44`,
-              }}
-            >
-              <span
-                className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                style={{
-                  background: RISK_COLORS[level].hover,
-                  boxShadow:  `0 0 5px ${RISK_COLORS[level].glow}`,
-                }}
-              />
-              <span
-                className="font-mono font-bold text-[13px] tabular-nums leading-none"
-                style={{ color: RISK_COLORS[level].hover }}
-              >
-                {count}
-              </span>
-              <span
-                className="font-mono text-[8px] tracking-[.1em] uppercase"
-                style={{ color: RISK_COLORS[level].fill }}
-              >
-                {level}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* ── Legend — bottom left ──────────────────────────────────────────── */}
-      <div className="absolute bottom-5 left-4 z-20 pointer-events-none">
-        <div
-          className="rounded-xl px-3.5 py-3 backdrop-blur-sm"
-          style={{
-            background: "rgba(11,13,24,0.88)",
-            border:     "1px solid rgba(255,255,255,0.07)",
-          }}
-        >
-          <p className="font-mono text-[7px] tracking-[.22em] uppercase text-text-mute2 mb-2.5">
-            Risk Level
-          </p>
-          <div className="space-y-2">
-            {(["CRITICAL", "HIGH", "ELEVATED", "MODERATE"] as RiskLevel[]).map((level) => (
-              <div key={level} className="flex items-center gap-2">
-                <span
-                  className="w-3 h-2 rounded-[2px] flex-shrink-0"
-                  style={{ background: RISK_COLORS[level].fill }}
-                />
-                <span className="font-mono text-[8.5px] text-text-mute2">{level}</span>
-              </div>
-            ))}
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-2 rounded-[2px] flex-shrink-0" style={{ background: NO_DATA_FILL }} />
-              <span className="font-mono text-[8.5px] text-text-mute2">NO DATA</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Bottom credits ────────────────────────────────────────────────── */}
-      <div className="absolute bottom-5 right-4 z-20 pointer-events-none">
-        <p className="font-mono text-[8px] text-text-mute2/40 text-right leading-relaxed">
+      {/* ── Bottom-right credits ──────────────────────────────────────────── */}
+      <div className="absolute bottom-[100px] right-4 z-20 pointer-events-none">
+        <p className="font-mono text-[7.5px] text-text-mute2/35 text-right leading-relaxed">
           SIPRI · IAEA · ACLED · UN OCHA · CFR<br />
           INTELLIGENCE UPDATED MARCH 2026
         </p>
@@ -427,4 +447,3 @@ export function WorldRiskGlobe() {
     </div>
   );
 }
-

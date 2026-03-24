@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { SignalTicker }    from "@/components/watchtower/signal-ticker";
 import { LiveClock }       from "@/components/watchtower/live-clock";
-import { WatchtowerNav }   from "@/components/watchtower/watchtower-nav";
 import { TICKER_TEXT }     from "@/lib/watchtower/data";
 
 export const metadata: Metadata = {
@@ -14,18 +13,6 @@ export const metadata: Metadata = {
   description: "Tevatha Watchtower — global threat intelligence, collapse scenario analysis, and decision gate monitoring.",
 };
 
-// Shared nav link definitions — defined server-side, passed to client nav
-const NAV_LINKS = [
-  { href: "/watchtower",             label: "⬡ Hub"         },
-  { href: "/watchtower/scenarios",   label: "Scenarios"     },
-  { href: "/watchtower/timeline",    label: "Timeline"      },
-  { href: "/watchtower/signals",     label: "Signal Feed"   },
-  { href: "/watchtower/gear",        label: "Gear Tables"   },
-  { href: "/watchtower/psychology",  label: "Psychology"    },
-  { href: "/watchtower/world",       label: "World Risk"    },
-] as const;
-
-export type WatchtowerNavLink = (typeof NAV_LINKS)[number];
 
 export default function WatchtowerLayout({ children }: { children: ReactNode }) {
   return (
@@ -78,14 +65,9 @@ export default function WatchtowerLayout({ children }: { children: ReactNode }) 
       {/* ── TICKER — client island for CSS animation ─────────────────── */}
       <SignalTicker text={TICKER_TEXT} />
 
-      {/* ── NAV — client island for usePathname active state ────────── */}
-      <WatchtowerNav links={NAV_LINKS} />
-
       {/* ── PAGE CONTENT ─────────────────────────────────────────────── */}
-      <main className="flex-1 overflow-y-auto overscroll-none relative">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-24 w-full">
-          {children}
-        </div>
+      <main className="flex-1 overflow-hidden relative">
+        {children}
       </main>
     </div>
   );

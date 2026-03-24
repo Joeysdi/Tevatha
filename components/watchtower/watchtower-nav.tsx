@@ -3,7 +3,10 @@
 
 import Link      from "next/link";
 import { usePathname } from "next/navigation";
-import type { WatchtowerNavLink } from "@/app/(watchtower)/watchtower/layout";
+interface WatchtowerNavLink {
+  href:  string;
+  label: string;
+}
 
 interface WatchtowerNavProps {
   links: readonly WatchtowerNavLink[];
