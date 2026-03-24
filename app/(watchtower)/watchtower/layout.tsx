@@ -82,7 +82,7 @@ export default function WatchtowerLayout({ children }: { children: ReactNode }) 
       <WatchtowerNav links={NAV_LINKS} />
 
       {/* ── PAGE CONTENT ─────────────────────────────────────────────── */}
-      <main className="flex-1 overflow-y-auto overscroll-none">
+      <main className="flex-1 overflow-y-auto overscroll-none relative">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-24 w-full">
           {children}
         </div>

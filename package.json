@@ -22,6 +22,7 @@
     "@stripe/react-stripe-js": "^5.6.1",
     "@stripe/stripe-js": "^8.10.0",
     "@supabase/supabase-js": "^2.49.0",
+    "@types/topojson-client": "^3.1.5",
     "bs58": "^6.0.0",
     "clsx": "^2.1.1",
     "framer-motion": "^12.36.0",
@@ -29,10 +30,12 @@
     "next": "^15.3.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-globe.gl": "^2.37.0",
     "react-simple-maps": "^3.0.0",
     "serwist": "^9.0.0",
     "stripe": "^20.4.1",
     "tailwind-merge": "^2.5.5",
+    "topojson-client": "^3.1.0",
     "zustand": "^5.0.12"
   },
   "devDependencies": {
