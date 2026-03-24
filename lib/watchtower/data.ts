@@ -57,12 +57,13 @@ export interface Scenario {
 }
 
 export interface TimelineEvent {
-  year:    string;
-  label:   string;
-  sev:     "critical" | "high" | "low";
-  colKey:  "red" | "warn" | "info" | "pink";
-  isNow?:  boolean;
-  signal:  string;
+  year:       string;
+  label:      string;
+  sev:        "critical" | "high" | "low";
+  colKey:     "red" | "warn" | "info" | "pink";
+  isNow?:     boolean;
+  predicted?: boolean;
+  signal:     string;
 }
 
 export interface DecisionGate {
@@ -424,6 +425,18 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
   { year:"2025", label:"Doomsday Clock: 89 seconds — new record",             sev:"critical", colKey:"red",  signal:"AI battlefield use, intensified nuclear rhetoric cited. Moved from 90s to 89s." },
   { year:"2025", label:"Salt Typhoon: 9+ US telecoms compromised by China MSS", sev:"high",   colKey:"warn", signal:"Backbone ISP infrastructure. Access into energy, transport, healthcare networks. FBI: still active Feb 2026." },
   { year:"2026", label:"Doomsday Clock: 85 seconds — all-time closest. New START expires", sev:"critical", colKey:"red", isNow:true, signal:"No nuclear arms control treaty in force for first time in 50+ years. China at 600+ warheads. BAS Jan 27, 2026 + New START Feb 5, 2026." },
+
+  // ── PREDICTED ─────────────────────────────────────────────────────────────
+  { year:"2027", predicted:true, label:"China hits 800+ warheads — nuclear parity era begins",       sev:"critical", colKey:"red",  signal:"SIPRI projection. First time in history three superpowers hold near-equivalent first-strike capability. Mutual assured destruction calculus fundamentally shifts." },
+  { year:"2027", predicted:true, label:"US national debt crosses $40T — interest exceeds defense",   sev:"high",     colKey:"warn", signal:"CBO baseline: $40T by mid-2027. Interest payments projected to exceed defense budget for first time since WWII. Fiscal dominance risk becomes unavoidable." },
+  { year:"2028", predicted:true, label:"Taiwan Strait: peak crisis window — semiconductor supply at risk", sev:"critical", colKey:"red",  signal:"CFR rates 2026–28 as peak crisis window. China completes PLA modernization. Taiwan produces 92% of advanced chips. Full blockade = global tech shutdown." },
+  { year:"2028", predicted:true, label:"H5N1 pandemic risk: first sustained human cluster",          sev:"critical", colKey:"pink", signal:"Historical CFR ~48%. Any sustained human-to-human transmission triggers Ark Protocol D. No mass-use vaccine stockpile exists. Activate isolation immediately." },
+  { year:"2029", predicted:true, label:"EU Digital Euro launches — programmable money enters G7",    sev:"high",     colKey:"warn", signal:"ECB legislation targeted 2029. Programmable CBDC enables transaction-level surveillance and spending controls. Gate G8 trigger. Bitcoin self-custody now." },
+  { year:"2030", predicted:true, label:"Doomsday Clock: projected 75 seconds — Gate G5 trigger",    sev:"critical", colKey:"red",  signal:"BAS trajectory analysis. 75s = Tevatha Gate G5: Tier 3 → Tier 4 escalation. Ark location must be fully operational by this date. No exceptions." },
+  { year:"2030", predicted:true, label:"BRICS+ non-USD settlement active — dollar share below 45%", sev:"high",     colKey:"warn", signal:"BRICS+ (9+ members) targeting 2030 non-USD settlement infrastructure. USD global reserve share falls below 45% threshold. De-dollarization accelerates permanently." },
+  { year:"2032", predicted:true, label:"Climate cascade: 150M displaced — sovereign food conflicts begin", sev:"high", colKey:"info", signal:"UNHCR climate displacement projection. Arctic feedback loops lock in +2°C. Agricultural belt shift triggers competition for arable land between nuclear-armed states." },
+  { year:"2034", predicted:true, label:"AI autonomous weapons — treaty failure confirmed",           sev:"high",     colKey:"warn", signal:"UN lethal autonomous weapons treaty rejected by US, China, Russia. AI decision cycles fall below human response time. Escalation dynamics become machine-speed." },
+  { year:"2037", predicted:true, label:"Post-USD multipolar reserve system — Bretton Woods II ends", sev:"high",     colKey:"info", signal:"End of Bretton Woods II era. Multipolar currency bloc settlement becomes the new norm. Physical gold re-enters sovereign reserves as tier-1 asset globally." },
 ];
 
 // ─────────────────────────────────────────────────────────────────────
