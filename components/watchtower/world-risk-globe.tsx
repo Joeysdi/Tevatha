@@ -16,6 +16,7 @@ import {
 } from "@/lib/watchtower/era-risk";
 import type { EraPhase, EraCountry } from "@/lib/watchtower/era-risk";
 import type { TimelineEvent } from "@/lib/watchtower/data";
+import { DOMAINS, COLLAPSE_CLASSES } from "@/lib/watchtower/data";
 import { SCENARIO_IMPACTS } from "@/lib/watchtower/scenario-impacts";
 import type { ScenarioCountryImpact } from "@/lib/watchtower/scenario-impacts";
 import { SIGNAL_PINS } from "@/lib/watchtower/signal-pins";
@@ -905,44 +906,173 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
         </p>
       </div>
 
-      {/* ── Loading veil ─────────────────────────────────────────────────── */}
+      {/* ── Loading veil — intelligence briefing while globe initializes ─── */}
       {!globeReady && (
-        <div className="absolute inset-0 flex items-center justify-center bg-void-0 z-30">
-          {/* Radial glow */}
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{ background: "radial-gradient(circle at 50% 50%, rgba(232,64,64,0.05) 0%, transparent 65%)" }}
-          />
-          <div className="text-center relative">
-            {/* Concentric pulse rings */}
-            <div className="relative w-28 h-28 mx-auto mb-6">
-              <div className="absolute inset-0 rounded-full border border-red-protocol/18 animate-ping"
-                   style={{ animationDuration: "2.2s" }} />
-              <div className="absolute inset-3 rounded-full border border-red-protocol/14 animate-ping"
-                   style={{ animationDuration: "2.6s", animationDelay: "0.4s" }} />
-              <div className="absolute inset-6 rounded-full border border-red-bright/16 animate-ping"
-                   style={{ animationDuration: "1.9s", animationDelay: "0.8s" }} />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center">
-                  <span className="font-syne font-extrabold text-[11px] text-red-bright/40 tracking-[.3em] block">ARK</span>
-                  <span className="font-mono text-[7px] text-text-mute2/40 tracking-[.2em]">TEVATHA</span>
+        <div className="absolute inset-0 bg-void-0 z-30 overflow-y-auto">
+
+          {/* Scanline sweep */}
+          <div className="sticky top-0 h-px w-full overflow-hidden z-10 flex-shrink-0">
+            <div
+              className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-red-bright/60 to-transparent"
+              style={{ animation: "slideRight 1.4s ease-in-out infinite" }}
+            />
+          </div>
+
+          <div className="px-4 sm:px-6 py-5 max-w-2xl mx-auto min-h-full flex flex-col">
+
+            {/* Header */}
+            <div className="flex items-start justify-between mb-5 flex-shrink-0">
+              <div>
+                <p className="font-mono text-[7px] tracking-[.3em] uppercase text-text-mute2/50 mb-1">
+                  Tevatha Watchtower · Global Risk Intelligence
+                </p>
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-protocol animate-pulse flex-shrink-0" />
+                  <p className="font-mono text-[9px] tracking-[.14em] uppercase text-red-bright/70 animate-pulse">
+                    Globe Initializing…
+                  </p>
+                </div>
+              </div>
+              <p className="font-mono text-[7.5px] text-text-mute2/35 tracking-[.08em] text-right flex-shrink-0 ml-4">
+                Intel updated<br />March 2026
+              </p>
+            </div>
+
+            {/* Two-column content */}
+            <div className="flex flex-col sm:flex-row gap-4 flex-1">
+
+              {/* ── Left col: Clock + Collapse matrix ────────────── */}
+              <div className="flex flex-col gap-4 sm:w-[46%]">
+
+                {/* Doomsday clock */}
+                <div
+                  className="rounded-xl overflow-hidden flex-shrink-0"
+                  style={{
+                    background: "rgba(232,64,64,0.07)",
+                    border:     "1px solid rgba(232,64,64,0.28)",
+                  }}
+                >
+                  <div className="h-px w-full"
+                       style={{ background: "linear-gradient(90deg,#e84040,rgba(232,64,64,0.15),transparent)" }} />
+                  <div className="px-4 py-3">
+                    <p className="font-mono text-[7px] tracking-[.22em] uppercase text-red-bright/55 mb-2">
+                      ☢ Doomsday Clock · BAS Jan 27, 2026
+                    </p>
+                    <div className="flex items-baseline gap-3 mb-2">
+                      <span
+                        className="font-syne font-extrabold leading-none text-red-bright tabular-nums"
+                        style={{ fontSize: "clamp(40px,10vw,56px)", textShadow: "0 0 40px rgba(232,64,64,0.5)" }}
+                      >
+                        85s
+                      </span>
+                      <span className="font-mono text-[12px] text-text-mute2 leading-snug">
+                        to<br />midnight
+                      </span>
+                    </div>
+                    <p className="font-mono text-[8.5px] text-text-dim leading-relaxed">
+                      All-time record. No nuclear arms control treaty
+                      in force for the first time since 1972.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Collapse probability matrix */}
+                <div
+                  className="rounded-xl overflow-hidden flex-1"
+                  style={{
+                    background: "rgba(11,13,24,0.75)",
+                    border:     "1px solid rgba(255,255,255,0.06)",
+                  }}
+                >
+                  <div className="px-4 py-3">
+                    <p className="font-mono text-[7px] tracking-[.22em] uppercase text-text-mute2/55 mb-3">
+                      Collapse Probability Matrix
+                    </p>
+                    <div className="space-y-2.5">
+                      {COLLAPSE_CLASSES.map((c) => {
+                        const col = c.sev === "EX" || c.sev === "CR" ? "#e84040"
+                                  : c.sev === "HI" ? "#f0a500"
+                                  : "#38bdf8";
+                        return (
+                          <div key={c.cls}>
+                            <div className="flex items-center gap-2 mb-0.5">
+                              <span className="font-mono text-[8.5px] font-bold w-3.5 flex-shrink-0"
+                                    style={{ color: col }}>{c.cls}</span>
+                              <span className="font-mono text-[8.5px] text-text-dim flex-1 truncate">{c.name}</span>
+                              <span className="font-mono text-[9px] font-bold tabular-nums flex-shrink-0"
+                                    style={{ color: col }}>{c.prob}%</span>
+                            </div>
+                            <div className="h-[3px] rounded-full bg-void-3 overflow-hidden ml-5">
+                              <div
+                                className="h-full rounded-full"
+                                style={{ width: `${c.prob}%`, background: col, boxShadow: `0 0 5px ${col}55` }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ── Right col: Threat domains ─────────────────────── */}
+              <div
+                className="rounded-xl overflow-hidden sm:flex-1"
+                style={{
+                  background: "rgba(11,13,24,0.75)",
+                  border:     "1px solid rgba(255,255,255,0.06)",
+                }}
+              >
+                <div className="px-4 py-3">
+                  <p className="font-mono text-[7px] tracking-[.22em] uppercase text-text-mute2/55 mb-3">
+                    Threat Matrix · ARK Scores
+                  </p>
+                  <div className="space-y-3.5">
+                    {DOMAINS.map((d) => {
+                      const col = d.level === "CRITICAL" ? "#e84040"
+                                : d.level === "HIGH"     ? "#f0a500"
+                                : d.level === "ELEVATED" ? "#38bdf8"
+                                : "#c9a84c";
+                      return (
+                        <div key={d.id}>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-[14px] leading-none flex-shrink-0">{d.icon}</span>
+                            <span className="font-mono text-[9px] text-text-dim flex-1 truncate">{d.label}</span>
+                            <span className="font-mono text-[9px] font-bold tabular-nums flex-shrink-0"
+                                  style={{ color: col }}>{d.score}</span>
+                            <span className="font-mono text-[10px] flex-shrink-0" style={{ color: col }}>{d.trend}</span>
+                          </div>
+                          <div className="h-[3px] rounded-full bg-void-3 overflow-hidden">
+                            <div
+                              className="h-full rounded-full"
+                              style={{ width: `${d.score}%`, background: col, boxShadow: `0 0 5px ${col}55` }}
+                            />
+                          </div>
+                          <div className="flex items-center justify-between mt-0.5">
+                            <p className="font-mono text-[7px] text-text-mute2/40">{d.level}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             </div>
 
-            <p className="font-mono text-[7.5px] tracking-[.3em] uppercase text-text-mute2/60 mb-1">
-              Watchtower · Global Risk Map
-            </p>
-            <p className="font-mono text-[9.5px] tracking-[.18em] uppercase text-red-bright/60 animate-pulse mb-5">
-              Initializing Globe...
-            </p>
-
-            <div className="w-48 h-px bg-border-protocol/40 mx-auto relative overflow-hidden rounded-full">
-              <div
-                className="absolute inset-y-0 w-24 bg-gradient-to-r from-transparent via-red-bright/60 to-transparent"
-                style={{ animation: "slideRight 1.4s ease-in-out infinite" }}
-              />
+            {/* Footer */}
+            <div className="mt-5 flex-shrink-0">
+              <div className="w-full h-px bg-border-protocol/25 relative overflow-hidden rounded-full mb-2.5">
+                <div
+                  className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-red-bright/45 to-transparent"
+                  style={{ animation: "slideRight 1.4s ease-in-out infinite" }}
+                />
+              </div>
+              <p className="font-mono text-[6.5px] text-text-mute2/25 text-center tracking-[.14em]">
+                SOURCES: SIPRI · IAEA · ACLED · UN OCHA · CFR · BAS · FDIC · WHO
+              </p>
             </div>
+
           </div>
         </div>
       )}
