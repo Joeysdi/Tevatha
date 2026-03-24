@@ -11,9 +11,9 @@ export function SignalTicker({ text }: SignalTickerProps) {
 
   return (
     <div
-      className="flex-shrink-0 overflow-hidden h-7 flex items-center
-                 border-b border-red-protocol/15"
-      style={{ background: "rgba(232,64,64,0.05)" }}
+      className="flex-shrink-0 overflow-hidden h-6 flex items-center
+                 border-t border-red-protocol/12"
+      style={{ background: "rgba(6,8,12,0.95)" }}
     >
       <div
         className="inline-flex whitespace-nowrap font-mono text-[10.5px]

@@ -7,10 +7,12 @@ import { GlobeIntelPanel }        from "./globe-intel-panel";
 import { GlobeProvisionerPanel }  from "./globe-provisioner-panel";
 import { GlobeTimeline }          from "./globe-timeline";
 import { GlobeProtocolPanel }     from "./globe-protocol-panel";
+import { LiveClock }              from "./live-clock";
+import { SignalTicker }           from "./signal-ticker";
 import type { IntelTab }          from "./globe-intel-panel";
 import type { ProvisionerTab }    from "./globe-provisioner-panel";
 import type { TimelineEvent }     from "@/lib/watchtower/data";
-import { SIGNALS }                from "@/lib/watchtower/data";
+import { SIGNALS, TICKER_TEXT }   from "@/lib/watchtower/data";
 import { SCENARIO_IMPACTS }       from "@/lib/watchtower/scenario-impacts";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -259,6 +261,9 @@ export function WatchtowerGlobeShell() {
           </div>
         )}
 
+        {/* ── UTC clock overlay — top-right of globe ──────────────────────── */}
+        <LiveClock />
+
         {/* ── Panels ──────────────────────────────────────────────────────── */}
         <GlobeIntelPanel
           open={intelOpen}
@@ -274,6 +279,9 @@ export function WatchtowerGlobeShell() {
         />
         <GlobeProtocolPanel open={protocolOpen} onClose={() => setProtocolOpen(false)} />
       </div>
+
+      {/* ── Signal ticker strip (above timeline) ────────────────────────── */}
+      <SignalTicker text={TICKER_TEXT} />
 
       {/* ── Timeline bar ─────────────────────────────────────────────────── */}
       <GlobeTimeline
