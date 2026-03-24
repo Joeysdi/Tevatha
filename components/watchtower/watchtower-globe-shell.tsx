@@ -8,11 +8,11 @@ import { GlobeProvisionerPanel }  from "./globe-provisioner-panel";
 import { GlobeTimeline }          from "./globe-timeline";
 import { GlobeProtocolPanel }     from "./globe-protocol-panel";
 import { LiveClock }              from "./live-clock";
-import { SignalTicker }           from "./signal-ticker";
+
 import type { IntelTab }          from "./globe-intel-panel";
 import type { ProvisionerTab }    from "./globe-provisioner-panel";
 import type { TimelineEvent }     from "@/lib/watchtower/data";
-import { SIGNALS, TICKER_TEXT }   from "@/lib/watchtower/data";
+import { SIGNALS }                from "@/lib/watchtower/data";
 import { SCENARIO_IMPACTS }       from "@/lib/watchtower/scenario-impacts";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -339,10 +339,7 @@ export function WatchtowerGlobeShell() {
         </button>
       </div>
 
-      {/* ── Signal ticker strip (above timeline) ────────────────────────── */}
-      <SignalTicker text={TICKER_TEXT} />
-
-      {/* ── Timeline event brief — sits between ticker and timeline ─────── */}
+      {/* ── Timeline event brief — sits above timeline ──────────────────── */}
       {timelineEvent && (
         <TimelineEventBrief
           event={timelineEvent}
@@ -415,13 +412,6 @@ function KeyHint({ label, onClick }: { label: string; onClick: () => void }) {
   );
 }
 
-const EVENT_COLORS: Record<string, string> = {
-  red:  "#e84040",
-  warn: "#f0a500",
-  info: "#38bdf8",
-  pink: "#ff0055",
-};
-
 function TimelineEventBrief({
   event,
   onClose,
@@ -429,7 +419,8 @@ function TimelineEventBrief({
   event:   TimelineEvent;
   onClose: () => void;
 }) {
-  const col        = EVENT_COLORS[event.colKey] ?? "#c9a84c";
+  const COL_MAP: Record<string, string> = { red:"#e84040", warn:"#f0a500", info:"#38bdf8", pink:"#ff0055" };
+  const col        = COL_MAP[event.colKey] ?? "#c9a84c";
   const yearStr    = event.isNow ? "NOW" : event.year + (event.predicted ? "~" : "");
   const isForecast = event.predicted === true;
 

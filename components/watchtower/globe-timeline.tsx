@@ -56,8 +56,9 @@ interface Props {
 // ── Component ──────────────────────────────────────────────────────────────────
 
 export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Props) {
-  const scrollRef   = useRef<HTMLDivElement>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const scrollRef    = useRef<HTMLDivElement>(null);
+  const debounceRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [activeEvt,  setActiveEvt]  = useState<TimelineEvent | null>(null);
   const [gateHov,    setGateHov]    = useState<DecisionGate | null>(null);
   const [scrollYear, setScrollYear] = useState(NOW_YEAR);
@@ -69,19 +70,18 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
     el.scrollLeft = yrToPx(NOW_YEAR) - el.clientWidth * 0.5;
   }, []);
 
-  // Mouse wheel → horizontal scroll (passive:false needed to preventDefault)
+  // Wheel over entire timeline bar → horizontal scroll, no page scroll
   useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
+    const container = containerRef.current;
+    const scroller  = scrollRef.current;
+    if (!container || !scroller) return;
     const onWheel = (e: WheelEvent) => {
-      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-        // Only hijack vertical scroll; if user is already scrolling horizontally let it pass
-        e.preventDefault();
-        el.scrollLeft += e.deltaY;
-      }
+      // Convert vertical OR diagonal wheel to horizontal scroll
+      e.preventDefault();
+      scroller.scrollLeft += Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
     };
-    el.addEventListener("wheel", onWheel, { passive: false });
-    return () => el.removeEventListener("wheel", onWheel);
+    container.addEventListener("wheel", onWheel, { passive: false });
+    return () => container.removeEventListener("wheel", onWheel);
   }, []);
 
   // Cleanup debounce
@@ -122,8 +122,9 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
 
   return (
     <div
+      ref={containerRef}
       className="flex-shrink-0 relative overflow-hidden select-none"
-      style={{ height: HEIGHT, background: "rgba(4,5,10,0.98)", borderTop: "1px solid rgba(255,255,255,0.05)" }}
+      style={{ height: HEIGHT, background: "rgba(4,5,10,0.98)", borderTop: "1px solid rgba(255,255,255,0.05)", touchAction: "pan-x" }}
     >
       {/* ── Playhead line (fixed center marker) ── */}
       <div
@@ -179,7 +180,7 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
         ref={scrollRef}
         onScroll={handleScroll}
         className="w-full h-full overflow-x-auto overflow-y-hidden scrollbar-none"
-        style={{ WebkitOverflowScrolling: "touch" } as React.CSSProperties}
+        style={{ WebkitOverflowScrolling: "touch", touchAction: "pan-x" } as React.CSSProperties}
       >
         <div className="relative" style={{ width: TOTAL_W, height: HEIGHT }}>
 
