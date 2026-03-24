@@ -2,15 +2,16 @@
 "use client";
 
 import { useState } from "react";
-import { WorldRiskGlobe }      from "./world-risk-globe";
-import { GlobeIntelPanel }     from "./globe-intel-panel";
-import { GlobePrepPanel }      from "./globe-prep-panel";
-import { GlobeTimeline }       from "./globe-timeline";
-import { GlobeProtocolPanel }  from "./globe-protocol-panel";
-import { GlobeEnvoyPanel }     from "./globe-envoy-panel";
-import type { IntelTab }       from "./globe-intel-panel";
-import type { PrepTab }        from "./globe-prep-panel";
-import type { TimelineEvent }  from "@/lib/watchtower/data";
+import { WorldRiskGlobe }         from "./world-risk-globe";
+import { GlobeIntelPanel }        from "./globe-intel-panel";
+import { GlobeProvisionerPanel }  from "./globe-provisioner-panel";
+import { GlobeTimeline }          from "./globe-timeline";
+import { GlobeProtocolPanel }     from "./globe-protocol-panel";
+import type { IntelTab }          from "./globe-intel-panel";
+import type { ProvisionerTab }    from "./globe-provisioner-panel";
+import type { TimelineEvent }     from "@/lib/watchtower/data";
+import { SIGNALS }                from "@/lib/watchtower/data";
+import { SCENARIO_IMPACTS }       from "@/lib/watchtower/scenario-impacts";
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -23,39 +24,23 @@ const PHASE_LABELS: Record<string, string> = {
 };
 
 export function WatchtowerGlobeShell() {
-  const [intelOpen, setIntelOpen] = useState(false);
-  const [prepOpen,  setPrepOpen]  = useState(false);
-  const [intelTab,  setIntelTab]  = useState<IntelTab>("hub");
-  const [prepTab,   setPrepTab]   = useState<PrepTab>("gear");
-  const [eraPhase,  setEraPhase]  = useState("P4");
-  const [timelineEvent, setTimelineEvent] = useState<TimelineEvent | null>(null);
+  const [intelOpen,        setIntelOpen]        = useState(false);
+  const [provisionerOpen,  setProvisionerOpen]  = useState(false);
+  const [intelTab,         setIntelTab]         = useState<IntelTab>("hub");
+  const [provisionerTab,   setProvisionerTab]   = useState<ProvisionerTab>("gear");
+  const [eraPhase,         setEraPhase]         = useState("P4");
+  const [timelineEvent,    setTimelineEvent]    = useState<TimelineEvent | null>(null);
 
-  // New state for scenario mode, signal pins, and bottom panels
-  const [scenarioId,   setScenarioId]   = useState<string | null>(null);
-  const [showSignals,  setShowSignals]  = useState(false);
-  const [protocolOpen, setProtocolOpen] = useState(false);
-  const [envoyOpen,    setEnvoyOpen]    = useState(false);
-
-  const openIntel = (tab?: IntelTab) => {
-    if (tab) setIntelTab(tab);
-    setIntelOpen(true);
-    setPrepOpen(false);
-  };
-
-  const openPrep = (tab?: PrepTab) => {
-    if (tab) setPrepTab(tab);
-    setPrepOpen(true);
-    setIntelOpen(false);
-  };
+  const [scenarioId,       setScenarioId]       = useState<string | null>(null);
+  const [showSignals,      setShowSignals]      = useState(false);
+  const [psychologyMode,   setPsychologyMode]   = useState(false);
+  const [protocolOpen,     setProtocolOpen]     = useState(false);
+  const [selectedSignalIdx, setSelectedSignalIdx] = useState<number | null>(null);
 
   const toggleIntel = () => {
     if (intelOpen) { setIntelOpen(false); return; }
-    openIntel();
-  };
-
-  const togglePrep = () => {
-    if (prepOpen) { setPrepOpen(false); return; }
-    openPrep();
+    setIntelOpen(true);
+    setProvisionerOpen(false);
   };
 
   const isHistorical = eraPhase !== "P4";
@@ -72,6 +57,8 @@ export function WatchtowerGlobeShell() {
           timelineEvent={timelineEvent}
           scenarioId={scenarioId}
           showSignals={showSignals}
+          psychologyMode={psychologyMode}
+          onSignalPinClick={setSelectedSignalIdx}
         />
 
         {/* ── Intel (left) panel trigger ─────────────────────────────────── */}
@@ -85,24 +72,28 @@ export function WatchtowerGlobeShell() {
           />
         </div>
 
-        {/* ── Prep (right) panel trigger ─────────────────────────────────── */}
+        {/* ── Provisioner (right) panel trigger ──────────────────────────── */}
         <div className="absolute right-0 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-0.5">
           <PanelTrigger
-            open={prepOpen}
-            onClick={togglePrep}
-            label="Prep"
+            open={provisionerOpen}
+            onClick={() => {
+              if (provisionerOpen) { setProvisionerOpen(false); return; }
+              setProvisionerOpen(true);
+              setIntelOpen(false);
+            }}
+            label="Shop"
             openColor="gold"
             side="right"
           />
         </div>
 
         {/* ── Keyboard shortcut hints (bottom-center, show on first load) ── */}
-        {!intelOpen && !prepOpen && (
+        {!intelOpen && !provisionerOpen && (
           <div className="absolute bottom-[8px] left-1/2 -translate-x-1/2 z-10
                           flex items-center gap-3 pointer-events-none">
-            <KeyHint label="◄ INTEL" onClick={() => openIntel()} />
+            <KeyHint label="◄ INTEL" onClick={() => {}} />
             <KeyHint label="TIMELINE ▼" onClick={() => {}} />
-            <KeyHint label="PREP ►" onClick={() => openPrep()} />
+            <KeyHint label="SHOP ►" onClick={() => {}} />
           </div>
         )}
 
@@ -132,7 +123,7 @@ export function WatchtowerGlobeShell() {
         )}
 
         {/* ── Timeline event card overlay (shows above the globe) ─────────── */}
-        {timelineEvent && !intelOpen && !prepOpen && (
+        {timelineEvent && !intelOpen && !provisionerOpen && (
           <TimelineEventOverlay
             event={timelineEvent}
             onClose={() => { setTimelineEvent(null); setEraPhase("P4"); }}
@@ -142,7 +133,7 @@ export function WatchtowerGlobeShell() {
         {/* ── Protocol trigger — bottom left ──────────────────────────────── */}
         <div className="absolute bottom-[92px] left-3 z-20">
           <button
-            onClick={() => { setProtocolOpen(!protocolOpen); setEnvoyOpen(false); }}
+            onClick={() => setProtocolOpen(!protocolOpen)}
             className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg
                         border font-mono text-[8px] tracking-[.1em] uppercase
                         transition-all duration-200 backdrop-blur-sm
@@ -156,22 +147,117 @@ export function WatchtowerGlobeShell() {
           </button>
         </div>
 
-        {/* ── Envoy trigger — bottom right ────────────────────────────────── */}
-        <div className="absolute bottom-[92px] right-3 z-20">
-          <button
-            onClick={() => { setEnvoyOpen(!envoyOpen); setProtocolOpen(false); }}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg
-                        border font-mono text-[8px] tracking-[.1em] uppercase
-                        transition-all duration-200 backdrop-blur-sm
-                        ${envoyOpen
-                          ? "bg-gold-glow border-gold-dim text-gold-bright"
-                          : "bg-void-1/78 border-border-protocol text-text-mute2 hover:border-gold-dim/40 hover:text-text-base"
-                        }`}
+        {/* ── Globe mode controls — scenario + psychology + signals ─────────── */}
+        <div className="absolute top-4 left-4 z-20 flex flex-col gap-1.5" style={{ top: "48px" }}>
+          {/* Scenario selector */}
+          <div
+            className="rounded-xl overflow-hidden backdrop-blur-sm"
+            style={{ background: "rgba(11,13,24,0.88)", border: "1px solid rgba(255,255,255,0.07)" }}
           >
-            <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${envoyOpen ? "bg-gold-protocol animate-pulse" : "bg-text-mute2/40"}`} />
-            Envoy
+            <p className="font-mono text-[6.5px] tracking-[.2em] uppercase text-text-mute2/60 px-2.5 pt-2 pb-1">
+              Scenarios
+            </p>
+            <div className="flex flex-col gap-0.5 px-1.5 pb-1.5">
+              {SCENARIO_IMPACTS.map((s) => {
+                const active = scenarioId === s.id;
+                return (
+                  <button
+                    key={s.id}
+                    onClick={() => setScenarioId(active ? null : s.id)}
+                    className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-left
+                                transition-all duration-150 font-mono text-[8px]
+                                ${active
+                                  ? "bg-red-protocol/20 text-red-bright border border-red-protocol/40"
+                                  : "text-text-mute2 hover:text-text-base hover:bg-white/[0.04] border border-transparent"
+                                }`}
+                  >
+                    <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${active ? "bg-red-bright animate-pulse" : "bg-text-mute2/30"}`} />
+                    {s.title}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Psychology toggle */}
+          <button
+            onClick={() => setPsychologyMode(!psychologyMode)}
+            className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl backdrop-blur-sm
+                        border font-mono text-[8px] transition-all duration-150
+                        ${psychologyMode
+                          ? "border-purple-500/50 text-purple-300"
+                          : "border-border-protocol text-text-mute2 hover:border-purple-500/30 hover:text-text-base"
+                        }`}
+            style={{ background: psychologyMode ? "rgba(138,43,226,0.15)" : "rgba(11,13,24,0.88)" }}
+          >
+            <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${psychologyMode ? "bg-purple-400 animate-pulse" : "bg-text-mute2/30"}`} />
+            🧠 Psychology
+          </button>
+
+          {/* Signals pin toggle */}
+          <button
+            onClick={() => setShowSignals(!showSignals)}
+            className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl backdrop-blur-sm
+                        border font-mono text-[8px] transition-all duration-150
+                        ${showSignals
+                          ? "border-red-protocol/50 text-red-bright"
+                          : "border-border-protocol text-text-mute2 hover:border-red-protocol/30 hover:text-text-base"
+                        }`}
+            style={{ background: showSignals ? "rgba(232,64,64,0.12)" : "rgba(11,13,24,0.88)" }}
+          >
+            <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${showSignals ? "bg-red-bright animate-pulse" : "bg-text-mute2/30"}`} />
+            📡 Signals
           </button>
         </div>
+
+        {/* ── Signal info overlay (shown when signal pin clicked) ────────────── */}
+        {selectedSignalIdx !== null && SIGNALS[selectedSignalIdx] && (
+          <div className="absolute bottom-[100px] left-1/2 -translate-x-1/2 z-20 w-[340px] max-w-[90vw]">
+            <div
+              className="rounded-xl overflow-hidden backdrop-blur-md"
+              style={{
+                background: "rgba(11,13,24,0.95)",
+                border:     "1px solid rgba(240,165,0,0.35)",
+                boxShadow:  "0 8px 40px rgba(0,0,0,0.7)",
+              }}
+            >
+              <div className="h-px w-full" style={{ background: "linear-gradient(90deg,#f0a500,transparent)" }} />
+              <div className="px-4 py-3">
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className={`font-mono text-[7px] px-1.5 py-0.5 rounded border font-bold
+                      ${SIGNALS[selectedSignalIdx].tier === "t4"
+                        ? "text-red-bright border-red-protocol/40 bg-red-protocol/10"
+                        : SIGNALS[selectedSignalIdx].tier === "t3"
+                        ? "text-amber-protocol border-amber-DEFAULT/30 bg-amber-dim"
+                        : "text-blue-DEFAULT border-blue-DEFAULT/30 bg-blue-dim"
+                      }`}>
+                      {SIGNALS[selectedSignalIdx].tier.toUpperCase()}
+                    </span>
+                    <p className="font-mono text-[7.5px] tracking-[.14em] uppercase text-text-mute2">
+                      {SIGNALS[selectedSignalIdx].domain} · Score {SIGNALS[selectedSignalIdx].score}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setSelectedSignalIdx(null)}
+                    className="font-mono text-[9px] text-text-mute2 hover:text-text-base transition-colors flex-shrink-0"
+                  >✕</button>
+                </div>
+                <p className="font-mono text-[10px] text-text-base leading-relaxed mb-2">
+                  {SIGNALS[selectedSignalIdx].sig}
+                </p>
+                <a
+                  href={SIGNALS[selectedSignalIdx].sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-mono text-[8px] text-text-mute2/60 hover:text-amber-protocol/70 transition-colors"
+                >
+                  {SIGNALS[selectedSignalIdx].source} ↗
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ── Panels ──────────────────────────────────────────────────────── */}
         <GlobeIntelPanel
@@ -179,19 +265,14 @@ export function WatchtowerGlobeShell() {
           onClose={() => setIntelOpen(false)}
           activeTab={intelTab}
           onTabChange={setIntelTab}
-          onScenarioSelect={setScenarioId}
-          activeScenarioId={scenarioId}
-          onSignalToggle={setShowSignals}
-          showSignals={showSignals}
         />
-        <GlobePrepPanel
-          open={prepOpen}
-          onClose={() => setPrepOpen(false)}
-          activeTab={prepTab}
-          onTabChange={setPrepTab}
+        <GlobeProvisionerPanel
+          open={provisionerOpen}
+          onClose={() => setProvisionerOpen(false)}
+          activeTab={provisionerTab}
+          onTabChange={setProvisionerTab}
         />
         <GlobeProtocolPanel open={protocolOpen} onClose={() => setProtocolOpen(false)} />
-        <GlobeEnvoyPanel    open={envoyOpen}    onClose={() => setEnvoyOpen(false)} />
       </div>
 
       {/* ── Timeline bar ─────────────────────────────────────────────────── */}

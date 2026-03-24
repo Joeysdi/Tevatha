@@ -3,27 +3,20 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  DOMAINS, SIGNALS, COLLAPSE_CLASSES, SCENARIOS, ALARM_CATEGORIES,
+  DOMAINS, SIGNALS, COLLAPSE_CLASSES,
 } from "@/lib/watchtower/data";
-import { ScenarioAccordion } from "./scenario-accordion";
 
-export type IntelTab = "hub" | "scenarios" | "signals";
+export type IntelTab = "hub";
 
 interface Props {
-  open:             boolean;
-  onClose:          () => void;
-  activeTab:        IntelTab;
-  onTabChange:      (t: IntelTab) => void;
-  onScenarioSelect: (id: string | null) => void;
-  activeScenarioId: string | null;
-  onSignalToggle:   (show: boolean) => void;
-  showSignals:      boolean;
+  open:        boolean;
+  onClose:     () => void;
+  activeTab:   IntelTab;
+  onTabChange: (t: IntelTab) => void;
 }
 
 const TABS: { id: IntelTab; label: string }[] = [
-  { id: "hub",       label: "⬡ Hub"      },
-  { id: "scenarios", label: "Scenarios"  },
-  { id: "signals",   label: "Signals"    },
+  { id: "hub", label: "⬡ Hub" },
 ];
 
 const DOMAIN_COLORS: Record<string, string> = {
@@ -49,10 +42,6 @@ export function GlobeIntelPanel({
   onClose,
   activeTab,
   onTabChange,
-  onScenarioSelect,
-  activeScenarioId,
-  onSignalToggle,
-  showSignals,
 }: Props) {
   return (
     <AnimatePresence>
@@ -118,81 +107,6 @@ export function GlobeIntelPanel({
                 transition={{ duration: 0.16, ease: [0.4, 0, 0.2, 1] }}
               >
                 {activeTab === "hub" && <HubTab />}
-
-                {activeTab === "scenarios" && (
-                  <div className="p-3">
-                    {/* Active scenario banner */}
-                    {activeScenarioId && (
-                      <div className="mb-3 px-3 py-2 rounded-xl border border-red-protocol/40 bg-red-protocol/8 flex items-center justify-between">
-                        <p className="font-mono text-[8px] text-red-bright tracking-[.1em] uppercase">
-                          Globe mode: scenario active
-                        </p>
-                        <button
-                          onClick={() => onScenarioSelect(null)}
-                          className="font-mono text-[9px] text-text-mute2 hover:text-red-bright transition-colors">
-                          ✕ reset
-                        </button>
-                      </div>
-                    )}
-                    {/* Scenario list with globe buttons */}
-                    <div className="space-y-1.5 mb-3">
-                      {SCENARIOS.map((s) => {
-                        const active = activeScenarioId === s.id;
-                        return (
-                          <button
-                            key={s.id}
-                            onClick={() => onScenarioSelect(active ? null : s.id)}
-                            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl border
-                                        text-left transition-all duration-150
-                                        ${active
-                                          ? "bg-red-protocol/12 border-red-protocol/40"
-                                          : "bg-void-3/50 border-border-protocol hover:border-border-bright/40"
-                                        }`}
-                          >
-                            <span className="text-[14px] flex-shrink-0">{s.icon}</span>
-                            <div className="min-w-0 flex-1">
-                              <p className={`font-mono text-[9px] font-bold leading-snug ${active ? "text-red-bright" : "text-text-base"}`}>
-                                {s.title}
-                              </p>
-                              <p className="font-mono text-[7.5px] text-text-mute2">{s.prob}% prob · {s.window}</p>
-                            </div>
-                            <span className={`font-mono text-[7.5px] flex-shrink-0 px-1.5 py-0.5 rounded border
-                                              ${active
-                                                ? "text-red-bright border-red-protocol/40 bg-red-protocol/10"
-                                                : "text-text-mute2 border-border-protocol"
-                                              }`}>
-                              {active ? "ACTIVE ◀" : "▶ GLOBE"}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                    <ScenarioAccordion scenarios={SCENARIOS} />
-                  </div>
-                )}
-
-                {activeTab === "signals" && (
-                  <div>
-                    <div className="px-4 py-2 border-b border-border-protocol flex items-center justify-between">
-                      <p className="font-mono text-[8px] tracking-[.1em] uppercase text-text-mute2">
-                        Globe pins
-                      </p>
-                      <button
-                        onClick={() => onSignalToggle(!showSignals)}
-                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border
-                                    font-mono text-[8px] transition-all duration-150
-                                    ${showSignals
-                                      ? "bg-red-protocol/12 border-red-protocol/40 text-red-bright"
-                                      : "bg-void-3 border-border-protocol text-text-mute2 hover:border-border-bright/40"
-                                    }`}
-                      >
-                        <span className={`w-1.5 h-1.5 rounded-full ${showSignals ? "bg-red-bright animate-pulse" : "bg-text-mute2/40"}`} />
-                        {showSignals ? "Pins On" : "Pin to Globe"}
-                      </button>
-                    </div>
-                    <SignalsTab />
-                  </div>
-                )}
               </motion.div>
             </AnimatePresence>
           </div>
@@ -311,32 +225,3 @@ function HubTab() {
   );
 }
 
-// ── SIGNALS TAB ───────────────────────────────────────────────────────────────
-
-function SignalsTab() {
-  return (
-    <div className="divide-y divide-border-protocol/60">
-      {ALARM_CATEGORIES.map((cat) => (
-        <div key={cat.cat} className="px-4 py-3">
-          <p className="font-mono text-[7.5px] tracking-[.2em] uppercase text-text-mute2 mb-2.5">
-            {cat.cat} — Alarm Conditions
-          </p>
-          <div className="space-y-2">
-            {cat.items.map((item, i) => (
-              <div key={i} className="flex items-start gap-2">
-                <span className={`flex-shrink-0 mt-0.5 px-1.5 py-0.5 rounded border
-                                 font-mono text-[7px] font-bold ${SEV_STYLES[item.tier] ?? SEV_STYLES.t2}`}>
-                  {item.tier.toUpperCase()}
-                </span>
-                <div className="min-w-0">
-                  <p className="font-mono text-[9.5px] text-text-base leading-snug">{item.sig}</p>
-                  <p className="font-mono text-[8.5px] text-text-dim mt-0.5 leading-relaxed">{item.action}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}

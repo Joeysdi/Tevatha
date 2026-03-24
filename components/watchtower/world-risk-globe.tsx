@@ -128,16 +128,38 @@ interface GeoFeature {
   geometry?:   unknown;
 }
 
+// ─── Psychology zones ─────────────────────────────────────────────────────────
+interface PsychZone {
+  lat:    number;
+  lng:    number;
+  region: string;
+  threat: string;
+  note:   string;
+}
+
+const PSYCH_ZONES: PsychZone[] = [
+  { lat: 49.0, lng: 31.5,   region: "Ukraine",      threat: "Combat Stress",          note: "3yr war → hypervigilance & moral injury at scale. Identity anchoring critical." },
+  { lat: 31.9, lng: 35.2,   region: "Gaza",         threat: "Infrastructure Collapse", note: "Complete social fabric destruction → anomie + learned helplessness cascade." },
+  { lat: 33.5, lng: 36.3,   region: "Syria",        threat: "Chronic Displacement",    note: "14yr conflict: compound trauma + grief without closure = identity dissolution." },
+  { lat: 15.5, lng: 32.5,   region: "Sudan",        threat: "Societal Fracture",       note: "Largest displacement crisis: community bonds severed = primary resilience failure." },
+  { lat: 39.0, lng: 125.75, region: "North Korea",  threat: "Information Blackout",    note: "Total information control → normalisation of abnormal. Cognitive capture complete." },
+  { lat:  2.0, lng: 45.3,   region: "Somalia",      threat: "State Collapse",          note: "33yr failed state: survival psychology becomes default — trust radius collapses to family." },
+  { lat: 34.5, lng: 69.2,   region: "Afghanistan",  threat: "Learned Helplessness",    note: "4 regime changes in 20yrs: agency loss → fatalism prevents adaptive action." },
+  { lat: 15.5, lng: 44.2,   region: "Yemen",        threat: "Famine Stress",           note: "Chronic hunger impairs cognition: decision quality collapses under caloric deficit." },
+];
+
 // ─── Props ────────────────────────────────────────────────────────────────────
 interface Props {
-  eraPhase:      string;
-  timelineEvent: TimelineEvent | null;
-  scenarioId:    string | null;
-  showSignals:   boolean;
+  eraPhase:        string;
+  timelineEvent:   TimelineEvent | null;
+  scenarioId:      string | null;
+  showSignals:     boolean;
+  psychologyMode:  boolean;
+  onSignalPinClick:(sigIndex: number) => void;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
-export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignals }: Props) {
+export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignals, psychologyMode, onSignalPinClick }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const globeRef     = useRef<GlobeMethods | undefined>(undefined);
   const [dims,       setDims]       = useState({ w: 0, h: 0 });
@@ -220,30 +242,146 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
     }));
   }, [eraPhase, isHistorical, scenarioId]);
 
-  // ── Signal pin HTML elements ──────────────────────────────────────────────
-  const signalPinsData = useMemo(() => {
-    if (!showSignals) return [];
-    return SIGNAL_PINS.map(pin => ({
-      lat:    pin.lat,
-      lng:    pin.lng,
-      label:  pin.label,
-      colKey: pin.colKey,
-    }));
-  }, [showSignals]);
+  // ── Unified HTML elements for globe ──────────────────────────────────────
+  type HtmlGlobeItem = {
+    type:       "signal" | "scenario-label" | "psych-zone";
+    lat:        number;
+    lng:        number;
+    // signal fields
+    sigIndex?:  number;
+    label?:     string;
+    colKey?:    "red" | "warn" | "info";
+    // scenario label fields
+    role?:      "primary" | "cascade";
+    note?:      string;
+    isoLabel?:  string;
+    // psych zone fields
+    region?:    string;
+    threat?:    string;
+    psychNote?: string;
+  };
+
+  const htmlGlobeData = useMemo<HtmlGlobeItem[]>(() => {
+    const items: HtmlGlobeItem[] = [];
+
+    // Signal pins
+    if (showSignals) {
+      for (const pin of SIGNAL_PINS) {
+        items.push({
+          type:     "signal",
+          lat:      pin.lat,
+          lng:      pin.lng,
+          sigIndex: pin.sigIndex,
+          label:    pin.label,
+          colKey:   pin.colKey,
+        });
+      }
+    }
+
+    // Scenario overlay labels
+    if (scenarioId) {
+      const scenario = SCENARIO_IMPACTS.find(s => s.id === scenarioId);
+      if (scenario) {
+        for (const c of scenario.countries) {
+          const risk = riskByIso[c.iso];
+          if (!risk) continue;
+          items.push({
+            type:     "scenario-label",
+            lat:      risk.lat,
+            lng:      risk.lon,
+            role:     c.role,
+            note:     c.note,
+            isoLabel: risk.name,
+          });
+        }
+      }
+    }
+
+    // Psychology zone overlays
+    if (psychologyMode) {
+      for (const z of PSYCH_ZONES) {
+        items.push({
+          type:      "psych-zone",
+          lat:       z.lat,
+          lng:       z.lng,
+          region:    z.region,
+          threat:    z.threat,
+          psychNote: z.note,
+        });
+      }
+    }
+
+    return items;
+  }, [showSignals, scenarioId, psychologyMode]);
 
   const htmlElement = useCallback((d: object) => {
-    const pin = d as { lat: number; lng: number; label: string; colKey: "red" | "warn" | "info" };
-    const colHex = SIGNAL_PIN_COLORS[pin.colKey];
+    const item = d as HtmlGlobeItem;
     const el = document.createElement("div");
-    el.style.cssText = `
-      width: 8px; height: 8px; border-radius: 50%;
-      background: ${colHex};
-      box-shadow: 0 0 8px ${colHex};
-      border: 1.5px solid rgba(255,255,255,0.4);
-      cursor: pointer;
-      animation: pulse 2s infinite;
-    `;
-    el.title = pin.label;
+
+    if (item.type === "signal") {
+      const colHex = SIGNAL_PIN_COLORS[item.colKey ?? "info"];
+      el.style.cssText = `
+        width: 9px; height: 9px; border-radius: 50%;
+        background: ${colHex};
+        box-shadow: 0 0 10px ${colHex}, 0 0 20px ${colHex}44;
+        border: 1.5px solid rgba(255,255,255,0.5);
+        cursor: pointer;
+        transition: transform 0.15s;
+      `;
+      el.title = item.label ?? "";
+      el.addEventListener("mouseenter", () => { el.style.transform = "scale(1.8)"; });
+      el.addEventListener("mouseleave", () => { el.style.transform = "scale(1)"; });
+      el.addEventListener("click", (e) => {
+        e.stopPropagation();
+        el.dispatchEvent(new CustomEvent("signal-pin-click", {
+          bubbles: true,
+          detail: { sigIndex: item.sigIndex ?? 0 },
+        }));
+      });
+    } else if (item.type === "scenario-label") {
+      const bgCol  = item.role === "primary" ? "rgba(232,64,64,0.82)" : "rgba(240,165,0,0.82)";
+      const badge  = item.role === "primary" ? "PRIMARY" : "CASCADE";
+      const truncated = (item.note ?? "").length > 60 ? (item.note ?? "").slice(0, 60) + "…" : (item.note ?? "");
+      el.style.cssText = `
+        background: ${bgCol};
+        border: 1px solid rgba(255,255,255,0.25);
+        border-radius: 8px;
+        padding: 5px 8px;
+        pointer-events: none;
+        max-width: 160px;
+        backdrop-filter: blur(4px);
+      `;
+      el.innerHTML = `
+        <div style="font-family:monospace;font-size:7px;font-weight:bold;color:rgba(255,255,255,0.7);
+                    letter-spacing:.1em;margin-bottom:2px;">${badge}</div>
+        <div style="font-family:monospace;font-size:8.5px;font-weight:bold;color:#fff;
+                    margin-bottom:2px;">${item.isoLabel ?? ""}</div>
+        <div style="font-family:monospace;font-size:7.5px;color:rgba(255,255,255,0.75);
+                    line-height:1.3;">${truncated}</div>
+      `;
+    } else if (item.type === "psych-zone") {
+      const truncated = (item.psychNote ?? "").length > 65 ? (item.psychNote ?? "").slice(0, 65) + "…" : (item.psychNote ?? "");
+      el.style.cssText = `
+        background: rgba(138,43,226,0.8);
+        border: 1px solid rgba(200,150,255,0.4);
+        border-radius: 8px;
+        padding: 5px 8px;
+        pointer-events: none;
+        max-width: 155px;
+        backdrop-filter: blur(4px);
+      `;
+      el.innerHTML = `
+        <div style="font-family:monospace;font-size:7px;font-weight:bold;color:rgba(200,150,255,0.9);
+                    letter-spacing:.1em;margin-bottom:2px;">🧠 PSYCH RISK</div>
+        <div style="font-family:monospace;font-size:8.5px;font-weight:bold;color:#fff;
+                    margin-bottom:2px;">${item.region ?? ""}</div>
+        <div style="font-family:monospace;font-size:7px;color:rgba(200,150,255,0.85);
+                    margin-bottom:2px;">${item.threat ?? ""}</div>
+        <div style="font-family:monospace;font-size:7px;color:rgba(255,255,255,0.7);
+                    line-height:1.3;">${truncated}</div>
+      `;
+    }
+
     return el;
   }, []);
 
@@ -262,6 +400,20 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
     if (containerRef.current) ro.observe(containerRef.current);
     return () => ro.disconnect();
   }, []);
+
+  // ── Signal pin click listener ─────────────────────────────────────────────
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.sigIndex !== undefined) {
+        onSignalPinClick(detail.sigIndex);
+      }
+    };
+    container.addEventListener("signal-pin-click", handler);
+    return () => container.removeEventListener("signal-pin-click", handler);
+  }, [onSignalPinClick]);
 
   // ── Load + parse TopoJSON ─────────────────────────────────────────────────
   useEffect(() => {
@@ -452,7 +604,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
             return        `rgba(255,20,60,${Math.min(0.92, 0.8 + (t - 0.55) * 0.27)})`;
           }}
 
-          htmlElementsData={signalPinsData}
+          htmlElementsData={htmlGlobeData}
           htmlLat="lat"
           htmlLng="lng"
           htmlElement={htmlElement}
@@ -472,6 +624,20 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
             <span className="w-1.5 h-1.5 rounded-full bg-red-bright animate-pulse" />
             <p className="font-mono text-[8.5px] tracking-[.14em] uppercase text-red-bright">
               Scenario · {SCENARIO_IMPACTS.find(s => s.id === scenarioId)?.title ?? scenarioId}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ── Psychology mode badge ─────────────────────────────────────────── */}
+      {psychologyMode && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 pointer-events-none"
+             style={{ marginTop: scenarioId ? "40px" : "0" }}>
+          <div className="flex items-center gap-2 rounded-full px-3.5 py-1.5 backdrop-blur-sm"
+               style={{ background: "rgba(11,13,24,0.88)", border: "1px solid rgba(138,43,226,0.4)" }}>
+            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "#8b2be2" }} />
+            <p className="font-mono text-[8.5px] tracking-[.14em] uppercase" style={{ color: "#c084fc" }}>
+              Psychology · Stress Zone Overlay
             </p>
           </div>
         </div>
