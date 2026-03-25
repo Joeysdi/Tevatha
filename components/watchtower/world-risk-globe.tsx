@@ -685,7 +685,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
 
   const altitude = useCallback(
     (feat: object): number => {
-      if (!feat) return 0.001;
+      if (!feat) return 0.006;
       const f   = feat as GeoFeature;
       const iso = String(parseInt(String(f.id ?? "0"), 10));
 
@@ -699,11 +699,11 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
         return lookupRisk(f)?.level ?? null;
       })();
 
-      if (!level) return 0.001;
+      if (!level) return 0.006;
       if (level === "CRITICAL") return 0.032;
       if (level === "HIGH")     return 0.018;
       if (level === "ELEVATED") return 0.008;
-      return 0.003;
+      return 0.006;
     },
     [eraByIso, scenarioMap],
   );
@@ -832,6 +832,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
           polygonSideColor={() => "rgba(0,212,255,0.04)"}
           polygonStrokeColor={() => "rgba(0,212,255,0.55)"}
           polygonAltitude={altitude}
+          polygonCapCurvatureResolution={5}
           onPolygonHover={handleHover as (f: object | null, p: object | null) => void}
           onPolygonClick={(feat: object) => {
             const f = feat as GeoFeature;
