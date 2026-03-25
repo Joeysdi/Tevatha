@@ -173,10 +173,7 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
       className="relative overflow-hidden select-none"
       style={{
         height:     HEIGHT,
-        background: "linear-gradient(to top, rgba(2,3,8,0.88) 0%, rgba(2,3,8,0.72) 60%, transparent 100%)",
-        backdropFilter: "blur(6px)",
-        WebkitBackdropFilter: "blur(6px)",
-        borderTop:  "1px solid rgba(255,255,255,0.05)",
+        background: "transparent",
       }}
     >
       {/* ── Playhead ── */}
