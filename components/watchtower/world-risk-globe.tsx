@@ -24,6 +24,9 @@ import { SIGNAL_PINS } from "@/lib/watchtower/signal-pins";
 import { DOMAIN_IMPACTS } from "@/lib/watchtower/domain-impacts";
 import { DOMAINS } from "@/lib/watchtower/data";
 import { GATE_PINS } from "@/lib/watchtower/gate-pins";
+import { COMMODITY_PINS } from "@/lib/watchtower/commodity-pins";
+import { NEWS_FEED_PINS } from "@/lib/watchtower/news-feed-pins";
+import { INSTABILITY_SCORES, INSTABILITY_DEFAULT, instabilityFill } from "@/lib/watchtower/instability-data";
 
 // ─── Dynamic import — WebGL requires browser environment ──────────────────────
 const Globe = dynamic(() => import("react-globe.gl"), {
@@ -75,6 +78,42 @@ const CITY_PINS_DATA: CityPin[] = [
   { name: "Taipei",        country: "Taiwan",       flag: "🇹🇼", lat:  25.03, lng:  121.56, pop:  2.7, threatScore: 85, note: "PRC military pressure; strait crossing rehearsals" },
   { name: "Istanbul",      country: "Türkiye",      flag: "🇹🇷", lat:  41.01, lng:   28.97, pop: 15.5, threatScore: 62, note: "Bosphorus chokepoint; Kurdish-Turkish conflict" },
 ];
+
+// ─── Instability badge — "looks live" animated score ─────────────────────────
+function InstabilityBadge() {
+  const [delta, setDelta] = useState(0);
+  const [score, setScore] = useState(58.4);
+
+  useEffect(() => {
+    const iv = setInterval(() => {
+      const d = (Math.random() - 0.48) * 1.8;
+      setDelta(d);
+      setScore((s) => Math.max(40, Math.min(80, s + d * 0.1)));
+    }, 3800);
+    return () => clearInterval(iv);
+  }, []);
+
+  const col = delta > 0.1 ? "#e84040" : delta < -0.1 ? "#1ae8a0" : "#f0a500";
+
+  return (
+    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 pointer-events-none"
+         style={{ marginTop: "0px" }}>
+      <div
+        className="flex items-center gap-2.5 rounded-full px-3.5 py-1.5 backdrop-blur-sm"
+        style={{ background: "rgba(11,13,24,0.90)", border: "1px solid rgba(240,165,0,0.4)" }}
+      >
+        <span className="w-1.5 h-1.5 rounded-full animate-pulse flex-shrink-0" style={{ background: "#f0a500" }} />
+        <p className="font-mono text-[8.5px] tracking-[.14em] uppercase text-amber-protocol">
+          INSTABILITY INDEX
+        </p>
+        <span className="font-mono text-[8.5px] font-bold tabular-nums" style={{ color: col }}>
+          {score.toFixed(1)} {delta > 0.1 ? "▲" : delta < -0.1 ? "▼" : "—"}
+        </span>
+        <span className="font-mono text-[7px] text-text-mute2/50">● LIVE</span>
+      </div>
+    </div>
+  );
+}
 
 // ─── Starfield canvas (static, rendered once) ─────────────────────────────────
 function StarfieldCanvas({ w, h }: { w: number; h: number }) {
@@ -251,20 +290,25 @@ const PSYCH_ZONES: PsychZone[] = [
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 interface Props {
-  eraPhase:         string;
-  scenarioId:       string | null;
-  showSignals:      boolean;
-  psychologyMode:   boolean;
-  domainId:         string | null;
-  gatePhase:        string;
-  scrubVelocity:    number;
-  onSignalPinClick: (sigIndex: number) => void;
-  onPsychZoneClick: (zone: { region: string; threat: string; note: string }) => void;
-  onGatePinClick:   (gateId: string) => void;
+  eraPhase:              string;
+  scenarioId:            string | null;
+  showSignals:           boolean;
+  psychologyMode:        boolean;
+  domainId:              string | null;
+  gatePhase:             string;
+  scrubVelocity:         number;
+  showCommodities:       boolean;
+  showInstability:       boolean;
+  showNewsFeed:          boolean;
+  onSignalPinClick:      (sigIndex: number) => void;
+  onPsychZoneClick:      (zone: { region: string; threat: string; note: string }) => void;
+  onGatePinClick:        (gateId: string) => void;
+  onCommodityPinClick:   (commodityId: string) => void;
+  onNewsFeedPinClick:    (newsId: string) => void;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
-export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMode, domainId, gatePhase, scrubVelocity, onSignalPinClick, onPsychZoneClick, onGatePinClick }: Props) {
+export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMode, domainId, gatePhase, scrubVelocity, showCommodities, showInstability, showNewsFeed, onSignalPinClick, onPsychZoneClick, onGatePinClick, onCommodityPinClick, onNewsFeedPinClick }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const globeRef     = useRef<GlobeMethods | undefined>(undefined);
   const [dims,         setDims]         = useState({ w: 0, h: 0 });
@@ -407,7 +451,7 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
 
   // ── Unified HTML elements for globe ──────────────────────────────────────
   type HtmlGlobeItem = {
-    type:        "signal" | "scenario-label" | "psych-zone" | "city" | "domain-label" | "gate";
+    type:        "signal" | "scenario-label" | "psych-zone" | "city" | "domain-label" | "gate" | "commodity" | "news";
     lat:         number;
     lng:         number;
     // signal fields
@@ -434,6 +478,18 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
     gateId?:    string;
     gateLabel?: string;
     gateTier?:  string;
+    // commodity fields
+    commodityId?:     string;
+    commoditySymbol?: string;
+    commodityPrice?:  string;
+    commodityUnit?:   string;
+    commodityChange?: number;
+    commodityName?:   string;
+    // news fields
+    newsId?:       string;
+    newsTier?:     string;
+    newsHeadline?: string;
+    newsCategory?: string;
   };
 
   const htmlGlobeData = useMemo<HtmlGlobeItem[]>(() => {
@@ -535,8 +591,40 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
       }
     }
 
+    // Commodity price ticker pins
+    if (showCommodities) {
+      for (const pin of COMMODITY_PINS) {
+        items.push({
+          type:             "commodity",
+          lat:              pin.lat,
+          lng:              pin.lng,
+          commodityId:      pin.id,
+          commoditySymbol:  pin.symbol,
+          commodityPrice:   pin.price,
+          commodityUnit:    pin.unit,
+          commodityChange:  pin.change,
+          commodityName:    pin.name,
+        });
+      }
+    }
+
+    // World news feed pins
+    if (showNewsFeed) {
+      for (const pin of NEWS_FEED_PINS) {
+        items.push({
+          type:         "news",
+          lat:          pin.lat,
+          lng:          pin.lng,
+          newsId:       pin.id,
+          newsTier:     pin.tier,
+          newsHeadline: pin.headline,
+          newsCategory: pin.category,
+        });
+      }
+    }
+
     return items;
-  }, [showSignals, scenarioId, psychologyMode, domainId, domainColor, gatePhase]);
+  }, [showSignals, scenarioId, psychologyMode, domainId, domainColor, gatePhase, showCommodities, showNewsFeed]);
 
   const htmlElement = useCallback((d: object) => {
     const el = document.createElement("div");
@@ -694,6 +782,94 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
         }));
       });
 
+    } else if (item.type === "commodity") {
+      const up  = (item.commodityChange ?? 0) >= 0;
+      const chg = Math.abs(item.commodityChange ?? 0).toFixed(1);
+      const col = up ? "#1ae8a0" : "#e84040";
+      el.style.cssText = `
+        background: rgba(5,8,13,0.92);
+        border: 1px solid ${col}55;
+        border-left: 2px solid ${col};
+        border-radius: 6px;
+        padding: 4px 7px;
+        pointer-events: auto;
+        cursor: pointer;
+        white-space: nowrap;
+        backdrop-filter: blur(8px);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.7), 0 0 8px ${col}18;
+        transition: transform 0.15s, box-shadow 0.15s;
+      `;
+      el.innerHTML = `
+        <div style="font-family:monospace;font-size:7px;font-weight:bold;color:${col}99;letter-spacing:.1em;margin-bottom:1px;">${item.commoditySymbol ?? ""}</div>
+        <div style="display:flex;align-items:baseline;gap:4px;">
+          <span style="font-family:monospace;font-size:10px;font-weight:bold;color:#e8dcc8;">${item.commodityPrice ?? ""}</span>
+          <span style="font-family:monospace;font-size:7.5px;color:rgba(215,220,230,0.5);">${item.commodityUnit ?? ""}</span>
+          <span style="font-family:monospace;font-size:8px;font-weight:bold;color:${col};">${up ? "▲" : "▼"} ${chg}%</span>
+        </div>
+      `;
+      el.title = `${item.commodityName ?? ""} — Click for details`;
+      el.addEventListener("mouseenter", () => {
+        el.style.transform = "scale(1.06)";
+        el.style.boxShadow = `0 6px 24px rgba(0,0,0,0.8), 0 0 16px ${col}30`;
+      });
+      el.addEventListener("mouseleave", () => {
+        el.style.transform = "scale(1)";
+        el.style.boxShadow = `0 4px 16px rgba(0,0,0,0.7), 0 0 8px ${col}18`;
+      });
+      el.addEventListener("click", (e) => {
+        e.stopPropagation();
+        el.dispatchEvent(new CustomEvent("commodity-pin-click", {
+          bubbles: true,
+          detail:  { commodityId: item.commodityId },
+        }));
+      });
+
+    } else if (item.type === "news") {
+      const tierCol = item.newsTier === "t4" ? "#e84040" : item.newsTier === "t3" ? "#f0a500" : "#38bdf8";
+      const catIcon: Record<string, string> = {
+        war: "⚔", economic: "📉", nuclear: "☢", health: "⚕", climate: "🌡", political: "🏛",
+      };
+      const icon = catIcon[item.newsCategory ?? ""] ?? "📡";
+      el.style.cssText = `
+        background: rgba(5,8,13,0.92);
+        border: 1px solid ${tierCol}55;
+        border-left: 2px solid ${tierCol};
+        border-radius: 6px;
+        padding: 4px 8px;
+        pointer-events: auto;
+        cursor: pointer;
+        max-width: 150px;
+        backdrop-filter: blur(8px);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.7), 0 0 8px ${tierCol}18;
+        transition: transform 0.15s, box-shadow 0.15s;
+      `;
+      const truncHead = (item.newsHeadline ?? "").length > 38
+        ? (item.newsHeadline ?? "").slice(0, 38) + "…"
+        : (item.newsHeadline ?? "");
+      el.innerHTML = `
+        <div style="display:flex;align-items:center;gap:4px;margin-bottom:2px;">
+          <span style="font-size:9px;">${icon}</span>
+          <span style="font-family:monospace;font-size:6.5px;font-weight:bold;color:${tierCol};letter-spacing:.1em;">${(item.newsTier ?? "").toUpperCase()}</span>
+        </div>
+        <div style="font-family:monospace;font-size:8px;font-weight:bold;color:rgba(215,220,230,0.92);line-height:1.3;">${truncHead}</div>
+      `;
+      el.title = item.newsHeadline ?? "";
+      el.addEventListener("mouseenter", () => {
+        el.style.transform = "scale(1.05)";
+        el.style.boxShadow = `0 6px 24px rgba(0,0,0,0.8), 0 0 16px ${tierCol}30`;
+      });
+      el.addEventListener("mouseleave", () => {
+        el.style.transform = "scale(1)";
+        el.style.boxShadow = `0 4px 16px rgba(0,0,0,0.7), 0 0 8px ${tierCol}18`;
+      });
+      el.addEventListener("click", (e) => {
+        e.stopPropagation();
+        el.dispatchEvent(new CustomEvent("news-pin-click", {
+          bubbles: true,
+          detail:  { newsId: item.newsId },
+        }));
+      });
+
     } else if (item.type === "domain-label") {
       const hex   = item.domainHex ?? "#c9a84c";
       const role  = item.domainRole ?? "watch";
@@ -795,6 +971,30 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
     return () => container.removeEventListener("gate-pin-click", handler);
   }, [onGatePinClick]);
 
+  // ── Commodity pin click listener ─────────────────────────────────────────
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.commodityId) onCommodityPinClick(detail.commodityId);
+    };
+    container.addEventListener("commodity-pin-click", handler);
+    return () => container.removeEventListener("commodity-pin-click", handler);
+  }, [onCommodityPinClick]);
+
+  // ── News feed pin click listener ─────────────────────────────────────────
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.newsId) onNewsFeedPinClick(detail.newsId);
+    };
+    container.addEventListener("news-pin-click", handler);
+    return () => container.removeEventListener("news-pin-click", handler);
+  }, [onNewsFeedPinClick]);
+
   // ── Load + parse TopoJSON ─────────────────────────────────────────────────
   useEffect(() => {
     fetch("/world-50m.json")
@@ -876,6 +1076,11 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
       const iso = String(parseInt(String(f.id ?? "0"), 10));
       const isHov = hovered && String(f.id) === String(hovered.id);
 
+      if (showInstability) {
+        const score = INSTABILITY_SCORES[iso] ?? INSTABILITY_DEFAULT;
+        return instabilityFill(score, !!isHov);
+      }
+
       if (domainMap) {
         const role = domainMap[iso];
         if (!role) return ERA_NEUTRAL_FILL;
@@ -900,7 +1105,7 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
       if (!risk) return NO_DATA_FILL;
       return isHov ? RISK_COLORS[risk.level].hover : RISK_COLORS[risk.level].fill;
     },
-    [hovered, eraByIso, scenarioMap, domainMap],
+    [hovered, eraByIso, scenarioMap, domainMap, showInstability],
   );
 
   const altitude = useCallback(
@@ -1096,6 +1301,11 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
             </p>
           </div>
         </div>
+      )}
+
+      {/* ── Instability mode badge ───────────────────────────────────────── */}
+      {showInstability && (
+        <InstabilityBadge />
       )}
 
       {/* ── Hover info overlay ────────────────────────────────────────────── */}

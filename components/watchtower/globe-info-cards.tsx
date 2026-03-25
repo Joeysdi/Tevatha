@@ -6,6 +6,8 @@ import { motion, AnimatePresence, useMotionValue } from "framer-motion";
 import type { MotionValue } from "framer-motion";
 import type { RefObject } from "react";
 import { DOMAINS, SIGNALS, SCENARIOS, PSYCH_PILLARS, GEAR, GATES } from "@/lib/watchtower/data";
+import { COMMODITY_PINS } from "@/lib/watchtower/commodity-pins";
+import { NEWS_FEED_PINS } from "@/lib/watchtower/news-feed-pins";
 
 // ── Domain-to-gear category mapping ─────────────────────────────────────────
 const DOMAIN_GEAR_CATS: Record<string, string[]> = {
@@ -741,6 +743,113 @@ function GateDetailCard({
   );
 }
 
+// ── Commodity detail card ─────────────────────────────────────────────────────
+function CommodityCard({ commodityId, onClose }: { commodityId: string; onClose: () => void }) {
+  const pin = COMMODITY_PINS.find((p) => p.id === commodityId);
+  if (!pin) return null;
+  const up  = pin.change >= 0;
+  const col = up ? "#1ae8a0" : "#e84040";
+  const CAT_LABEL: Record<string, string> = {
+    grain: "GRAIN MARKET", energy: "ENERGY MARKET", metal: "METALS MARKET", index: "GLOBAL INDEX",
+  };
+  return (
+    <Frame col={col}>
+      <div className="px-4 py-3.5">
+        <div className="flex items-start justify-between gap-2 mb-3">
+          <div>
+            <p className="font-mono text-[7.5px] tracking-[.18em] uppercase mb-1" style={{ color: `${col}99` }}>
+              {CAT_LABEL[pin.category] ?? "COMMODITY"} · {pin.exchange}
+            </p>
+            <p className="font-syne font-bold text-[15px] text-text-base leading-none">{pin.name}</p>
+            <p className="font-mono text-[8px] text-text-mute2 mt-0.5">{pin.symbol}</p>
+          </div>
+          <CloseBtn onClick={(e) => { e.stopPropagation(); onClose(); }} />
+        </div>
+
+        {/* Price + change */}
+        <div className="flex items-end gap-3 mb-3">
+          <div>
+            <p className="font-mono font-bold text-[28px] leading-none tabular-nums" style={{ color: col, textShadow: `0 0 20px ${col}44` }}>
+              {pin.price}
+            </p>
+            <p className="font-mono text-[9px] text-text-mute2 mt-0.5">{pin.unit}</p>
+          </div>
+          <div className="pb-1">
+            <p className="font-mono font-bold text-[13px]" style={{ color: col }}>
+              {up ? "▲" : "▼"} {Math.abs(pin.change).toFixed(1)}%
+            </p>
+            <p className="font-mono text-[7.5px] text-text-mute2">24h change</p>
+          </div>
+        </div>
+
+        <div className="w-full h-px mb-3" style={{ background: `linear-gradient(90deg,${col}44,transparent)` }} />
+
+        <SectionLabel text="Market Context" col={col} />
+        <p className="font-mono text-[9px] text-text-dim leading-relaxed mb-3">{pin.note}</p>
+
+        <div className="flex items-center gap-2 pt-2 border-t" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
+          <span className="w-1.5 h-1.5 rounded-full animate-pulse flex-shrink-0" style={{ background: col }} />
+          <p className="font-mono text-[7.5px] tracking-[.1em]" style={{ color: `${col}80` }}>
+            LIVE · {pin.exchange.toUpperCase()}
+          </p>
+        </div>
+      </div>
+    </Frame>
+  );
+}
+
+// ── News feed detail card ──────────────────────────────────────────────────────
+function NewsFeedCard({ newsId, onClose }: { newsId: string; onClose: () => void }) {
+  const pin = NEWS_FEED_PINS.find((p) => p.id === newsId);
+  if (!pin) return null;
+  const tierCol = pin.tier === "t4" ? "#e84040" : pin.tier === "t3" ? "#f0a500" : "#38bdf8";
+  const CAT_LABEL: Record<string, string> = {
+    war: "CONFLICT", economic: "ECONOMICS", nuclear: "NUCLEAR", health: "HEALTH",
+    climate: "CLIMATE", political: "POLITICAL",
+  };
+  const CAT_ICON: Record<string, string> = {
+    war: "⚔", economic: "📉", nuclear: "☢", health: "⚕", climate: "🌡", political: "🏛",
+  };
+  return (
+    <Frame col={tierCol}>
+      <div className="px-4 py-3.5">
+        <div className="flex items-start justify-between gap-2 mb-2.5">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span
+              className="font-mono text-[7px] px-1.5 py-0.5 rounded border font-bold flex-shrink-0"
+              style={{ color: tierCol, borderColor: `${tierCol}40`, background: `${tierCol}15` }}
+            >
+              {pin.tier.toUpperCase()} · {CAT_ICON[pin.category]} {CAT_LABEL[pin.category] ?? pin.category.toUpperCase()}
+            </span>
+            <span className="font-mono text-[7px] text-text-mute2/60">{pin.date}</span>
+          </div>
+          <CloseBtn onClick={(e) => { e.stopPropagation(); onClose(); }} />
+        </div>
+
+        <p className="font-syne font-bold text-[13px] text-text-base leading-snug mb-3">{pin.headline}</p>
+
+        <div className="w-full h-px mb-3" style={{ background: `linear-gradient(90deg,${tierCol}44,transparent)` }} />
+
+        <p className="font-mono text-[9.5px] text-text-dim leading-relaxed mb-3">{pin.summary}</p>
+
+        <a
+          href={pin.sourceUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1.5 font-mono text-[8px] transition-colors"
+          style={{ color: `${tierCol}80` }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = tierCol)}
+          onMouseLeave={(e) => (e.currentTarget.style.color = `${tierCol}80`)}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <span>{pin.source}</span>
+          <span>↗</span>
+        </a>
+      </div>
+    </Frame>
+  );
+}
+
 // ── Main export ───────────────────────────────────────────────────────────────
 
 interface GlobeInfoCardsProps {
@@ -758,6 +867,10 @@ interface GlobeInfoCardsProps {
   onClosePsych:      () => void;
   onCloseGate:       () => void;
   onOpenShop:        () => void;
+  selectedCommodityId: string | null;
+  selectedNewsId:      string | null;
+  onCloseCommodity:    () => void;
+  onCloseNews:         () => void;
 }
 
 export function GlobeInfoCards({
@@ -765,6 +878,7 @@ export function GlobeInfoCards({
   domainId, scenarioId, selectedSignalIdx, selectedPsychZone, selectedGateId,
   onCloseDomain, onCloseScenario, onCloseSignal, onClosePsych, onCloseGate,
   onOpenShop,
+  selectedCommodityId, selectedNewsId, onCloseCommodity, onCloseNews,
 }: GlobeInfoCardsProps) {
   // ── Card registry for real-time repulsion ─────────────────────────────────
   const registryRef = useRef<Map<string, RegistryEntry>>(new Map());
@@ -929,7 +1043,30 @@ export function GlobeInfoCards({
     );
   })();
 
-  const hasAny = !!(domainId || scenarioId || selectedSignalIdx !== null || selectedPsychZone || selectedGateId);
+  // ── Commodity ──────────────────────────────────────────────────────────────
+  const commodityCards = (() => {
+    if (!selectedCommodityId) return null;
+    const col = "#1ae8a0";
+    const pos = spreadPositions(1, 100, containerW, containerH, 288, 260, containerW * 0.5, containerH * 0.35);
+    return (
+      <DragCard key="commodity-detail" cardKey="commodity-detail" initX={pos[0].x} initY={pos[0].y} containerRef={containerRef} {...dragProps}>
+        <CommodityCard commodityId={selectedCommodityId} onClose={onCloseCommodity} />
+      </DragCard>
+    );
+  })();
+
+  // ── News ───────────────────────────────────────────────────────────────────
+  const newsCards = (() => {
+    if (!selectedNewsId) return null;
+    const pos = spreadPositions(1, 100, containerW, containerH, 288, 260, containerW * 0.5, containerH * 0.35);
+    return (
+      <DragCard key="news-detail" cardKey="news-detail" initX={pos[0].x} initY={pos[0].y} containerRef={containerRef} {...dragProps}>
+        <NewsFeedCard newsId={selectedNewsId} onClose={onCloseNews} />
+      </DragCard>
+    );
+  })();
+
+  const hasAny = !!(domainId || scenarioId || selectedSignalIdx !== null || selectedPsychZone || selectedGateId || selectedCommodityId || selectedNewsId);
 
   return (
     <AnimatePresence>
@@ -940,6 +1077,8 @@ export function GlobeInfoCards({
           {signalCards}
           {psychCards}
           {gateCards}
+          {commodityCards}
+          {newsCards}
         </>
       )}
     </AnimatePresence>

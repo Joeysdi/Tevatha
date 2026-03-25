@@ -107,6 +107,13 @@ export function WatchtowerGlobeShell() {
   const [selectedPsychZone, setSelectedPsychZone] = useState<{ region: string; threat: string; note: string } | null>(null);
   const [selectedGateId,    setSelectedGateId]    = useState<string | null>(null);
 
+  // ── New layer toggles ───────────────────────────────────────────────────────
+  const [showCommodities,   setShowCommodities]   = useState(false);
+  const [showInstability,   setShowInstability]   = useState(false);
+  const [showNewsFeed,      setShowNewsFeed]      = useState(false);
+  const [selectedCommodityId, setSelectedCommodityId] = useState<string | null>(null);
+  const [selectedNewsId,    setSelectedNewsId]    = useState<string | null>(null);
+
   const globeContainerRef = useRef<HTMLDivElement>(null);
   const [containerW, setContainerW] = useState(800);
   const [containerH, setContainerH] = useState(600);
@@ -140,9 +147,14 @@ export function WatchtowerGlobeShell() {
           domainId={domainId}
           gatePhase={eraPhase}
           scrubVelocity={scrubVelocity}
+          showCommodities={showCommodities}
+          showInstability={showInstability}
+          showNewsFeed={showNewsFeed}
           onSignalPinClick={setSelectedSignalIdx}
           onPsychZoneClick={setSelectedPsychZone}
           onGatePinClick={setSelectedGateId}
+          onCommodityPinClick={setSelectedCommodityId}
+          onNewsFeedPinClick={setSelectedNewsId}
         />
 
         {/* ── Provisioner (right) panel trigger ──────────────────────────── */}
@@ -310,6 +322,67 @@ export function WatchtowerGlobeShell() {
             📡 {t("nav_signals")}
           </button>
 
+          {/* ── New layer group ─────────────────────────────────────────── */}
+          <div
+            className="rounded-xl overflow-hidden backdrop-blur-sm"
+            style={{ background: "rgba(11,13,24,0.88)", border: "1px solid rgba(255,255,255,0.07)" }}
+          >
+            <p className="font-mono text-[6.5px] tracking-[.2em] uppercase text-text-mute2/60 px-2.5 pt-2 pb-1">
+              Live Layers
+            </p>
+            <div className="flex flex-col gap-0.5 px-1.5 pb-1.5">
+
+              {/* Commodity Prices */}
+              <button
+                onClick={(e) => { e.stopPropagation(); setShowCommodities(v => !v); }}
+                aria-pressed={showCommodities}
+                className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-left
+                            transition-all duration-150 font-mono text-[8px]
+                            ${showCommodities
+                              ? "border border-emerald-500/40 text-emerald-400"
+                              : "text-text-mute2 hover:text-text-base hover:bg-white/[0.04] border border-transparent"
+                            }`}
+                style={showCommodities ? { background: "rgba(16,185,129,0.10)" } : {}}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${showCommodities ? "bg-emerald-400 animate-pulse" : "bg-text-mute2/30"}`} />
+                📊 Prices
+              </button>
+
+              {/* World Instability */}
+              <button
+                onClick={(e) => { e.stopPropagation(); setShowInstability(v => !v); }}
+                aria-pressed={showInstability}
+                className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-left
+                            transition-all duration-150 font-mono text-[8px]
+                            ${showInstability
+                              ? "border border-amber-500/40 text-amber-protocol"
+                              : "text-text-mute2 hover:text-text-base hover:bg-white/[0.04] border border-transparent"
+                            }`}
+                style={showInstability ? { background: "rgba(240,165,0,0.10)" } : {}}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${showInstability ? "bg-amber-protocol animate-pulse" : "bg-text-mute2/30"}`} />
+                🌡 Instability
+              </button>
+
+              {/* World News */}
+              <button
+                onClick={(e) => { e.stopPropagation(); setShowNewsFeed(v => !v); }}
+                aria-pressed={showNewsFeed}
+                className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-left
+                            transition-all duration-150 font-mono text-[8px]
+                            ${showNewsFeed
+                              ? "border border-sky-500/40 text-sky-300"
+                              : "text-text-mute2 hover:text-text-base hover:bg-white/[0.04] border border-transparent"
+                            }`}
+                style={showNewsFeed ? { background: "rgba(56,189,248,0.10)" } : {}}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${showNewsFeed ? "bg-sky-300 animate-pulse" : "bg-text-mute2/30"}`} />
+                📰 News
+              </button>
+
+            </div>
+          </div>
+
           {/* Language picker */}
           <div
             className="rounded-xl overflow-hidden backdrop-blur-sm"
@@ -352,6 +425,10 @@ export function WatchtowerGlobeShell() {
           onClosePsych={() => setSelectedPsychZone(null)}
           onCloseGate={() => setSelectedGateId(null)}
           onOpenShop={() => { setProvisionerOpen(true); updateUrl({ panel: "shop" }); }}
+          selectedCommodityId={selectedCommodityId}
+          selectedNewsId={selectedNewsId}
+          onCloseCommodity={() => setSelectedCommodityId(null)}
+          onCloseNews={() => setSelectedNewsId(null)}
         />
 
         {/* ── UTC clock — desktop only ─────────────────────────────────────── */}
@@ -560,6 +637,35 @@ export function WatchtowerGlobeShell() {
                       ${showSignals ? "border-red-protocol/50 text-red-bright" : "bg-void-3 border-border-protocol text-text-mute2"}`}
           style={{ background: showSignals ? "rgba(232,64,64,0.12)" : undefined }}>
           📡 {t("nav_signals")}
+        </button>
+
+        <div className="w-px h-4 bg-border-protocol/60 flex-shrink-0" />
+
+        <button
+          onClick={() => setShowCommodities(v => !v)}
+          aria-pressed={showCommodities}
+          className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-2.5 rounded-lg border font-mono text-[9px] transition-all min-h-[44px]
+                      ${showCommodities ? "border-emerald-500/40 text-emerald-400" : "bg-void-3 border-border-protocol text-text-mute2"}`}
+          style={{ background: showCommodities ? "rgba(16,185,129,0.10)" : undefined }}>
+          📊
+        </button>
+
+        <button
+          onClick={() => setShowInstability(v => !v)}
+          aria-pressed={showInstability}
+          className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-2.5 rounded-lg border font-mono text-[9px] transition-all min-h-[44px]
+                      ${showInstability ? "border-amber-500/40 text-amber-protocol" : "bg-void-3 border-border-protocol text-text-mute2"}`}
+          style={{ background: showInstability ? "rgba(240,165,0,0.10)" : undefined }}>
+          🌡
+        </button>
+
+        <button
+          onClick={() => setShowNewsFeed(v => !v)}
+          aria-pressed={showNewsFeed}
+          className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-2.5 rounded-lg border font-mono text-[9px] transition-all min-h-[44px]
+                      ${showNewsFeed ? "border-sky-500/40 text-sky-300" : "bg-void-3 border-border-protocol text-text-mute2"}`}
+          style={{ background: showNewsFeed ? "rgba(56,189,248,0.10)" : undefined }}>
+          📰
         </button>
 
       </div>
