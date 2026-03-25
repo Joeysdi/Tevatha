@@ -4,6 +4,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import type { GearCategory } from "@/lib/watchtower/data";
+import { useTranslation } from "@/lib/i18n/use-translation";
 
 const DOMAIN_MAP: Record<string, string> = {
   Communications: "B1 EMP + B2 Cyber",
@@ -25,6 +26,7 @@ interface GearPanelProps {
 }
 
 export function GearPanel({ categories }: GearPanelProps) {
+  const { t } = useTranslation();
   const [active, setActive] = useState(categories[0]?.cat ?? "");
   const current = categories.find((c) => c.cat === active);
 
@@ -51,7 +53,7 @@ export function GearPanel({ categories }: GearPanelProps) {
         ))}
         <span className="ml-auto font-mono text-[9px] text-text-mute2
                          self-center pr-2">
-          {current?.items.length ?? 0} ITEMS
+          {current?.items.length ?? 0} {t("gear_items")}
         </span>
       </div>
 
@@ -59,15 +61,15 @@ export function GearPanel({ categories }: GearPanelProps) {
       <div className="flex items-center gap-3 flex-wrap px-4 py-3
                       bg-void-2 border border-border-protocol rounded-lg mb-4">
         <span className="font-mono text-[10px] text-text-mute2 tracking-[.1em]">
-          THREAT DOMAIN ▸
+          {t("gear_threat_domain")}
         </span>
         <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full
                          bg-red-dim text-red-bright border border-red-protocol/28
                          font-mono text-[10.5px] font-semibold">
-          {DOMAIN_MAP[active] ?? "MULTI-DOMAIN"}
+          {DOMAIN_MAP[active] ?? t("gear_multi_domain")}
         </span>
         <span className="text-[12px] text-text-mute2">
-          Items below directly mitigate this scenario class.
+          {t("gear_scenario_desc")}
         </span>
       </div>
 
@@ -79,7 +81,10 @@ export function GearPanel({ categories }: GearPanelProps) {
             <table className="w-full border-collapse">
               <thead>
                 <tr>
-                  {["Item","Brand","Price","Tier","Rating","Critical","Spec","Build Note"].map((h) => (
+                  {([
+                    t("col_item"), t("col_brand"), t("col_price"), t("col_tier"),
+                    t("col_rating"), t("col_critical"), t("col_spec"), t("col_build_note"),
+                  ] as string[]).map((h) => (
                     <th
                       key={h}
                       className="text-left font-mono text-[9.5px] tracking-[.12em]
@@ -133,7 +138,7 @@ export function GearPanel({ categories }: GearPanelProps) {
                                          font-mono text-[10px] font-semibold">
                           <span className="w-1.5 h-1.5 rounded-full bg-red-bright
                                            animate-pulse" />
-                          YES
+                          {t("gear_critical_yes")}
                         </span>
                       ) : (
                         <span className="text-text-mute2 text-[11px]">—</span>
@@ -159,17 +164,17 @@ export function GearPanel({ categories }: GearPanelProps) {
       <div className="flex gap-5 flex-wrap px-4 py-3 bg-void-2
                       border border-border-protocol rounded-lg text-[12px]">
         {[
-          { l:"T1", d:"Essential — every household", c:"text-green-bright" },
-          { l:"T2", d:"Sanctuary / community level", c:"text-blue-DEFAULT"  },
-          { l:"T3", d:"Tier 3+ communities only",   c:"text-purple-DEFAULT" },
-        ].map((t) => (
-          <div key={t.l} className="flex items-center gap-2">
-            <span className={`font-mono text-[11px] font-bold ${t.c}`}>{t.l}</span>
-            <span className="text-text-mute2">{t.d}</span>
+          { l:"T1", d:t("gear_t1_desc"), c:"text-green-bright" },
+          { l:"T2", d:t("gear_t2_desc"), c:"text-blue-DEFAULT"  },
+          { l:"T3", d:t("gear_t3_desc"), c:"text-purple-DEFAULT" },
+        ].map((tier) => (
+          <div key={tier.l} className="flex items-center gap-2">
+            <span className={`font-mono text-[11px] font-bold ${tier.c}`}>{tier.l}</span>
+            <span className="text-text-mute2">{tier.d}</span>
           </div>
         ))}
         <span className="text-text-mute2 text-[12px] ml-auto">
-          ★★★★★ = Tevatha-Certified
+          {t("gear_certified")}
         </span>
       </div>
     </>

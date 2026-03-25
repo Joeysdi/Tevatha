@@ -4,6 +4,8 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import { TIMELINE_EVENTS, GATES } from "@/lib/watchtower/data";
 import type { TimelineEvent, DecisionGate } from "@/lib/watchtower/data";
+import { useTranslation } from "@/lib/i18n/use-translation";
+import type { TranslationKey } from "@/lib/i18n/translations";
 
 // ── Non-linear scale ───────────────────────────────────────────────────────────
 // Dense around NOW, compressed for distant past/future
@@ -74,12 +76,12 @@ function parseYear(y: string): number {
 // ── Phase metadata (for axis coloring) ────────────────────────────────────────
 
 const PHASES = [
-  { id:"P1", label:"STABILITY",  yearStart:1945, yearEnd:1971, hex:"#38bdf8" },
-  { id:"P2", label:"EXPANSION",  yearStart:1971, yearEnd:2008, hex:"#818cf8" },
-  { id:"P3", label:"STRESS",     yearStart:2008, yearEnd:2020, hex:"#fbbf24" },
-  { id:"P4", label:"NOW",        yearStart:2020, yearEnd:2027, hex:"#e84040", isNow:true },
-  { id:"P5", label:"CASCADE",    yearStart:2027, yearEnd:2032, hex:"#ff0055" },
-  { id:"P6", label:"RESOLVE",    yearStart:2032, yearEnd:2038, hex:"#64748b" },
+  { id:"P1", labelKey:"era_stability" as TranslationKey, yearStart:1945, yearEnd:1971, hex:"#38bdf8" },
+  { id:"P2", labelKey:"era_expansion" as TranslationKey, yearStart:1971, yearEnd:2008, hex:"#818cf8" },
+  { id:"P3", labelKey:"era_stress"    as TranslationKey, yearStart:2008, yearEnd:2020, hex:"#fbbf24" },
+  { id:"P4", labelKey:null,                              yearStart:2020, yearEnd:2027, hex:"#e84040", isNow:true },
+  { id:"P5", labelKey:"era_cascade"   as TranslationKey, yearStart:2027, yearEnd:2032, hex:"#ff0055" },
+  { id:"P6", labelKey:"era_resolve"   as TranslationKey, yearStart:2032, yearEnd:2038, hex:"#64748b" },
 ] as const;
 
 const EVENT_COLORS: Record<string, string> = {
@@ -104,6 +106,7 @@ interface Props {
 // ── Component ──────────────────────────────────────────────────────────────────
 
 export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Props) {
+  const { t } = useTranslation();
   const containerRef  = useRef<HTMLDivElement>(null);
   const scrollRef     = useRef<HTMLDivElement>(null);
   const debounceRef   = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -243,7 +246,7 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
           className="font-mono tabular-nums"
           style={{ fontSize: "10px", letterSpacing: ".1em", color: `${activePhaseHex}cc`, transition: "color 0.5s" }}
         >
-          {scrollYear > NOW_YEAR ? `${scrollYear} ▸ forecast` : scrollYear < NOW_YEAR ? `◂ ${scrollYear}` : "▸ now  2026"}
+          {scrollYear > NOW_YEAR ? `${scrollYear} ▸ ${t("timeline_forecast")}` : scrollYear < NOW_YEAR ? `◂ ${scrollYear}` : "▸ now  2026"}
         </p>
       </div>
 
@@ -301,7 +304,7 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
                   transition: "color 0.4s",
                 }}
               >
-                {"isNow" in p && p.isNow ? "▶ " : ""}{p.label}
+                {"isNow" in p && p.isNow ? "▶ " : ""}{p.labelKey ? t(p.labelKey) : "NOW"}
               </p>
             );
           })}

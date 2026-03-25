@@ -9,6 +9,7 @@ import { GradeBadge }  from "./grade-badge";
 import { useCart }     from "@/lib/cart/store";
 import type { Product, ProductCategory } from "@/lib/provisioner/catalog";
 import type { GradeLevel } from "@/types/treasury";
+import { useTranslation } from "@/lib/i18n/use-translation";
 
 // Maps imageSlug → local /public path for each product that has an image
 const PRODUCT_IMAGES: Record<string, string> = {
@@ -31,18 +32,6 @@ const PRODUCT_IMAGES: Record<string, string> = {
 
 type FilterTab = "all" | ProductCategory | "critical";
 
-const FILTER_LABELS: Record<FilterTab, string> = {
-  all:            "All Items",
-  critical:       "Critical",
-  communications: "Comms",
-  medical:        "Medical",
-  energy:         "Energy",
-  mobility:       "Mobility",
-  water:          "Water",
-  security:       "Security",
-  shelter:        "Shelter",
-};
-
 const TIER_COLORS = {
   T0: "text-text-mute2",
   T1: "text-green-bright",
@@ -55,7 +44,20 @@ interface ProductGridProps {
 }
 
 export function ProductGrid({ products }: ProductGridProps) {
+  const { t } = useTranslation();
   const [activeFilter, setActiveFilter] = useState<FilterTab>("all");
+
+  const FILTER_LABELS: Record<FilterTab, string> = {
+    all:            t("filter_all_items"),
+    critical:       t("filter_critical"),
+    communications: t("filter_comms"),
+    medical:        t("filter_medical"),
+    energy:         t("filter_energy"),
+    mobility:       t("filter_mobility"),
+    water:          t("filter_water"),
+    security:       t("filter_security"),
+    shelter:        t("filter_shelter"),
+  };
 
   // Derive available filter tabs from actual catalog
   const availableFilters = useMemo<FilterTab[]>(() => {
@@ -98,7 +100,7 @@ export function ProductGrid({ products }: ProductGridProps) {
         ))}
         <span className="ml-auto self-center pr-2 font-mono text-[9.5px]
                           text-text-mute2 tracking-[.06em]">
-          {filtered.length} ITEMS
+          {filtered.length} {t("shop_items")}
         </span>
       </div>
 
@@ -115,6 +117,7 @@ export function ProductGrid({ products }: ProductGridProps) {
 }
 
 function ProductCard({ product: p }: { product: Product }) {
+  const { t } = useTranslation();
   const { addItem, setOpen } = useCart();
   const [added, setAdded] = useState(false);
 
@@ -219,7 +222,7 @@ function ProductCard({ product: p }: { product: Product }) {
             {p.tier} ITEM
           </span>
           <span className={`font-mono text-[10px] ${p.inStock ? "text-green-bright" : "text-red-bright"}`}>
-            {p.inStock ? "● IN STOCK" : "○ OUT OF STOCK"}
+            {p.inStock ? `● ${t("shop_in_stock")}` : `○ ${t("shop_out_of_stock")}`}
           </span>
         </div>
       </div>
@@ -245,10 +248,10 @@ function ProductCard({ product: p }: { product: Product }) {
                      disabled:opacity-40 disabled:cursor-not-allowed`}
         >
           {added
-            ? "✓ ADDED TO CART"
+            ? `✓ ${t("shop_added_to_cart")}`
             : p.inStock
-              ? `ADD TO CART — $${(p.priceUsd / 100).toFixed(2)}`
-              : "OUT OF STOCK"}
+              ? `${t("shop_add_to_cart")} — $${(p.priceUsd / 100).toFixed(2)}`
+              : t("shop_out_of_stock")}
         </button>
       </div>
     </motion.article>

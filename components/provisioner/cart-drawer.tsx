@@ -7,6 +7,7 @@ import { motion, AnimatePresence }        from "framer-motion";
 import { useCart, cartTotal, cartTotalUsdc, type CartItem } from "@/lib/cart/store";
 import { SolanaCheckout }                 from "./solana-checkout";
 import { StripeEmbeddedCheckout }         from "./stripe-embedded-checkout";
+import { useTranslation }                 from "@/lib/i18n/use-translation";
 
 const PRODUCT_IMAGES: Record<string, string> = {
   "garmin-inreach-mini2": "/products/garmin-inreach-mini2.jpg",
@@ -29,6 +30,7 @@ const PRODUCT_IMAGES: Record<string, string> = {
 type CheckoutMode = "cart" | "stripe" | "usdc";
 
 export function CartDrawer() {
+  const { t } = useTranslation();
   const { items, open, setOpen, removeItem, updateQty, clearCart } = useCart();
   const overlayRef = useRef<HTMLDivElement>(null);
   const [mode, setMode] = useState<CheckoutMode>("cart");
@@ -56,16 +58,16 @@ export function CartDrawer() {
   };
 
   const headerLabel = mode === "stripe"
-    ? "Secure Card Checkout"
+    ? t("cart_checkout_card")
     : mode === "usdc"
-      ? "USDC / Solana Checkout"
-      : "Cart";
+      ? t("cart_checkout_usdc")
+      : t("cart_title");
 
   const headerSub = mode === "stripe"
-    ? "Powered by Stripe · TLS encrypted"
+    ? t("cart_stripe_note")
     : mode === "usdc"
-      ? "Solana Pay · No counterparty risk"
-      : `${items.length} ${items.length === 1 ? "item" : "items"}`;
+      ? t("cart_solana_note")
+      : `${items.length} ${items.length === 1 ? t("cart_item_singular") : t("cart_item_plural")}`;
 
   return (
     <AnimatePresence>
@@ -131,8 +133,7 @@ export function CartDrawer() {
               // ── USDC checkout view ─────────────────────────────────────
               <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
                 <p className="font-mono text-[10px] text-text-mute2 leading-relaxed">
-                  Each item generates a unique Solana Pay invoice. Scan the QR code
-                  or open in your wallet. Settle in USDC on Solana.
+                  {t("cart_usdc_instruction")}
                 </p>
                 {items.map((item) => (
                   <div key={item.id}
@@ -168,7 +169,7 @@ export function CartDrawer() {
                           className="w-full font-mono text-[10px] text-text-mute2
                                      hover:text-text-dim transition-colors text-center"
                         >
-                          ← collapse
+                          {t("cart_collapse")}
                         </button>
                       </>
                     ) : (
@@ -193,7 +194,7 @@ export function CartDrawer() {
                     <div className="flex flex-col items-center justify-center h-40 gap-3">
                       <span className="font-mono text-[28px] opacity-20">🛒</span>
                       <p className="font-mono text-[10px] text-text-mute2 tracking-[.08em]">
-                        YOUR CART IS EMPTY
+                        {t("cart_empty")}
                       </p>
                     </div>
                   ) : (
@@ -214,7 +215,7 @@ export function CartDrawer() {
                     {/* Totals row */}
                     <div className="flex items-center justify-between">
                       <span className="font-mono text-[10px] text-text-mute2">
-                        {items.reduce((s, i) => s + i.qty, 0)} item{items.reduce((s, i) => s + i.qty, 0) !== 1 ? "s" : ""}
+                        {items.reduce((s, i) => s + i.qty, 0)} {items.reduce((s, i) => s + i.qty, 0) !== 1 ? t("cart_item_plural") : t("cart_item_singular")}
                       </span>
                       <div className="flex items-center gap-3">
                         <span className="font-mono text-[13px] font-bold text-gold-bright">
@@ -229,7 +230,7 @@ export function CartDrawer() {
 
                     {/* Rail label */}
                     <p className="font-mono text-[9px] text-text-mute2 text-center tracking-[.1em] uppercase">
-                      Choose your payment rail
+                      {t("cart_choose_rail")}
                     </p>
 
                     {/* Card checkout */}
@@ -240,7 +241,7 @@ export function CartDrawer() {
                                  transition-all duration-150 hover:bg-gold-bright hover:-translate-y-0.5
                                  hover:shadow-[0_8px_24px_rgba(201,168,76,0.3)]"
                     >
-                      💳 PAY WITH CARD — ${(totalUsd / 100).toFixed(2)}
+                      💳 {t("cart_pay_card")} — ${(totalUsd / 100).toFixed(2)}
                     </button>
 
                     {/* USDC checkout */}
@@ -252,7 +253,7 @@ export function CartDrawer() {
                                  transition-all duration-150 hover:bg-cyan-dim hover:-translate-y-0.5
                                  hover:shadow-[0_8px_24px_rgba(0,212,255,0.2)]"
                     >
-                      ◎ PAY WITH USDC — {totalUsdc.toFixed(2)} USDC
+                      ◎ {t("cart_pay_usdc")} — {totalUsdc.toFixed(2)} USDC
                     </button>
 
                     {/* Clear */}
@@ -261,7 +262,7 @@ export function CartDrawer() {
                       className="w-full font-mono text-[10px] text-text-mute2
                                  hover:text-red-bright transition-colors text-center py-1"
                     >
-                      Clear cart
+                      {t("cart_clear")}
                     </button>
                   </div>
                 )}

@@ -5,18 +5,20 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-
-const PROTOCOL_LINKS = [
-  { href: "/ledger",  label: "Continuity Ledger" },
-  { href: "/envoy",   label: "Envoy Network"      },
-];
+import { useTranslation } from "@/lib/i18n/use-translation";
 
 const ESCAPE_LINK = { href: "/watchtower", label: "← Watchtower" };
 
 export function ProtocolNav() {
+  const { t } = useTranslation();
   const pathname  = usePathname();
   const [open, setOpen]       = useState(false);
   const [isOnline, setOnline] = useState(true);
+
+  const PROTOCOL_LINKS = [
+    { href: "/ledger",  label: t("proto_ledger") },
+    { href: "/envoy",   label: t("proto_envoy")  },
+  ];
 
   useEffect(() => {
     setOnline(navigator.onLine);
@@ -33,7 +35,7 @@ export function ProtocolNav() {
   const OfflineBadge = () => (
     <span className="border border-cyan-border text-cyan-DEFAULT font-mono text-[9px]
                      px-2 py-0.5 rounded ml-4">
-      {isOnline ? "ONLINE" : "OFFLINE READY"}
+      {isOnline ? t("status_online") : t("status_offline_ready")}
     </span>
   );
 

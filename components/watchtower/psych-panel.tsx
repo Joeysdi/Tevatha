@@ -5,15 +5,9 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { StaggerParent, StaggerChild } from "@/components/ui/motion";
 import type { PsychPillar, PsychThreat, SevCode } from "@/lib/watchtower/data";
+import { useTranslation } from "@/lib/i18n/use-translation";
 
 type Tab = "pillars" | "threats" | "protocol" | "crisis";
-
-const TAB_LABELS: { id: Tab; label: string }[] = [
-  { id:"pillars",  label:"Six Pillars"     },
-  { id:"threats",  label:"Threat Matrix"   },
-  { id:"protocol", label:"Daily Protocol"  },
-  { id:"crisis",   label:"Crisis Protocols"},
-];
 
 const SEV_STYLES: Record<SevCode, string> = {
   EX: "bg-[rgba(255,0,85,0.18)] text-[#ff0055] border border-[rgba(255,0,85,0.3)]",
@@ -43,27 +37,35 @@ interface PsychPanelProps {
 }
 
 export function PsychPanel({ pillars, threats }: PsychPanelProps) {
+  const { t } = useTranslation();
   const [tab, setTab] = useState<Tab>("pillars");
+
+  const TAB_LABELS: { id: Tab; label: string }[] = [
+    { id:"pillars",  label: t("psych_tab_pillars") },
+    { id:"threats",  label: t("psych_tab_threat")  },
+    { id:"protocol", label: t("psych_tab_daily")   },
+    { id:"crisis",   label: t("psych_tab_crisis")  },
+  ];
 
   return (
     <>
       {/* Tab strip */}
       <div className="flex flex-wrap gap-1.5 p-1 bg-void-2 rounded-lg
                       border border-border-protocol mb-5">
-        {TAB_LABELS.map((t) => (
+        {TAB_LABELS.map((tab_item) => (
           <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
+            key={tab_item.id}
+            onClick={() => setTab(tab_item.id)}
             className={`
               px-3.5 py-1.5 text-[12px] font-medium transition-all duration-150
               focus-visible:outline-none
-              ${tab === t.id
+              ${tab === tab_item.id
                 ? "rounded-full border border-gold-protocol/60 bg-gold-glow text-gold-bright"
                 : "rounded-full text-text-mute2 hover:bg-white/[0.03]"
               }
             `}
           >
-            {t.label}
+            {tab_item.label}
           </button>
         ))}
       </div>
@@ -97,7 +99,7 @@ export function PsychPanel({ pillars, threats }: PsychPanelProps) {
                 </p>
                 <div className="font-mono text-[9px] text-text-mute2
                                 tracking-[.1em] uppercase mb-2">
-                  Tactics
+                  {t("psych_tactics")}
                 </div>
                 {p.tactics.map((t, i) => (
                   <div
@@ -132,7 +134,10 @@ export function PsychPanel({ pillars, threats }: PsychPanelProps) {
               <table className="w-full border-collapse">
                 <thead>
                   <tr>
-                    {["Threat","Onset","Severity","Warning Signs","Ark Intervention"].map((h) => (
+                    {([
+                      t("psych_col_threat"), t("psych_col_onset"), t("psych_col_severity"),
+                      t("psych_col_warning"), t("psych_col_intervention"),
+                    ] as string[]).map((h) => (
                       <th key={h}
                           className="text-left font-mono text-[9.5px] tracking-[.12em]
                                      uppercase text-text-mute2 px-3.5 py-2.5
