@@ -6,16 +6,14 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "@/lib/i18n/use-translation";
 import { WorldRiskGlobe }         from "./world-risk-globe";
-import { GlobeIntelPanel }        from "./globe-intel-panel";
 import { GlobeProvisionerPanel }  from "./globe-provisioner-panel";
 import { GlobeTimeline }          from "./globe-timeline";
 import { GlobeProtocolPanel }     from "./globe-protocol-panel";
 import { LiveClock }              from "./live-clock";
 
-import type { IntelTab }          from "./globe-intel-panel";
 import type { ProvisionerTab }    from "./globe-provisioner-panel";
 import type { TimelineEvent }     from "@/lib/watchtower/data";
-import { SIGNALS, DOMAINS }       from "@/lib/watchtower/data";
+import { SIGNALS, DOMAINS, SCENARIOS, PSYCH_PILLARS, GEAR, GATES } from "@/lib/watchtower/data";
 import { SCENARIO_IMPACTS }       from "@/lib/watchtower/scenario-impacts";
 import { DOMAIN_IMPACTS }         from "@/lib/watchtower/domain-impacts";
 
@@ -43,7 +41,7 @@ const DOMAIN_COLORS: Record<string, string> = {
 };
 
 export function WatchtowerGlobeShell() {
-  const { t } = useTranslation();
+  const { t, locale, setLocale, locales, meta } = useTranslation();
   const searchParams = useSearchParams();
   const router       = useRouter();
 
@@ -59,9 +57,7 @@ export function WatchtowerGlobeShell() {
   }, [searchParams, router]);
 
   // ── State (initialized from URL params) ────────────────────────────────────
-  const [intelOpen,         setIntelOpen]         = useState(() => searchParams.get("panel") === "intel");
   const [provisionerOpen,   setProvisionerOpen]   = useState(() => searchParams.get("panel") === "shop");
-  const [intelTab,          setIntelTab]          = useState<IntelTab>("scenarios");
   const [provisionerTab,    setProvisionerTab]    = useState<ProvisionerTab>("products");
   const [eraPhase,          setEraPhase]          = useState(() => searchParams.get("era") ?? "P4");
   const [timelineEvent,     setTimelineEvent]     = useState<TimelineEvent | null>(null);
@@ -73,13 +69,8 @@ export function WatchtowerGlobeShell() {
   const [protocolOpen,      setProtocolOpen]      = useState(() => searchParams.get("panel") === "protocol");
   const [selectedSignalIdx, setSelectedSignalIdx] = useState<number | null>(null);
   const [domainId,          setDomainId]          = useState<string | null>(() => searchParams.get("domain"));
-
-  const toggleIntel = () => {
-    const next = !intelOpen;
-    setIntelOpen(next);
-    if (next) setProvisionerOpen(false);
-    updateUrl({ panel: next ? "intel" : null });
-  };
+  const [selectedPsychZone, setSelectedPsychZone] = useState<{ region: string; threat: string; note: string } | null>(null);
+  const [selectedGateId,    setSelectedGateId]    = useState<string | null>(null);
 
   const closeTimeline = () => {
     setTimelineOpen(false);
@@ -106,16 +97,24 @@ export function WatchtowerGlobeShell() {
           showSignals={showSignals}
           psychologyMode={psychologyMode}
           domainId={domainId}
+          timelineOpen={timelineOpen}
           onSignalPinClick={setSelectedSignalIdx}
+          onPsychZoneClick={setSelectedPsychZone}
+          onGatePinClick={setSelectedGateId}
         />
 
-        {/* ── Intel (left) panel trigger ─────────────────────────────────── */}
+        {/* ── Protocol (left) panel trigger ──────────────────────────────── */}
         <div className="absolute left-0 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-0.5">
           <PanelTrigger
-            open={intelOpen}
-            onClick={(e) => { e.stopPropagation(); toggleIntel(); }}
-            label={t("nav_intel")}
-            openColor="red"
+            open={protocolOpen}
+            onClick={(e) => {
+              e.stopPropagation();
+              const next = !protocolOpen;
+              setProtocolOpen(next);
+              updateUrl({ panel: next ? "protocol" : null });
+            }}
+            label={t("nav_protocol")}
+            openColor="cyan"
             side="left"
           />
         </div>
@@ -128,7 +127,6 @@ export function WatchtowerGlobeShell() {
               e.stopPropagation();
               const next = !provisionerOpen;
               setProvisionerOpen(next);
-              if (next) setIntelOpen(false);
               updateUrl({ panel: next ? "shop" : null });
             }}
             label={t("nav_shop")}
@@ -227,33 +225,6 @@ export function WatchtowerGlobeShell() {
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* ── Protocol trigger — bottom left (desktop only) ────────────────── */}
-        <div
-          className="hidden sm:block absolute left-3 z-30"
-          style={{ bottom: timelineOpen ? "12px" : "44px", transition: "bottom 0.3s" }}
-        >
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              const next = !protocolOpen;
-              setProtocolOpen(next);
-              updateUrl({ panel: next ? "protocol" : null });
-            }}
-            aria-pressed={protocolOpen}
-            aria-label={t("nav_protocol")}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg
-                        border font-mono text-[8px] tracking-[.1em] uppercase
-                        transition-all duration-200 backdrop-blur-sm
-                        ${protocolOpen
-                          ? "bg-cyan-DEFAULT/12 border-cyan-border text-cyan-DEFAULT"
-                          : "bg-void-1/78 border-border-protocol text-text-mute2 hover:border-cyan-border/40 hover:text-text-base"
-                        }`}
-          >
-            <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${protocolOpen ? "bg-cyan-DEFAULT animate-pulse" : "bg-text-mute2/40"}`} />
-            {t("nav_protocol")}
-          </button>
-        </div>
 
         {/* ── Globe mode controls — desktop only ───────────────────────────── */}
         <div className="hidden sm:flex absolute left-4 z-20 flex-col gap-1.5" style={{ top: "48px" }}>
@@ -375,6 +346,31 @@ export function WatchtowerGlobeShell() {
             <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${showSignals ? "bg-red-bright animate-pulse" : "bg-text-mute2/30"}`} />
             📡 {t("nav_signals")}
           </button>
+
+          {/* Language picker */}
+          <div
+            className="rounded-xl overflow-hidden backdrop-blur-sm"
+            style={{ background: "rgba(11,13,24,0.88)", border: "1px solid rgba(255,255,255,0.07)" }}
+          >
+            <p className="font-mono text-[6.5px] tracking-[.2em] uppercase text-text-mute2/60 px-2.5 pt-2 pb-1">
+              {t("language_label")}
+            </p>
+            <div className="grid grid-cols-3 gap-0.5 px-1.5 pb-1.5">
+              {locales.map((loc) => {
+                const active = loc === locale;
+                return (
+                  <button
+                    key={loc}
+                    onClick={(e) => { e.stopPropagation(); setLocale(loc); }}
+                    className={`flex items-center justify-center p-1.5 rounded font-mono text-[7.5px] transition-all
+                                ${active ? "border border-gold-protocol/55 bg-gold-glow text-gold-bright" : "text-text-mute2 hover:bg-white/[0.04] border border-transparent"}`}
+                  >
+                    <span className="text-[11px] leading-none">{meta[loc].flag}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
         {/* ── Signal info overlay ──────────────────────────────────────────── */}
@@ -469,6 +465,36 @@ export function WatchtowerGlobeShell() {
                       </div>
                     ))}
                   </div>
+                  {(() => {
+                    const DOMAIN_GEAR_CATS: Record<string, string[]> = {
+                      nuclear:   ["Communications"],
+                      cyber:     ["Communications", "Energy"],
+                      civil:     ["Communications", "Mobility"],
+                      economic:  ["Medical", "Energy"],
+                      bio:       ["Medical"],
+                      climate:   ["Energy", "Medical"],
+                    };
+                    const cats = DOMAIN_GEAR_CATS[domainId] ?? [];
+                    const gearItems = GEAR
+                      .filter(cat => cats.includes(cat.cat))
+                      .flatMap(cat => cat.items.filter(item => item.critical))
+                      .slice(0, 3);
+                    if (gearItems.length === 0) return null;
+                    return (
+                      <div className="space-y-1 mb-2.5">
+                        <p className="font-mono text-[7px] tracking-[.12em] uppercase text-text-mute2/60 mb-1">Key Gear</p>
+                        {gearItems.map((item, i) => (
+                          <div key={i} className="flex items-center gap-2">
+                            <span className="font-mono text-[7px] px-1 py-0.5 rounded text-text-mute2 border border-border-protocol bg-void-3">
+                              {item.tier}
+                            </span>
+                            <span className="font-mono text-[8px] text-text-base flex-1 truncate">{item.name}</span>
+                            <span className="font-mono text-[7.5px] text-gold-protocol flex-shrink-0">{item.price}</span>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
                   <div className="flex items-center gap-3 pt-2 border-t" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
                     <span className="font-mono text-[8px] text-text-mute2">
                       <span className="font-bold" style={{ color: col }}>{primaryCount}</span> primary · <span className="font-bold text-amber-protocol">{secondaryCount}</span> secondary
@@ -481,13 +507,188 @@ export function WatchtowerGlobeShell() {
           );
         })()}
 
+        {/* ── Scenario detail card ──────────────────────────────────────────── */}
+        {scenarioId && (() => {
+          const si = SCENARIO_IMPACTS.find(s => s.id === scenarioId);
+          const sc = SCENARIOS.find(s => s.id === scenarioId);
+          if (!si || !sc) return null;
+          const sevCol = sc.sev === "EX" || sc.sev === "CR" ? "#e84040" : sc.sev === "HI" ? "#f0a500" : "#38bdf8";
+          return (
+            <motion.div
+              key={scenarioId}
+              initial={{ opacity: 0, x: 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 16 }}
+              transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+              className="absolute z-20 hidden sm:block"
+              style={{ right: "1rem", top: "5rem", width: 300, maxHeight: "calc(100vh - 160px)" }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div
+                className="rounded-xl overflow-hidden backdrop-blur-md flex flex-col"
+                style={{ background: "rgba(11,13,24,0.96)", border: `1px solid ${sevCol}40`, boxShadow: `0 8px 40px rgba(0,0,0,0.7), 0 0 24px ${sevCol}0a`, maxHeight: "inherit" }}
+              >
+                <div className="h-px w-full flex-shrink-0" style={{ background: `linear-gradient(90deg,${sevCol},transparent)` }} />
+                <div className="px-3.5 py-3 flex-shrink-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[16px]">{sc.icon}</span>
+                      <div>
+                        <p className="font-mono text-[7px] tracking-[.16em] uppercase mb-0.5" style={{ color: sevCol }}>
+                          {sc.prob}% PROB · {sc.window}
+                        </p>
+                        <p className="font-syne font-bold text-[13px] text-text-base leading-none">{sc.title}</p>
+                      </div>
+                    </div>
+                    <button onClick={() => setScenarioId(null)} className="font-mono text-[9px] text-text-mute2 hover:text-text-base transition-colors flex-shrink-0">✕</button>
+                  </div>
+                </div>
+                <div className="overflow-y-auto px-3.5 pb-3 space-y-3 flex-1" style={{ scrollbarWidth: "thin" }}>
+                  <p className="font-mono text-[8.5px] text-text-dim leading-relaxed">{sc.summary}</p>
+                  <div>
+                    <p className="font-mono text-[7px] tracking-[.14em] uppercase mb-1.5" style={{ color: sevCol }}>Triggers</p>
+                    <div className="space-y-1">
+                      {sc.triggers.map((tr, i) => (
+                        <div key={i} className="flex items-start gap-1.5">
+                          <span className="font-mono text-[8px] flex-shrink-0 mt-0.5" style={{ color: sevCol }}>→</span>
+                          <p className="font-mono text-[8px] text-text-mute2 leading-relaxed">{tr}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="font-mono text-[7px] tracking-[.14em] uppercase mb-1.5 text-amber-protocol">Cascade</p>
+                    <div className="flex flex-wrap gap-1">
+                      {sc.cascade.map((c, i) => (
+                        <span key={i} className="font-mono text-[7.5px] px-1.5 py-0.5 rounded border border-amber-DEFAULT/25 bg-amber-dim text-amber-protocol">{c}</span>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="font-mono text-[7px] tracking-[.14em] uppercase mb-1.5 text-green-protocol">Mitigation</p>
+                    <div className="space-y-1">
+                      {sc.mitigation.map((m, i) => (
+                        <div key={i} className="flex items-start gap-1.5">
+                          <span className="font-mono text-[7px] font-bold px-1 py-0.5 rounded flex-shrink-0"
+                                style={{ color: m.pri === "1" ? "#e84040" : m.pri === "2" ? "#f0a500" : "#38bdf8",
+                                         background: m.pri === "1" ? "rgba(232,64,64,0.1)" : m.pri === "2" ? "rgba(240,165,0,0.1)" : "rgba(56,189,248,0.1)" }}>
+                            P{m.pri}
+                          </span>
+                          <div>
+                            <p className="font-mono text-[8px] text-text-dim leading-snug">{m.action}</p>
+                            <p className="font-mono text-[7px] text-text-mute2">{m.cost}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          );
+        })()}
+
+        {/* ── Psych zone detail card ────────────────────────────────────────── */}
+        <AnimatePresence>
+          {selectedPsychZone && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.2 }}
+              className="absolute z-20 hidden sm:block"
+              style={{ right: "1rem", bottom: timelineOpen ? "164px" : "60px", width: 280, maxWidth: "calc(100vw - 80px)" }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div
+                className="rounded-xl overflow-hidden backdrop-blur-md"
+                style={{ background: "rgba(11,13,24,0.96)", border: "1px solid rgba(138,43,226,0.45)", boxShadow: "0 8px 40px rgba(0,0,0,0.7), 0 0 24px rgba(138,43,226,0.08)" }}
+              >
+                <div className="h-px w-full" style={{ background: "linear-gradient(90deg,rgba(138,43,226,0.9),transparent)" }} />
+                <div className="px-3.5 py-3">
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div>
+                      <p className="font-mono text-[7px] tracking-[.16em] uppercase text-purple-300/70 mb-0.5">🧠 PSYCH THREAT</p>
+                      <p className="font-syne font-bold text-[13px] text-text-base">{selectedPsychZone.region}</p>
+                      <p className="font-mono text-[8px] text-purple-300 mt-0.5">{selectedPsychZone.threat}</p>
+                    </div>
+                    <button onClick={() => setSelectedPsychZone(null)} className="font-mono text-[9px] text-text-mute2 hover:text-text-base transition-colors flex-shrink-0">✕</button>
+                  </div>
+                  <p className="font-mono text-[8.5px] text-text-dim leading-relaxed mb-3">{selectedPsychZone.note}</p>
+                  <div className="border-t border-white/[0.05] pt-2.5">
+                    <p className="font-mono text-[7px] tracking-[.12em] uppercase text-purple-300/60 mb-2">Ark Response</p>
+                    <div className="space-y-1.5">
+                      {PSYCH_PILLARS.slice(0, 2).map((p) => (
+                        <div key={p.name} className="flex items-start gap-1.5">
+                          <span className="text-[10px] flex-shrink-0">{p.icon}</span>
+                          <div>
+                            <p className="font-mono text-[8px] font-bold text-text-base">{p.name}</p>
+                            <p className="font-mono text-[7.5px] text-text-mute2 leading-snug">{p.tactics[0]}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ── Gate detail card ──────────────────────────────────────────────── */}
+        <AnimatePresence>
+          {selectedGateId && (() => {
+            const gate = GATES.find(g => g.id === selectedGateId);
+            if (!gate) return null;
+            const col = gate.tier === "t4" ? "#e84040" : gate.tier === "t3" ? "#f0a500" : "#38bdf8";
+            return (
+              <motion.div
+                key={selectedGateId}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.2 }}
+                className="absolute z-20"
+                style={{ left: "1rem", bottom: timelineOpen ? "164px" : "60px", width: 300, maxWidth: "calc(100vw - 80px)" }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div
+                  className="rounded-xl overflow-hidden backdrop-blur-md"
+                  style={{ background: "rgba(11,13,24,0.96)", border: `1px solid ${col}45`, boxShadow: `0 8px 40px rgba(0,0,0,0.7)` }}
+                >
+                  <div className="h-px w-full" style={{ background: `linear-gradient(90deg,${col},transparent)` }} />
+                  <div className="px-3.5 py-3">
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-[7.5px] px-1.5 py-0.5 rounded border font-bold"
+                              style={{ color: col, borderColor: `${col}40`, background: `${col}15` }}>
+                          {gate.id} · {gate.tier.toUpperCase()}
+                        </span>
+                        <span className="font-mono text-[7px] text-text-mute2">{gate.window}</span>
+                      </div>
+                      <button onClick={() => setSelectedGateId(null)} className="font-mono text-[9px] text-text-mute2 hover:text-text-base transition-colors flex-shrink-0">✕</button>
+                    </div>
+                    <p className="font-mono text-[8px] tracking-[.08em] uppercase mb-2 font-bold" style={{ color: col }}>
+                      TRIGGER
+                    </p>
+                    <p className="font-mono text-[9px] text-text-base leading-relaxed mb-3">{gate.trigger}</p>
+                    <div className="border-t pt-2.5" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
+                      <p className="font-mono text-[7px] tracking-[.1em] uppercase text-text-mute2 mb-1">Action</p>
+                      <p className="font-mono text-[9px] font-bold leading-relaxed" style={{ color: col }}>{gate.action}</p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })()}
+        </AnimatePresence>
+
         {/* ── UTC clock — desktop only ─────────────────────────────────────── */}
         <div className="hidden sm:block" onClick={(e) => e.stopPropagation()}>
           <LiveClock />
         </div>
 
         {/* ── Side panels ──────────────────────────────────────────────────── */}
-        <GlobeIntelPanel open={intelOpen} onClose={() => setIntelOpen(false)} activeTab={intelTab} onTabChange={setIntelTab} />
         <GlobeProvisionerPanel open={provisionerOpen} onClose={() => setProvisionerOpen(false)} activeTab={provisionerTab} onTabChange={setProvisionerTab} />
         <GlobeProtocolPanel open={protocolOpen} onClose={() => setProtocolOpen(false)} />
 
@@ -689,7 +890,7 @@ function PanelTrigger({
   open, onClick, label, openColor, side,
 }: {
   open: boolean; onClick: (e: React.MouseEvent) => void;
-  label: string; openColor: "red" | "gold"; side: "left" | "right";
+  label: string; openColor: "red" | "gold" | "cyan"; side: "left" | "right";
 }) {
   const { t } = useTranslation();
   const colorMap = {
@@ -697,6 +898,8 @@ function PanelTrigger({
             idle:   "bg-void-1/78 border-border-protocol text-text-mute2 hover:border-red-protocol/30 hover:text-text-base" },
     gold: { active: "bg-gold-glow border-gold-protocol/55 text-gold-bright",
             idle:   "bg-void-1/78 border-border-protocol text-text-mute2 hover:border-gold-protocol/30 hover:text-text-base" },
+    cyan: { active: "bg-cyan-DEFAULT/12 border-cyan-border text-cyan-DEFAULT",
+            idle:   "bg-void-1/78 border-border-protocol text-text-mute2 hover:border-cyan-border/40 hover:text-text-base" },
   };
   const cls     = colorMap[openColor];
   const rounded = side === "left" ? "rounded-r-xl border-r border-y" : "rounded-l-xl border-l border-y";

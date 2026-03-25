@@ -23,6 +23,7 @@ import type { ScenarioCountryImpact } from "@/lib/watchtower/scenario-impacts";
 import { SIGNAL_PINS } from "@/lib/watchtower/signal-pins";
 import { DOMAIN_IMPACTS } from "@/lib/watchtower/domain-impacts";
 import { DOMAINS } from "@/lib/watchtower/data";
+import { GATE_PINS } from "@/lib/watchtower/gate-pins";
 
 // ─── Dynamic import — WebGL requires browser environment ──────────────────────
 const Globe = dynamic(() => import("react-globe.gl"), {
@@ -262,17 +263,20 @@ const PSYCH_ZONES: PsychZone[] = [
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 interface Props {
-  eraPhase:        string;
-  timelineEvent:   TimelineEvent | null;
-  scenarioId:      string | null;
-  showSignals:     boolean;
-  psychologyMode:  boolean;
-  domainId:        string | null;
-  onSignalPinClick:(sigIndex: number) => void;
+  eraPhase:         string;
+  timelineEvent:    TimelineEvent | null;
+  scenarioId:       string | null;
+  showSignals:      boolean;
+  psychologyMode:   boolean;
+  domainId:         string | null;
+  timelineOpen:     boolean;
+  onSignalPinClick: (sigIndex: number) => void;
+  onPsychZoneClick: (zone: { region: string; threat: string; note: string }) => void;
+  onGatePinClick:   (gateId: string) => void;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
-export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignals, psychologyMode, domainId, onSignalPinClick }: Props) {
+export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignals, psychologyMode, domainId, timelineOpen, onSignalPinClick, onPsychZoneClick, onGatePinClick }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const globeRef     = useRef<GlobeMethods | undefined>(undefined);
   const [dims,         setDims]         = useState({ w: 0, h: 0 });
@@ -408,7 +412,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
 
   // ── Unified HTML elements for globe ──────────────────────────────────────
   type HtmlGlobeItem = {
-    type:        "signal" | "scenario-label" | "psych-zone" | "city" | "domain-label";
+    type:        "signal" | "scenario-label" | "psych-zone" | "city" | "domain-label" | "gate";
     lat:         number;
     lng:         number;
     // signal fields
@@ -431,6 +435,10 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
     domainRole?:  "primary" | "secondary" | "watch";
     domainLabel?: string;
     domainHex?:   string;
+    // gate fields
+    gateId?:    string;
+    gateLabel?: string;
+    gateTier?:  string;
   };
 
   const htmlGlobeData = useMemo<HtmlGlobeItem[]>(() => {
@@ -514,8 +522,25 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
       }
     }
 
+    // Gate pins — visible when timeline is open
+    if (timelineOpen) {
+      const GATE_TIER: Record<string, string> = {
+        G1:"t4", G2:"t4", G3:"t4", G4:"t4", G5:"t4", G6:"t3", G7:"t3", G8:"t2",
+      };
+      for (const pin of GATE_PINS) {
+        items.push({
+          type:      "gate",
+          lat:       pin.lat,
+          lng:       pin.lng,
+          gateId:    pin.gateId,
+          gateLabel: pin.label,
+          gateTier:  GATE_TIER[pin.gateId] ?? "t3",
+        });
+      }
+    }
+
     return items;
-  }, [showSignals, scenarioId, psychologyMode, domainId, domainColor]);
+  }, [showSignals, scenarioId, psychologyMode, domainId, domainColor, timelineOpen]);
 
   const htmlElement = useCallback((d: object) => {
     const el = document.createElement("div");
@@ -607,9 +632,11 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
         border: 1px solid rgba(200,150,255,0.4);
         border-radius: 8px;
         padding: 5px 8px;
-        pointer-events: none;
+        pointer-events: auto;
+        cursor: pointer;
         max-width: 155px;
         backdrop-filter: blur(4px);
+        transition: transform 0.15s, box-shadow 0.15s;
       `;
       el.innerHTML = `
         <div style="font-family:monospace;font-size:7px;font-weight:bold;color:rgba(200,150,255,0.9);
@@ -621,6 +648,55 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
         <div style="font-family:monospace;font-size:7px;color:rgba(255,255,255,0.7);
                     line-height:1.3;">${truncated}</div>
       `;
+      el.addEventListener("mouseenter", () => {
+        el.style.transform = "scale(1.05)";
+        el.style.boxShadow = "0 4px 20px rgba(138,43,226,0.5)";
+      });
+      el.addEventListener("mouseleave", () => {
+        el.style.transform = "scale(1)";
+        el.style.boxShadow = "none";
+      });
+      el.addEventListener("click", (e) => {
+        e.stopPropagation();
+        el.dispatchEvent(new CustomEvent("psych-zone-click", {
+          bubbles: true,
+          detail: { region: item.region, threat: item.threat, note: item.psychNote },
+        }));
+      });
+
+    } else if (item.type === "gate") {
+      const tierCol = item.gateTier === "t4" ? "#e84040" : item.gateTier === "t3" ? "#f0a500" : "#38bdf8";
+      el.style.cssText = `
+        background: rgba(5,8,13,0.88);
+        border: 1.5px solid ${tierCol}88;
+        border-radius: 6px;
+        padding: 4px 7px;
+        pointer-events: auto;
+        cursor: pointer;
+        max-width: 120px;
+        backdrop-filter: blur(6px);
+        box-shadow: 0 0 12px ${tierCol}33;
+        transition: transform 0.15s, box-shadow 0.15s;
+      `;
+      el.innerHTML = `
+        <div style="font-family:monospace;font-size:7.5px;font-weight:bold;
+                    color:${tierCol};letter-spacing:.1em;">${item.gateLabel ?? ""}</div>
+      `;
+      el.addEventListener("mouseenter", () => {
+        el.style.transform = "scale(1.1)";
+        el.style.boxShadow = `0 4px 20px ${tierCol}55`;
+      });
+      el.addEventListener("mouseleave", () => {
+        el.style.transform = "scale(1)";
+        el.style.boxShadow = `0 0 12px ${tierCol}33`;
+      });
+      el.addEventListener("click", (e) => {
+        e.stopPropagation();
+        el.dispatchEvent(new CustomEvent("gate-pin-click", {
+          bubbles: true,
+          detail: { gateId: item.gateId },
+        }));
+      });
 
     } else if (item.type === "domain-label") {
       const hex   = item.domainHex ?? "#c9a84c";
@@ -694,6 +770,34 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
     container.addEventListener("city-pin-click", handler);
     return () => container.removeEventListener("city-pin-click", handler);
   }, []);
+
+  // ── Psych zone click listener ─────────────────────────────────────────────
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.region) {
+        onPsychZoneClick(detail);
+      }
+    };
+    container.addEventListener("psych-zone-click", handler);
+    return () => container.removeEventListener("psych-zone-click", handler);
+  }, [onPsychZoneClick]);
+
+  // ── Gate pin click listener ───────────────────────────────────────────────
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.gateId) {
+        onGatePinClick(detail.gateId);
+      }
+    };
+    container.addEventListener("gate-pin-click", handler);
+    return () => container.removeEventListener("gate-pin-click", handler);
+  }, [onGatePinClick]);
 
   // ── Load + parse TopoJSON ─────────────────────────────────────────────────
   useEffect(() => {
