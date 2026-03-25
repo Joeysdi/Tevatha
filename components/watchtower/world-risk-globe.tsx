@@ -760,19 +760,19 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
         max-width: 120px;
         backdrop-filter: blur(6px);
         box-shadow: 0 0 12px ${tierCol}33;
-        transition: transform 0.15s, box-shadow 0.15s;
+        transition: box-shadow 0.15s, border-color 0.15s;
       `;
       el.innerHTML = `
         <div style="font-family:monospace;font-size:7.5px;font-weight:bold;
                     color:${tierCol};letter-spacing:.1em;">${item.gateLabel ?? ""}</div>
       `;
       el.addEventListener("mouseenter", () => {
-        el.style.transform = "scale(1.1)";
-        el.style.boxShadow = `0 4px 20px ${tierCol}55`;
+        el.style.boxShadow = `0 4px 20px ${tierCol}66, 0 0 0 1px ${tierCol}88`;
+        el.style.borderColor = `${tierCol}cc`;
       });
       el.addEventListener("mouseleave", () => {
-        el.style.transform = "scale(1)";
         el.style.boxShadow = `0 0 12px ${tierCol}33`;
+        el.style.borderColor = `${tierCol}88`;
       });
       el.addEventListener("click", (e) => {
         e.stopPropagation();
