@@ -11,10 +11,29 @@ export const metadata: Metadata = {
     default: "Tevatha — Prepare. Operate. Endure.",
   },
   description:
-    "Tevatha is a three-pillar resilience operating system: Watchtower, Provisioner, Protocol.",
+    "Tevatha is a three-pillar resilience operating system: Watchtower threat intelligence, Provisioner supply chain, and Protocol offline continuity.",
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_APP_URL ?? "https://tevatha.com"
   ),
+  openGraph: {
+    type:        "website",
+    siteName:    "Tevatha",
+    title:       "Tevatha — Prepare. Operate. Endure.",
+    description: "Three-pillar resilience OS: threat intelligence, supply chain, and offline continuity.",
+    url:         "/",
+  },
+  twitter: {
+    card:        "summary_large_image",
+    site:        "@tevatha",
+    creator:     "@tevatha",
+    title:       "Tevatha — Prepare. Operate. Endure.",
+    description: "Three-pillar resilience OS: threat intelligence, supply chain, and offline continuity.",
+  },
+  robots: {
+    index:     true,
+    follow:    true,
+    googleBot: { index: true, follow: true },
+  },
 };
 
 export default function RootLayout({

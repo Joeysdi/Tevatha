@@ -620,7 +620,9 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
         minDistance:     number;
         maxDistance:     number;
       };
-      ctrl.autoRotate      = true;
+      const prefersReduced = typeof window !== "undefined"
+        && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      ctrl.autoRotate      = !prefersReduced;
       ctrl.autoRotateSpeed = 0.22;
       ctrl.enableDamping   = false;
       ctrl.minDistance     = 180;
@@ -646,7 +648,10 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
   const handleHover = useCallback((feat: GeoFeature | null | object) => {
     setHovered((feat as GeoFeature) ?? null);
     if (globeRef.current) {
-      (globeRef.current.controls() as { autoRotate: boolean }).autoRotate = !feat;
+      const prefersReduced = typeof window !== "undefined"
+        && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      (globeRef.current.controls() as { autoRotate: boolean }).autoRotate =
+        !feat && !prefersReduced;
     }
   }, []);
 

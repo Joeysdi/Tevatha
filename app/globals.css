@@ -27,3 +27,27 @@
   0%, 100% { box-shadow: 0 0 8px currentColor, 0 0 2px currentColor; }
   50%       { box-shadow: 0 0 18px currentColor, 0 0 6px currentColor; }
 }
+
+/* ── Reduced motion ────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  /* Disable Tailwind utility animations */
+  .animate-pulse,
+  .animate-ping,
+  .animate-spin,
+  .animate-bounce,
+  .animate-ticker,
+  .animate-flicker,
+  .animate-scan,
+  .animate-breathe,
+  .animate-slideRight {
+    animation: none !important;
+  }
+  /* Freeze city-pulse on globe pins (applied inline via JS) */
+  [style*="city-pulse"] {
+    animation: none !important;
+  }
+  /* Keep transitions but make them instant so layout still works */
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+  }
+}

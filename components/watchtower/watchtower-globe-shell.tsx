@@ -1,7 +1,8 @@
 // components/watchtower/watchtower-globe-shell.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "@/lib/i18n/use-translation";
 import { WorldRiskGlobe }         from "./world-risk-globe";
@@ -33,30 +34,47 @@ const EVT_COLORS: Record<string, string> = {
 
 export function WatchtowerGlobeShell() {
   const { t } = useTranslation();
-  const [intelOpen,         setIntelOpen]         = useState(false);
-  const [provisionerOpen,   setProvisionerOpen]   = useState(false);
+  const searchParams = useSearchParams();
+  const router       = useRouter();
+
+  // ── URL-sync helper ────────────────────────────────────────────────────────
+  const updateUrl = useCallback((updates: Record<string, string | null>) => {
+    const params = new URLSearchParams(searchParams.toString());
+    for (const [key, val] of Object.entries(updates)) {
+      if (val === null) params.delete(key);
+      else params.set(key, val);
+    }
+    const qs = params.toString();
+    router.replace(qs ? `?${qs}` : "?", { scroll: false });
+  }, [searchParams, router]);
+
+  // ── State (initialized from URL params) ────────────────────────────────────
+  const [intelOpen,         setIntelOpen]         = useState(() => searchParams.get("panel") === "intel");
+  const [provisionerOpen,   setProvisionerOpen]   = useState(() => searchParams.get("panel") === "shop");
   const [intelTab,          setIntelTab]          = useState<IntelTab>("hub");
   const [provisionerTab,    setProvisionerTab]    = useState<ProvisionerTab>("products");
-  const [eraPhase,          setEraPhase]          = useState("P4");
+  const [eraPhase,          setEraPhase]          = useState(() => searchParams.get("era") ?? "P4");
   const [timelineEvent,     setTimelineEvent]     = useState<TimelineEvent | null>(null);
   const [timelineOpen,      setTimelineOpen]      = useState(false);
 
-  const [scenarioId,        setScenarioId]        = useState<string | null>(null);
-  const [showSignals,       setShowSignals]       = useState(false);
-  const [psychologyMode,    setPsychologyMode]    = useState(false);
-  const [protocolOpen,      setProtocolOpen]      = useState(false);
+  const [scenarioId,        setScenarioId]        = useState<string | null>(() => searchParams.get("scenario"));
+  const [showSignals,       setShowSignals]       = useState(() => searchParams.get("signals") === "1");
+  const [psychologyMode,    setPsychologyMode]    = useState(() => searchParams.get("psych") === "1");
+  const [protocolOpen,      setProtocolOpen]      = useState(() => searchParams.get("panel") === "protocol");
   const [selectedSignalIdx, setSelectedSignalIdx] = useState<number | null>(null);
 
   const toggleIntel = () => {
-    if (intelOpen) { setIntelOpen(false); return; }
-    setIntelOpen(true);
-    setProvisionerOpen(false);
+    const next = !intelOpen;
+    setIntelOpen(next);
+    if (next) setProvisionerOpen(false);
+    updateUrl({ panel: next ? "intel" : null });
   };
 
   const closeTimeline = () => {
     setTimelineOpen(false);
     setTimelineEvent(null);
     setEraPhase("P4");
+    updateUrl({ era: null });
   };
 
   const isHistorical = eraPhase !== "P4";
@@ -96,9 +114,10 @@ export function WatchtowerGlobeShell() {
             open={provisionerOpen}
             onClick={(e) => {
               e.stopPropagation();
-              if (provisionerOpen) { setProvisionerOpen(false); return; }
-              setProvisionerOpen(true);
-              setIntelOpen(false);
+              const next = !provisionerOpen;
+              setProvisionerOpen(next);
+              if (next) setIntelOpen(false);
+              updateUrl({ panel: next ? "shop" : null });
             }}
             label={t("nav_shop")}
             openColor="gold"
@@ -119,8 +138,14 @@ export function WatchtowerGlobeShell() {
               </p>
               <button
                 className="pointer-events-auto font-mono text-[9px] text-text-mute2
-                           hover:text-amber-protocol transition-colors ml-1"
-                onClick={(e) => { e.stopPropagation(); setEraPhase("P4"); setTimelineEvent(null); }}
+                           hover:text-amber-protocol transition-colors ml-1 min-h-[44px] sm:min-h-0 px-2"
+                aria-label={t("nav_back_to_now")}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEraPhase("P4");
+                  setTimelineEvent(null);
+                  updateUrl({ era: null });
+                }}
               >
                 ✕ {t("nav_back_to_now")}
               </button>
@@ -197,7 +222,14 @@ export function WatchtowerGlobeShell() {
           style={{ bottom: timelineOpen ? "12px" : "44px", transition: "bottom 0.3s" }}
         >
           <button
-            onClick={(e) => { e.stopPropagation(); setProtocolOpen(!protocolOpen); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              const next = !protocolOpen;
+              setProtocolOpen(next);
+              updateUrl({ panel: next ? "protocol" : null });
+            }}
+            aria-pressed={protocolOpen}
+            aria-label={t("nav_protocol")}
             className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg
                         border font-mono text-[8px] tracking-[.1em] uppercase
                         transition-all duration-200 backdrop-blur-sm
@@ -226,7 +258,14 @@ export function WatchtowerGlobeShell() {
                 return (
                   <button
                     key={s.id}
-                    onClick={(e) => { e.stopPropagation(); setScenarioId(active ? null : s.id); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const next = active ? null : s.id;
+                      setScenarioId(next);
+                      updateUrl({ scenario: next });
+                    }}
+                    aria-pressed={active}
+                    aria-label={`${active ? "Deactivate" : "Activate"} scenario: ${s.title}`}
                     className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-left
                                 transition-all duration-150 font-mono text-[8px]
                                 ${active
@@ -243,7 +282,14 @@ export function WatchtowerGlobeShell() {
           </div>
 
           <button
-            onClick={(e) => { e.stopPropagation(); setPsychologyMode(!psychologyMode); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              const next = !psychologyMode;
+              setPsychologyMode(next);
+              updateUrl({ psych: next ? "1" : null });
+            }}
+            aria-pressed={psychologyMode}
+            aria-label={`${psychologyMode ? "Disable" : "Enable"} psychology mode`}
             className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl backdrop-blur-sm
                         border font-mono text-[8px] transition-all duration-150
                         ${psychologyMode
@@ -257,7 +303,14 @@ export function WatchtowerGlobeShell() {
           </button>
 
           <button
-            onClick={(e) => { e.stopPropagation(); setShowSignals(!showSignals); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              const next = !showSignals;
+              setShowSignals(next);
+              updateUrl({ signals: next ? "1" : null });
+            }}
+            aria-pressed={showSignals}
+            aria-label={`${showSignals ? "Hide" : "Show"} signal pins`}
             className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl backdrop-blur-sm
                         border font-mono text-[8px] transition-all duration-150
                         ${showSignals
@@ -296,7 +349,7 @@ export function WatchtowerGlobeShell() {
                       {SIGNALS[selectedSignalIdx].domain} · Score {SIGNALS[selectedSignalIdx].score}
                     </p>
                   </div>
-                  <button onClick={() => setSelectedSignalIdx(null)} className="font-mono text-[9px] text-text-mute2 hover:text-text-base transition-colors flex-shrink-0">✕</button>
+                  <button onClick={() => setSelectedSignalIdx(null)} aria-label="Close signal details" className="font-mono text-[9px] text-text-mute2 hover:text-text-base transition-colors flex-shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center sm:min-w-0 sm:min-h-0">✕</button>
                 </div>
                 <p className="font-mono text-[10px] text-text-base leading-relaxed mb-2">{SIGNALS[selectedSignalIdx].sig}</p>
                 <a href={SIGNALS[selectedSignalIdx].sourceUrl} target="_blank" rel="noopener noreferrer"
@@ -322,7 +375,10 @@ export function WatchtowerGlobeShell() {
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 z-30">
           <button
             onClick={(e) => { e.stopPropagation(); setTimelineOpen((o) => !o); }}
-            className="flex items-center gap-2 px-5 py-1.5 rounded-t-xl transition-all duration-200 backdrop-blur-sm"
+            aria-expanded={timelineOpen}
+            aria-controls="globe-timeline-panel"
+            aria-label={timelineOpen ? "Close timeline" : "Open timeline"}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-t-xl transition-all duration-200 backdrop-blur-sm min-h-[44px]"
             style={{
               background:   timelineOpen ? "rgba(232,64,64,0.14)" : "rgba(8,10,20,0.82)",
               border:       `1px solid ${timelineOpen ? "rgba(232,64,64,0.35)" : "rgba(255,255,255,0.08)"}`,
@@ -355,6 +411,9 @@ export function WatchtowerGlobeShell() {
       <AnimatePresence>
         {timelineOpen && (
           <motion.div
+            id="globe-timeline-panel"
+            role="region"
+            aria-label="Historical timeline"
             initial={{ height: 0 }}
             animate={{ height: 144 }}
             exit={{ height: 0 }}
@@ -373,7 +432,8 @@ export function WatchtowerGlobeShell() {
               </div>
               <button
                 onClick={closeTimeline}
-                className="font-mono text-[11px] text-text-mute2/50 hover:text-text-mute2 transition-colors leading-none"
+                aria-label="Close timeline"
+                className="font-mono text-[11px] text-text-mute2/50 hover:text-text-mute2 transition-colors leading-none min-w-[44px] min-h-[44px] flex items-center justify-center sm:min-w-0 sm:min-h-0"
               >
                 ✕
               </button>
@@ -382,7 +442,10 @@ export function WatchtowerGlobeShell() {
             {/* Timeline bar */}
             <GlobeTimeline
               activePhase={eraPhase}
-              onPhaseSelect={setEraPhase}
+              onPhaseSelect={(phase) => {
+                setEraPhase(phase);
+                updateUrl({ era: phase !== "P4" ? phase : null });
+              }}
               onEventSelect={setTimelineEvent}
             />
           </motion.div>
@@ -395,8 +458,14 @@ export function WatchtowerGlobeShell() {
            style={{ scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch" } as React.CSSProperties}>
 
         <button
-          onClick={() => setProtocolOpen(!protocolOpen)}
-          className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg border font-mono text-[9px] transition-all
+          onClick={() => {
+            const next = !protocolOpen;
+            setProtocolOpen(next);
+            updateUrl({ panel: next ? "protocol" : null });
+          }}
+          aria-pressed={protocolOpen}
+          aria-label={t("nav_protocol")}
+          className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-2.5 rounded-lg border font-mono text-[9px] transition-all min-h-[44px]
                       ${protocolOpen ? "bg-cyan-DEFAULT/12 border-cyan-border text-cyan-DEFAULT" : "bg-void-3 border-border-protocol text-text-mute2"}`}
         >
           <span className={`w-1 h-1 rounded-full flex-shrink-0 ${protocolOpen ? "bg-cyan-DEFAULT animate-pulse" : "bg-text-mute2/40"}`} />
@@ -408,8 +477,15 @@ export function WatchtowerGlobeShell() {
         {SCENARIO_IMPACTS.map((s) => {
           const active = scenarioId === s.id;
           return (
-            <button key={s.id} onClick={() => setScenarioId(active ? null : s.id)}
-              className={`flex-shrink-0 px-2.5 py-1.5 rounded-lg border font-mono text-[9px] transition-all
+            <button key={s.id}
+              onClick={() => {
+                const next = active ? null : s.id;
+                setScenarioId(next);
+                updateUrl({ scenario: next });
+              }}
+              aria-pressed={active}
+              aria-label={`${active ? "Deactivate" : "Activate"} scenario ${s.id}`}
+              className={`flex-shrink-0 px-2.5 py-2.5 rounded-lg border font-mono text-[9px] transition-all min-h-[44px]
                           ${active ? "bg-red-protocol/20 border-red-protocol/40 text-red-bright" : "bg-void-3 border-border-protocol text-text-mute2"}`}>
               {s.id}
             </button>
@@ -418,15 +494,29 @@ export function WatchtowerGlobeShell() {
 
         <div className="w-px h-4 bg-border-protocol/60 flex-shrink-0" />
 
-        <button onClick={() => setPsychologyMode(!psychologyMode)}
-          className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg border font-mono text-[9px] transition-all
+        <button
+          onClick={() => {
+            const next = !psychologyMode;
+            setPsychologyMode(next);
+            updateUrl({ psych: next ? "1" : null });
+          }}
+          aria-pressed={psychologyMode}
+          aria-label={`${psychologyMode ? "Disable" : "Enable"} psychology mode`}
+          className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-2.5 rounded-lg border font-mono text-[9px] transition-all min-h-[44px]
                       ${psychologyMode ? "border-purple-500/50 text-purple-300" : "bg-void-3 border-border-protocol text-text-mute2"}`}
           style={{ background: psychologyMode ? "rgba(138,43,226,0.15)" : undefined }}>
           🧠 {t("nav_psychology")}
         </button>
 
-        <button onClick={() => setShowSignals(!showSignals)}
-          className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg border font-mono text-[9px] transition-all
+        <button
+          onClick={() => {
+            const next = !showSignals;
+            setShowSignals(next);
+            updateUrl({ signals: next ? "1" : null });
+          }}
+          aria-pressed={showSignals}
+          aria-label={`${showSignals ? "Hide" : "Show"} signal pins`}
+          className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-2.5 rounded-lg border font-mono text-[9px] transition-all min-h-[44px]
                       ${showSignals ? "border-red-protocol/50 text-red-bright" : "bg-void-3 border-border-protocol text-text-mute2"}`}
           style={{ background: showSignals ? "rgba(232,64,64,0.12)" : undefined }}>
           📡 {t("nav_signals")}
@@ -434,8 +524,12 @@ export function WatchtowerGlobeShell() {
 
         {/* Mobile timeline toggle */}
         <div className="w-px h-4 bg-border-protocol/60 flex-shrink-0" />
-        <button onClick={() => setTimelineOpen((o) => !o)}
-          className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg border font-mono text-[9px] transition-all
+        <button
+          onClick={() => setTimelineOpen((o) => !o)}
+          aria-expanded={timelineOpen}
+          aria-controls="globe-timeline-panel"
+          aria-label={timelineOpen ? "Close timeline" : "Open timeline"}
+          className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-2.5 rounded-lg border font-mono text-[9px] transition-all min-h-[44px]
                       ${timelineOpen ? "bg-red-protocol/15 border-red-protocol/40 text-red-bright" : "bg-void-3 border-border-protocol text-text-mute2"}`}>
           ◐ {t("nav_timeline")}
         </button>
@@ -467,7 +561,9 @@ function PanelTrigger({
   return (
     <button
       onClick={onClick}
-      className={`py-3 sm:py-5 px-2.5 ${rounded} flex flex-col items-center gap-1.5
+      aria-expanded={open}
+      aria-label={open ? t("nav_close") : label}
+      className={`py-3 sm:py-5 px-2.5 min-h-[44px] ${rounded} flex flex-col items-center gap-1.5
                   transition-all duration-200 backdrop-blur-sm
                   ${open ? cls.active : cls.idle}`}
     >
