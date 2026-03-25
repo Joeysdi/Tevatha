@@ -1,19 +1,17 @@
 // components/watchtower/watchtower-globe-shell.tsx
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "@/lib/i18n/use-translation";
 import { WorldRiskGlobe }         from "./world-risk-globe";
 import { GlobeProvisionerPanel }  from "./globe-provisioner-panel";
-import { GlobeTimeline }          from "./globe-timeline";
 import { GlobeProtocolPanel }     from "./globe-protocol-panel";
 import { LiveClock }              from "./live-clock";
 
 import type { ProvisionerTab }    from "./globe-provisioner-panel";
-import type { TimelineEvent }     from "@/lib/watchtower/data";
-import { SIGNALS, DOMAINS, SCENARIOS, PSYCH_PILLARS, GEAR, GATES } from "@/lib/watchtower/data";
+import { SIGNALS, DOMAINS, SCENARIOS, PSYCH_PILLARS, GEAR, GATES, TIMELINE_EVENTS } from "@/lib/watchtower/data";
 import { SCENARIO_IMPACTS }       from "@/lib/watchtower/scenario-impacts";
 import { DOMAIN_IMPACTS }         from "@/lib/watchtower/domain-impacts";
 
@@ -26,6 +24,45 @@ const PHASE_LABELS: Record<string, string> = {
   P5: "Cascade  2027–32",
   P6: "Resolve  2032+",
 };
+
+const SCRUB_PHASES = [
+  {
+    id: "P1", hex: "#38bdf8", label: "STABILITY", yearRange: "1945–71",
+    desc: "Bretton Woods-backed stability. USD becomes global reserve. Cold War nuclear standoff begins.",
+    gateIds: [] as string[],
+    yearStart: 1945, yearEnd: 1971,
+  },
+  {
+    id: "P2", hex: "#818cf8", label: "EXPANSION", yearRange: "1971–08",
+    desc: "Fiat era begins. Nixon Shock ends gold standard. Unlimited deficit spending enabled. Debt compounds.",
+    gateIds: [] as string[],
+    yearStart: 1971, yearEnd: 2008,
+  },
+  {
+    id: "P3", hex: "#fbbf24", label: "STRESS", yearRange: "2008–20",
+    desc: "GFC triggers unlimited QE. Fed balance sheet $900B → $9T. Systemic risk deferred, not resolved.",
+    gateIds: [] as string[],
+    yearStart: 2008, yearEnd: 2020,
+  },
+  {
+    id: "P4", hex: "#e84040", label: "NOW", yearRange: "2020–27",
+    desc: "COVID, Ukraine, Doomsday Clock at 85 seconds. Multiple simultaneous civilisation stressors active.",
+    gateIds: ["G1","G2","G3","G4","G6","G7"],
+    yearStart: 2020, yearEnd: 2027,
+  },
+  {
+    id: "P5", hex: "#ff0055", label: "CASCADE", yearRange: "2027–32",
+    desc: "China nuclear parity. Taiwan crisis window peaks. US debt $40T+. CBDC rollout. Three-way MAD calculus.",
+    gateIds: ["G1","G2","G3","G4","G5","G6","G7","G8"],
+    yearStart: 2027, yearEnd: 2032,
+  },
+  {
+    id: "P6", hex: "#64748b", label: "RESOLVE", yearRange: "2032+",
+    desc: "Post-USD multipolar order. Climate cascade locks in. AI autonomous weapons. New equilibrium or collapse.",
+    gateIds: ["G1","G2","G3","G4","G5","G6","G7","G8"],
+    yearStart: 2032, yearEnd: 2038,
+  },
+] as const;
 
 const EVT_COLORS: Record<string, string> = {
   red: "#e84040", warn: "#f0a500", info: "#38bdf8", pink: "#ff0055",
@@ -60,8 +97,8 @@ export function WatchtowerGlobeShell() {
   const [provisionerOpen,   setProvisionerOpen]   = useState(() => searchParams.get("panel") === "shop");
   const [provisionerTab,    setProvisionerTab]    = useState<ProvisionerTab>("products");
   const [eraPhase,          setEraPhase]          = useState(() => searchParams.get("era") ?? "P4");
-  const [timelineEvent,     setTimelineEvent]     = useState<TimelineEvent | null>(null);
-  const [timelineOpen,      setTimelineOpen]      = useState(false);
+  const [livePhase,         setLivePhase]         = useState(() => searchParams.get("era") ?? "P4");
+  const [scrubVelocity,     setScrubVelocity]     = useState(0);
 
   const [scenarioId,        setScenarioId]        = useState<string | null>(() => searchParams.get("scenario"));
   const [showSignals,       setShowSignals]       = useState(() => searchParams.get("signals") === "1");
@@ -72,32 +109,22 @@ export function WatchtowerGlobeShell() {
   const [selectedPsychZone, setSelectedPsychZone] = useState<{ region: string; threat: string; note: string } | null>(null);
   const [selectedGateId,    setSelectedGateId]    = useState<string | null>(null);
 
-  const closeTimeline = () => {
-    setTimelineOpen(false);
-    setTimelineEvent(null);
-    setEraPhase("P4");
-    updateUrl({ era: null });
-  };
-
   const isHistorical = eraPhase !== "P4";
 
   return (
     <div className="w-full h-full flex flex-col bg-void-0">
 
       {/* ── Globe area ───────────────────────────────────────────────────── */}
-      <div
-        className="flex-1 relative overflow-hidden min-h-0"
-        onClick={() => { if (timelineOpen) closeTimeline(); }}
-      >
+      <div className="flex-1 relative overflow-hidden min-h-0">
         {/* Globe */}
         <WorldRiskGlobe
           eraPhase={eraPhase}
-          timelineEvent={timelineEvent}
           scenarioId={scenarioId}
           showSignals={showSignals}
           psychologyMode={psychologyMode}
           domainId={domainId}
-          timelineOpen={timelineOpen}
+          gatePhase={eraPhase}
+          scrubVelocity={scrubVelocity}
           onSignalPinClick={setSelectedSignalIdx}
           onPsychZoneClick={setSelectedPsychZone}
           onGatePinClick={setSelectedGateId}
@@ -153,7 +180,7 @@ export function WatchtowerGlobeShell() {
                 onClick={(e) => {
                   e.stopPropagation();
                   setEraPhase("P4");
-                  setTimelineEvent(null);
+                  setLivePhase("P4");
                   updateUrl({ era: null });
                 }}
               >
@@ -162,69 +189,6 @@ export function WatchtowerGlobeShell() {
             </div>
           </div>
         )}
-
-        {/* ── Timeline event card — floats on globe while timeline is open ── */}
-        <AnimatePresence>
-          {timelineOpen && timelineEvent && (
-            <motion.div
-              initial={{ opacity: 0, x: -12 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -12 }}
-              transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-              className="absolute z-25 pointer-events-none"
-              style={{ top: isHistorical ? "5rem" : "1rem", left: "1rem", width: 260, maxWidth: "calc(100vw - 80px)" }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {(() => {
-                const col = EVT_COLORS[timelineEvent.colKey] ?? "#c9a84c";
-                return (
-                  <div
-                    className="rounded-xl overflow-hidden"
-                    style={{
-                      background: "rgba(6,7,14,0.90)",
-                      borderLeft: `2px solid ${col}`,
-                      borderTop:  `1px solid ${col}22`,
-                      borderRight:"1px solid rgba(255,255,255,0.05)",
-                      borderBottom:"1px solid rgba(255,255,255,0.05)",
-                      boxShadow:  `0 8px 32px rgba(0,0,0,0.6), 0 0 20px ${col}0a`,
-                      backdropFilter: "blur(8px)",
-                    }}
-                  >
-                    <div className="px-3.5 py-3">
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <span
-                          className="font-mono tabular-nums text-[7.5px] tracking-[.16em] font-bold"
-                          style={{ color: col }}
-                        >
-                          {timelineEvent.isNow ? "NOW · 2026" : timelineEvent.year}
-                          {timelineEvent.predicted ? " ~forecast" : ""}
-                        </span>
-                        <span
-                          className="font-mono text-[6px] tracking-[.1em] px-1.5 py-0.5 rounded"
-                          style={{
-                            color: timelineEvent.sev === "critical" ? "#e84040" : timelineEvent.sev === "high" ? "#f0a500" : "#38bdf8",
-                            background: timelineEvent.sev === "critical" ? "rgba(232,64,64,0.12)" : "rgba(240,165,0,0.1)",
-                          }}
-                        >
-                          {timelineEvent.sev}
-                        </span>
-                      </div>
-                      <p
-                        className="font-syne font-bold leading-snug mb-1.5"
-                        style={{ fontSize: "12px", color: "rgba(215,220,230,0.95)" }}
-                      >
-                        {timelineEvent.label}
-                      </p>
-                      <p className="font-mono text-[8.5px] text-text-dim leading-relaxed">
-                        {timelineEvent.signal}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })()}
-            </motion.div>
-          )}
-        </AnimatePresence>
 
         {/* ── Globe mode controls — desktop only ───────────────────────────── */}
         <div className="hidden sm:flex absolute left-4 z-20 flex-col gap-1.5" style={{ top: "48px" }}>
@@ -377,7 +341,7 @@ export function WatchtowerGlobeShell() {
         {selectedSignalIdx !== null && SIGNALS[selectedSignalIdx] && (
           <div
             className="absolute left-1/2 -translate-x-1/2 z-20 w-[340px] max-w-[92vw]"
-            style={{ bottom: timelineOpen ? "12px" : "60px", transition: "bottom 0.3s" }}
+            style={{ bottom: "80px" }}
             onClick={(e) => e.stopPropagation()}
           >
             <div
@@ -425,7 +389,7 @@ export function WatchtowerGlobeShell() {
               exit={{ opacity: 0, y: 10 }}
               transition={{ duration: 0.2 }}
               className="absolute left-1/2 -translate-x-1/2 z-20 w-[380px] max-w-[92vw]"
-              style={{ bottom: timelineOpen ? "12px" : "60px", transition: "bottom 0.3s" }}
+              style={{ bottom: "80px" }}
               onClick={(e) => e.stopPropagation()}
             >
               <div
@@ -597,7 +561,7 @@ export function WatchtowerGlobeShell() {
               exit={{ opacity: 0, y: 10 }}
               transition={{ duration: 0.2 }}
               className="absolute z-20 hidden sm:block"
-              style={{ right: "1rem", bottom: timelineOpen ? "164px" : "60px", width: 280, maxWidth: "calc(100vw - 80px)" }}
+              style={{ right: "1rem", bottom: "80px", width: 280, maxWidth: "calc(100vw - 80px)" }}
               onClick={(e) => e.stopPropagation()}
             >
               <div
@@ -649,7 +613,7 @@ export function WatchtowerGlobeShell() {
                 exit={{ opacity: 0, y: 10 }}
                 transition={{ duration: 0.2 }}
                 className="absolute z-20"
-                style={{ left: "1rem", bottom: timelineOpen ? "164px" : "60px", width: 300, maxWidth: "calc(100vw - 80px)" }}
+                style={{ left: "1rem", bottom: "80px", width: 300, maxWidth: "calc(100vw - 80px)" }}
                 onClick={(e) => e.stopPropagation()}
               >
                 <div
@@ -692,86 +656,126 @@ export function WatchtowerGlobeShell() {
         <GlobeProvisionerPanel open={provisionerOpen} onClose={() => setProvisionerOpen(false)} activeTab={provisionerTab} onTabChange={setProvisionerTab} />
         <GlobeProtocolPanel open={protocolOpen} onClose={() => setProtocolOpen(false)} />
 
-        {/* ── Timeline trigger tab — bottom center ─────────────────────────── */}
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 z-30">
-          <button
-            onClick={(e) => { e.stopPropagation(); setTimelineOpen((o) => !o); }}
-            aria-expanded={timelineOpen}
-            aria-controls="globe-timeline-panel"
-            aria-label={timelineOpen ? "Close timeline" : "Open timeline"}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-t-xl transition-all duration-200 backdrop-blur-sm min-h-[44px]"
-            style={{
-              background:   timelineOpen ? "rgba(232,64,64,0.14)" : "rgba(8,10,20,0.82)",
-              border:       `1px solid ${timelineOpen ? "rgba(232,64,64,0.35)" : "rgba(255,255,255,0.08)"}`,
-              borderBottom: "none",
+        {/* ── Era detail card — floats above scrubber when not at P4 ─────────── */}
+        <AnimatePresence>
+          {livePhase !== "P4" && (() => {
+            const sp = SCRUB_PHASES.find(p => p.id === livePhase);
+            if (!sp) return null;
+            const events = TIMELINE_EVENTS.filter(e => {
+              const yr = e.year.toLowerCase() === "now" ? 2026 : parseInt(e.year, 10) || 2026;
+              return yr >= sp.yearStart && yr < sp.yearEnd;
+            }).slice(0, 4);
+            const gateDetails = GATES.filter(g => (sp.gateIds as readonly string[]).includes(g.id));
+            return (
+              <motion.div
+                key={livePhase}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 8 }}
+                transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+                className="absolute left-1/2 -translate-x-1/2 z-25 w-[360px] max-w-[calc(100vw-80px)]"
+                style={{ bottom: "108px" }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div
+                  className="rounded-xl overflow-hidden backdrop-blur-md"
+                  style={{
+                    background: "rgba(6,7,14,0.96)",
+                    border: `1px solid ${sp.hex}33`,
+                    borderLeft: `2px solid ${sp.hex}`,
+                    boxShadow: `0 8px 40px rgba(0,0,0,0.7), 0 0 20px ${sp.hex}08`,
+                  }}
+                >
+                  {/* Header */}
+                  <div className="px-3.5 py-2.5 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="w-2 h-2 rounded-sm flex-shrink-0"
+                        style={{ background: sp.hex, transform: "rotate(45deg)", boxShadow: `0 0 8px ${sp.hex}` }}
+                      />
+                      <span className="font-mono text-[8px] tracking-[.2em] uppercase font-bold" style={{ color: sp.hex }}>
+                        {sp.label}
+                      </span>
+                      <span className="font-mono text-[7px] text-text-mute2">{sp.yearRange}</span>
+                    </div>
+                    <button
+                      onClick={() => { setEraPhase("P4"); setLivePhase("P4"); updateUrl({ era: null }); }}
+                      className="font-mono text-[9px] text-text-mute2 hover:text-text-base transition-colors flex-shrink-0"
+                    >✕</button>
+                  </div>
+                  <div className="px-3.5 pb-3 space-y-2.5">
+                    <p className="font-mono text-[8.5px] text-text-dim leading-relaxed">{sp.desc}</p>
+
+                    {/* Key events */}
+                    {events.length > 0 && (
+                      <div>
+                        <p className="font-mono text-[6.5px] tracking-[.16em] uppercase mb-1.5" style={{ color: `${sp.hex}88` }}>
+                          Key Events
+                        </p>
+                        <div className="space-y-1">
+                          {events.map((evt, i) => {
+                            const col = EVT_COLORS[evt.colKey] ?? "#c9a84c";
+                            const yr = evt.year.toLowerCase() === "now" ? "2026 NOW" : evt.year + (evt.predicted ? "~" : "");
+                            return (
+                              <div key={i} className="flex items-start gap-2">
+                                <span className="font-mono text-[7.5px] font-bold flex-shrink-0 tabular-nums" style={{ color: col }}>{yr}</span>
+                                <span className="font-mono text-[8px] text-text-mute2 leading-snug">{evt.label}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Decision gates */}
+                    {gateDetails.length > 0 && (
+                      <div className="border-t pt-2" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
+                        <p className="font-mono text-[6.5px] tracking-[.16em] uppercase text-red-bright/50 mb-1.5">
+                          Decision Gates
+                        </p>
+                        <div className="space-y-1">
+                          {gateDetails.slice(0, 4).map((gate) => {
+                            const col = gate.tier === "t4" ? "#e84040" : gate.tier === "t3" ? "#f0a500" : "#38bdf8";
+                            return (
+                              <div key={gate.id} className="flex items-start gap-2">
+                                <span
+                                  className="font-mono text-[7px] font-bold px-1.5 py-0.5 rounded border flex-shrink-0"
+                                  style={{ color: col, borderColor: `${col}40`, background: `${col}15` }}
+                                >
+                                  {gate.id}
+                                </span>
+                                <span className="font-mono text-[7.5px] text-text-mute2 leading-snug flex-1">{gate.trigger}</span>
+                                <span className="font-mono text-[7px] text-text-mute2/50 flex-shrink-0">{gate.window}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })()}
+        </AnimatePresence>
+
+        {/* ── Timeline scrubber — bottom-center of globe ───────────────────── */}
+        <div
+          className="absolute bottom-3 left-1/2 -translate-x-1/2 z-25"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <TimelineScrubber
+            activePhase={eraPhase}
+            onPhaseChange={(id) => {
+              setEraPhase(id);
+              setLivePhase(id);
+              updateUrl({ era: id !== "P4" ? id : null });
             }}
-          >
-            <span
-              className="w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors"
-              style={{ background: timelineOpen ? "#e84040" : "rgba(150,165,180,0.4)" }}
-            />
-            <span
-              className="font-mono text-[8px] tracking-[.22em] uppercase transition-colors"
-              style={{ color: timelineOpen ? "#e84040cc" : "rgba(140,155,170,0.65)" }}
-            >
-              {t("nav_timeline")}
-            </span>
-            <motion.span
-              animate={{ rotate: timelineOpen ? 180 : 0 }}
-              transition={{ duration: 0.25 }}
-              className="text-[8px]"
-              style={{ color: timelineOpen ? "#e84040aa" : "rgba(140,155,170,0.45)" }}
-            >
-              ▲
-            </motion.span>
-          </button>
+            onLivePhase={setLivePhase}
+            onVelocityChange={setScrubVelocity}
+          />
         </div>
       </div>
-
-      {/* ── Timeline slide-up panel ───────────────────────────────────────── */}
-      <AnimatePresence>
-        {timelineOpen && (
-          <motion.div
-            id="globe-timeline-panel"
-            role="region"
-            aria-label="Historical timeline"
-            initial={{ height: 0 }}
-            animate={{ height: 144 }}
-            exit={{ height: 0 }}
-            transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
-            className="flex-shrink-0 overflow-hidden"
-            style={{ background: "rgba(5,6,13,0.99)", borderTop: "1px solid rgba(232,64,64,0.2)" }}
-          >
-            {/* Panel header */}
-            <div className="flex items-center justify-between px-4 py-2 flex-shrink-0"
-                 style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-              <div className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-protocol animate-pulse" />
-                <span className="font-mono text-[7.5px] tracking-[.22em] uppercase text-red-bright/60">
-                  {t("nav_timeline")} · {t("timeline_scroll_hint")}
-                </span>
-              </div>
-              <button
-                onClick={closeTimeline}
-                aria-label="Close timeline"
-                className="font-mono text-[11px] text-text-mute2/50 hover:text-text-mute2 transition-colors leading-none min-w-[44px] min-h-[44px] flex items-center justify-center sm:min-w-0 sm:min-h-0"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Timeline bar */}
-            <GlobeTimeline
-              activePhase={eraPhase}
-              onPhaseSelect={(phase) => {
-                setEraPhase(phase);
-                updateUrl({ era: phase !== "P4" ? phase : null });
-              }}
-              onEventSelect={setTimelineEvent}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* ── Mobile control bar (hidden sm+) ──────────────────────────────── */}
       <div className="flex sm:hidden flex-shrink-0 items-center gap-1.5 px-2 py-1.5
@@ -867,17 +871,6 @@ export function WatchtowerGlobeShell() {
           📡 {t("nav_signals")}
         </button>
 
-        {/* Mobile timeline toggle */}
-        <div className="w-px h-4 bg-border-protocol/60 flex-shrink-0" />
-        <button
-          onClick={() => setTimelineOpen((o) => !o)}
-          aria-expanded={timelineOpen}
-          aria-controls="globe-timeline-panel"
-          aria-label={timelineOpen ? "Close timeline" : "Open timeline"}
-          className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-2.5 rounded-lg border font-mono text-[9px] transition-all min-h-[44px]
-                      ${timelineOpen ? "bg-red-protocol/15 border-red-protocol/40 text-red-bright" : "bg-void-3 border-border-protocol text-text-mute2"}`}>
-          ◐ {t("nav_timeline")}
-        </button>
       </div>
 
     </div>
@@ -885,6 +878,231 @@ export function WatchtowerGlobeShell() {
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
+
+// ── Timeline scrubber ─────────────────────────────────────────────────────────
+
+const SCRUB_PAD = 20; // px padding on each side of track
+
+function TimelineScrubber({
+  activePhase,
+  onPhaseChange,
+  onLivePhase,
+  onVelocityChange,
+}: {
+  activePhase:      string;
+  onPhaseChange:    (id: string) => void;
+  onLivePhase:      (id: string) => void;
+  onVelocityChange: (vel: number) => void;
+}) {
+  const trackRef    = useRef<HTMLDivElement>(null);
+  const [trackW,   setTrackW]   = useState(300);
+  const [dragIdx,  setDragIdx]  = useState<number | null>(null);
+  const isDragging  = useRef(false);
+  const lastX       = useRef(0);
+  const velRef      = useRef(0);
+  const velTimer    = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const N          = SCRUB_PHASES.length - 1; // 5
+  const activeIdx  = SCRUB_PHASES.findIndex((p) => p.id === activePhase);
+  const displayIdx = dragIdx ?? activeIdx;
+  const phase      = SCRUB_PHASES[displayIdx];
+
+  // Measure track width
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setTrackW(el.offsetWidth));
+    ro.observe(el);
+    setTrackW(el.offsetWidth);
+    return () => ro.disconnect();
+  }, []);
+
+  // Cleanup
+  useEffect(() => () => { if (velTimer.current) clearInterval(velTimer.current); }, []);
+
+  const innerW = Math.max(0, trackW - SCRUB_PAD * 2);
+  const stopX  = (i: number) => SCRUB_PAD + (i / N) * innerW;
+
+  const getFrac = (clientX: number) => {
+    const rect = trackRef.current?.getBoundingClientRect();
+    if (!rect) return activeIdx / N;
+    return Math.max(0, Math.min(1, (clientX - rect.left - SCRUB_PAD) / innerW));
+  };
+
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    isDragging.current = true;
+    lastX.current = e.clientX;
+    velRef.current = 0;
+    if (velTimer.current) clearInterval(velTimer.current);
+    const idx = Math.round(getFrac(e.clientX) * N);
+    setDragIdx(idx);
+    onLivePhase(SCRUB_PHASES[idx].id);
+  };
+
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDragging.current) return;
+    const frac = getFrac(e.clientX);
+    const idx  = Math.round(frac * N);
+    setDragIdx(idx);
+    onLivePhase(SCRUB_PHASES[idx].id);
+    const dx = e.clientX - lastX.current;
+    lastX.current = e.clientX;
+    velRef.current = dx * 0.18;
+    onVelocityChange(velRef.current);
+  };
+
+  const onPointerUp = () => {
+    if (!isDragging.current) return;
+    isDragging.current = false;
+    const finalIdx = dragIdx ?? activeIdx;
+    onPhaseChange(SCRUB_PHASES[finalIdx].id);
+    setDragIdx(null);
+    // Decay rotation velocity
+    velTimer.current = setInterval(() => {
+      velRef.current *= 0.72;
+      onVelocityChange(velRef.current);
+      if (Math.abs(velRef.current) < 0.02) {
+        onVelocityChange(0);
+        clearInterval(velTimer.current!);
+      }
+    }, 50);
+  };
+
+  return (
+    <div
+      className="select-none touch-none"
+      style={{ width: "min(340px, calc(100vw - 96px))" }}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
+    >
+      {/* Container card */}
+      <div
+        className="rounded-2xl px-2 py-2"
+        style={{
+          background: "rgba(6,7,14,0.88)",
+          border: "1px solid rgba(255,255,255,0.07)",
+          boxShadow: "0 4px 24px rgba(0,0,0,0.6)",
+          backdropFilter: "blur(12px)",
+          cursor: isDragging.current ? "grabbing" : "grab",
+        }}
+      >
+        {/* Phase label + year */}
+        <div className="flex items-center justify-center gap-2 mb-2 pointer-events-none">
+          <motion.span
+            key={phase.id}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="font-mono text-[8px] tracking-[.22em] uppercase font-bold"
+            style={{ color: phase.hex }}
+          >
+            {phase.label}
+          </motion.span>
+          <span className="font-mono text-[7px] text-text-mute2/60">{phase.yearRange}</span>
+        </div>
+
+        {/* Track */}
+        <div ref={trackRef} className="relative h-8">
+          {/* Background track line */}
+          <div
+            className="absolute top-1/2 pointer-events-none"
+            style={{
+              left: SCRUB_PAD, right: SCRUB_PAD,
+              height: 1,
+              background: "rgba(255,255,255,0.10)",
+              transform: "translateY(-50%)",
+            }}
+          />
+
+          {/* Active segment — from P1 stop to current stop */}
+          <div
+            className="absolute top-1/2 pointer-events-none transition-all duration-200"
+            style={{
+              left: stopX(0),
+              width: Math.max(0, stopX(displayIdx) - stopX(0)),
+              height: 2,
+              background: `linear-gradient(90deg, ${SCRUB_PHASES[0].hex}44, ${phase.hex}cc)`,
+              transform: "translateY(-50%)",
+              borderRadius: 1,
+            }}
+          />
+
+          {/* Phase stops */}
+          {SCRUB_PHASES.map((p, i) => {
+            const isActive = i === displayIdx;
+            return (
+              <div
+                key={p.id}
+                className="absolute top-1/2 -translate-x-1/2 pointer-events-none flex flex-col items-center"
+                style={{ left: stopX(i), transform: "translateX(-50%) translateY(-50%)" }}
+              >
+                {/* Stop dot */}
+                <div
+                  className="rounded-full transition-all duration-200"
+                  style={{
+                    width: isActive ? 6 : 4,
+                    height: isActive ? 6 : 4,
+                    background: isActive ? p.hex : `${p.hex}55`,
+                    boxShadow: isActive ? `0 0 8px ${p.hex}` : "none",
+                  }}
+                />
+              </div>
+            );
+          })}
+
+          {/* Phase labels — below track */}
+          {SCRUB_PHASES.map((p, i) => {
+            const isActive = i === displayIdx;
+            return (
+              <div
+                key={p.id + "-lbl"}
+                className="absolute pointer-events-none"
+                style={{
+                  left: stopX(i),
+                  top: "calc(50% + 8px)",
+                  transform: "translateX(-50%)",
+                }}
+              >
+                <p
+                  className="font-mono whitespace-nowrap transition-all duration-200"
+                  style={{
+                    fontSize: "6.5px",
+                    letterSpacing: ".1em",
+                    color: isActive ? `${p.hex}cc` : `${p.hex}44`,
+                    fontWeight: isActive ? "700" : "400",
+                  }}
+                >
+                  {p.label === "NOW" ? "NOW" : p.yearRange.split("–")[0]}
+                </p>
+              </div>
+            );
+          })}
+
+          {/* Draggable diamond handle */}
+          <motion.div
+            className="absolute top-1/2 pointer-events-none z-10"
+            animate={{ left: stopX(displayIdx) }}
+            transition={{ type: "spring", stiffness: 320, damping: 28 }}
+            style={{ translateX: "-50%", translateY: "-50%" }}
+          >
+            <div
+              style={{
+                width: 14, height: 14,
+                background: phase.hex,
+                transform: "rotate(45deg)",
+                borderRadius: 2,
+                boxShadow: `0 0 14px ${phase.hex}aa, 0 0 4px ${phase.hex}`,
+                border: "1.5px solid rgba(255,255,255,0.4)",
+              }}
+            />
+          </motion.div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function PanelTrigger({
   open, onClick, label, openColor, side,

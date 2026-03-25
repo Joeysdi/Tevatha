@@ -17,7 +17,6 @@ import {
   ERA_NEUTRAL_FILL,
 } from "@/lib/watchtower/era-risk";
 import type { EraPhase, EraCountry } from "@/lib/watchtower/era-risk";
-import type { TimelineEvent } from "@/lib/watchtower/data";
 import { SCENARIO_IMPACTS } from "@/lib/watchtower/scenario-impacts";
 import type { ScenarioCountryImpact } from "@/lib/watchtower/scenario-impacts";
 import { SIGNAL_PINS } from "@/lib/watchtower/signal-pins";
@@ -264,19 +263,19 @@ const PSYCH_ZONES: PsychZone[] = [
 // ─── Props ────────────────────────────────────────────────────────────────────
 interface Props {
   eraPhase:         string;
-  timelineEvent:    TimelineEvent | null;
   scenarioId:       string | null;
   showSignals:      boolean;
   psychologyMode:   boolean;
   domainId:         string | null;
-  timelineOpen:     boolean;
+  gatePhase:        string;
+  scrubVelocity:    number;
   onSignalPinClick: (sigIndex: number) => void;
   onPsychZoneClick: (zone: { region: string; threat: string; note: string }) => void;
   onGatePinClick:   (gateId: string) => void;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
-export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignals, psychologyMode, domainId, timelineOpen, onSignalPinClick, onPsychZoneClick, onGatePinClick }: Props) {
+export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMode, domainId, gatePhase, scrubVelocity, onSignalPinClick, onPsychZoneClick, onGatePinClick }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const globeRef     = useRef<GlobeMethods | undefined>(undefined);
   const [dims,         setDims]         = useState({ w: 0, h: 0 });
@@ -522,8 +521,9 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
       }
     }
 
-    // Gate pins — visible when timeline is open
-    if (timelineOpen) {
+    // Gate pins — visible in present/future phases (P4, P5, P6)
+    const showGates = gatePhase !== "P1" && gatePhase !== "P2" && gatePhase !== "P3";
+    if (showGates) {
       const GATE_TIER: Record<string, string> = {
         G1:"t4", G2:"t4", G3:"t4", G4:"t4", G5:"t4", G6:"t3", G7:"t3", G8:"t2",
       };
@@ -540,7 +540,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
     }
 
     return items;
-  }, [showSignals, scenarioId, psychologyMode, domainId, domainColor, timelineOpen]);
+  }, [showSignals, scenarioId, psychologyMode, domainId, domainColor, gatePhase]);
 
   const htmlElement = useCallback((d: object) => {
     const el = document.createElement("div");
@@ -850,19 +850,16 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
     }, 500);
   }, []);
 
-  // ── Fly to timeline event region when selected ────────────────────────────
+  // ── Scrub velocity → globe rotation speed ────────────────────────────────
   useEffect(() => {
-    if (!globeRef.current || !timelineEvent) return;
-    const phase     = eraPhase as EraPhase;
-    const overrides = ERA_OVERRIDES[phase] ?? [];
-    const match     = overrides[0];
-    if (match) {
-      globeRef.current.pointOfView(
-        { lat: match.lat, lng: match.lon, altitude: 2.0 },
-        900,
-      );
-    }
-  }, [timelineEvent, eraPhase]);
+    if (!globeRef.current || !globeReady) return;
+    const prefersReduced = typeof window !== "undefined"
+      && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReduced) return;
+    const ctrl = globeRef.current.controls() as { autoRotate: boolean; autoRotateSpeed: number };
+    ctrl.autoRotate      = true;
+    ctrl.autoRotateSpeed = 0.22 + scrubVelocity * 3;
+  }, [scrubVelocity, globeReady]);
 
   // ── Hover handler ─────────────────────────────────────────────────────────
   const handleHover = useCallback((feat: GeoFeature | null | object) => {
