@@ -1,3 +1,23 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Hide scrollbars on timeline and any scrollbar-none element */
+.scrollbar-none::-webkit-scrollbar,
+[style*="scrollbarWidth"]::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* Ticker animation */
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* Scanline animation used in loading veil */
+@keyframes slideRight {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(400%); }
+}

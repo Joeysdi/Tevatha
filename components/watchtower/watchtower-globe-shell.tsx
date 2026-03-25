@@ -126,7 +126,7 @@ export function WatchtowerGlobeShell() {
 
 
         {/* ── Protocol trigger — bottom left (desktop only) ───────────────── */}
-        <div className="hidden sm:block absolute bottom-[92px] left-3 z-20">
+        <div className="hidden sm:block absolute bottom-[86px] left-3 z-30">
           <button
             onClick={() => setProtocolOpen(!protocolOpen)}
             className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg
@@ -273,6 +273,15 @@ export function WatchtowerGlobeShell() {
           onTabChange={setProvisionerTab}
         />
         <GlobeProtocolPanel open={protocolOpen} onClose={() => setProtocolOpen(false)} />
+
+        {/* ── Timeline — overlaid at bottom of globe ───────────────────── */}
+        <div className="absolute bottom-0 left-0 right-0 z-20">
+          <GlobeTimeline
+            activePhase={eraPhase}
+            onPhaseSelect={setEraPhase}
+            onEventSelect={setTimelineEvent}
+          />
+        </div>
       </div>
 
       {/* ── Mobile control bar (hidden sm+) ─────────────────────────────── */}
@@ -339,12 +348,6 @@ export function WatchtowerGlobeShell() {
         </button>
       </div>
 
-      {/* ── Timeline bar ─────────────────────────────────────────────────── */}
-      <GlobeTimeline
-        activePhase={eraPhase}
-        onPhaseSelect={setEraPhase}
-        onEventSelect={setTimelineEvent}
-      />
     </div>
   );
 }

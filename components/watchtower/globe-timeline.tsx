@@ -170,8 +170,14 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
   return (
     <div
       ref={containerRef}
-      className="flex-shrink-0 relative overflow-hidden select-none"
-      style={{ height: HEIGHT, background: "rgba(3,4,9,1)", borderTop: "1px solid rgba(255,255,255,0.04)" }}
+      className="relative overflow-hidden select-none"
+      style={{
+        height:     HEIGHT,
+        background: "linear-gradient(to top, rgba(2,3,8,0.88) 0%, rgba(2,3,8,0.72) 60%, transparent 100%)",
+        backdropFilter: "blur(6px)",
+        WebkitBackdropFilter: "blur(6px)",
+        borderTop:  "1px solid rgba(255,255,255,0.05)",
+      }}
     >
       {/* ── Playhead ── */}
       <div
@@ -211,8 +217,13 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
       <div
         ref={scrollRef}
         onScroll={handleScroll}
-        className="w-full h-full overflow-x-auto overflow-y-hidden scrollbar-none"
-        style={{ WebkitOverflowScrolling: "touch", touchAction: "pan-x" } as React.CSSProperties}
+        className="w-full h-full overflow-x-auto overflow-y-hidden"
+        style={{
+          WebkitOverflowScrolling: "touch",
+          touchAction: "pan-x",
+          scrollbarWidth: "none",        /* Firefox */
+          msOverflowStyle: "none",       /* IE/Edge */
+        } as React.CSSProperties}
       >
         <div className="relative" style={{ width: TOTAL_W, height: HEIGHT }}>
 
