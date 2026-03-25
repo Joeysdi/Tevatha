@@ -1018,31 +1018,6 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
       {/* ── Starfield — behind globe canvas ──────────────────────────────── */}
       <StarfieldCanvas w={dims.w} h={dims.h} />
 
-      {/* ── Palantir orbital reticles ─────────────────────────────────────── */}
-      {dims.w > 0 && globeReady && (
-        <svg
-          className="absolute inset-0 z-[1] pointer-events-none"
-          viewBox="0 0 200 200"
-          preserveAspectRatio="xMidYMid meet"
-          style={{ width: "100%", height: "100%" }}
-        >
-          {/* Equatorial ring */}
-          <ellipse cx="100" cy="100" rx="90" ry="22"
-                   fill="none" stroke="rgba(0,212,255,0.08)" strokeWidth="0.4" />
-          {/* Polar ring */}
-          <ellipse cx="100" cy="100" rx="20" ry="90"
-                   fill="none" stroke="rgba(0,212,255,0.07)" strokeWidth="0.35" />
-          {/* Diagonal orbit */}
-          <ellipse cx="100" cy="100" rx="78" ry="28"
-                   fill="none" stroke="rgba(0,212,255,0.05)" strokeWidth="0.3"
-                   transform="rotate(42, 100, 100)" />
-          {/* Cardinal tick marks */}
-          <line x1="100" y1="8"   x2="100" y2="14"  stroke="rgba(0,212,255,0.14)" strokeWidth="0.5" />
-          <line x1="100" y1="186" x2="100" y2="192" stroke="rgba(0,212,255,0.14)" strokeWidth="0.5" />
-          <line x1="8"   y1="100" x2="14"  y2="100" stroke="rgba(0,212,255,0.14)" strokeWidth="0.5" />
-          <line x1="186" y1="100" x2="192" y2="100" stroke="rgba(0,212,255,0.14)" strokeWidth="0.5" />
-        </svg>
-      )}
 
       {/* ── Globe ────────────────────────────────────────────────────────── */}
       {dims.w > 0 && (
