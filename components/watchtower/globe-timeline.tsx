@@ -38,8 +38,8 @@ const TOTAL_W  = SIDE_PAD + CONTENT_W + SIDE_PAD;
 const NOW_YEAR   = 2026;
 const START_YEAR = 1942;
 const END_YEAR   = 2038;
-const AXIS_Y     = 40;   // px from container top — axis position
-const HEIGHT     = 76;
+const AXIS_Y     = 52;   // px from container top — axis position
+const HEIGHT     = 100;
 
 function yrToPx(year: number): number {
   for (let i = 0; i < SEGMENTS.length; i++) {
@@ -104,9 +104,12 @@ interface Props {
 // ── Component ──────────────────────────────────────────────────────────────────
 
 export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Props) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const scrollRef    = useRef<HTMLDivElement>(null);
-  const debounceRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const containerRef  = useRef<HTMLDivElement>(null);
+  const scrollRef     = useRef<HTMLDivElement>(null);
+  const debounceRef   = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isDragging    = useRef(false);
+  const dragStartX    = useRef(0);
+  const dragScrollLeft = useRef(0);
   const [activeEvt,  setActiveEvt]  = useState<TimelineEvent | null>(null);
   const [gateHov,    setGateHov]    = useState<DecisionGate | null>(null);
   const [scrollYear, setScrollYear] = useState(NOW_YEAR);
@@ -129,6 +132,40 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
     };
     container.addEventListener("wheel", onWheel, { passive: false });
     return () => container.removeEventListener("wheel", onWheel);
+  }, []);
+
+  // Mouse drag — click-and-drag horizontal scroll
+  useEffect(() => {
+    const scroller = scrollRef.current;
+    if (!scroller) return;
+
+    const onMouseDown = (e: MouseEvent) => {
+      isDragging.current   = true;
+      dragStartX.current   = e.pageX - scroller.offsetLeft;
+      dragScrollLeft.current = scroller.scrollLeft;
+      scroller.style.cursor = "grabbing";
+    };
+    const onMouseMove = (e: MouseEvent) => {
+      if (!isDragging.current) return;
+      e.preventDefault();
+      const x    = e.pageX - scroller.offsetLeft;
+      const walk = x - dragStartX.current;
+      scroller.scrollLeft = dragScrollLeft.current - walk;
+    };
+    const onMouseUp = () => {
+      isDragging.current    = false;
+      scroller.style.cursor = "grab";
+    };
+
+    scroller.style.cursor = "grab";
+    scroller.addEventListener("mousedown", onMouseDown);
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+    return () => {
+      scroller.removeEventListener("mousedown", onMouseDown);
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
   }, []);
 
   // Cleanup debounce
@@ -204,7 +241,7 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
       <div className="absolute top-1.5 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
         <p
           className="font-mono tabular-nums"
-          style={{ fontSize: "7px", letterSpacing: ".1em", color: `${activePhaseHex}cc`, transition: "color 0.5s" }}
+          style={{ fontSize: "10px", letterSpacing: ".1em", color: `${activePhaseHex}cc`, transition: "color 0.5s" }}
         >
           {scrollYear > NOW_YEAR ? `${scrollYear} ▸ forecast` : scrollYear < NOW_YEAR ? `◂ ${scrollYear}` : "▸ now  2026"}
         </p>
@@ -257,10 +294,10 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
                 className="absolute pointer-events-none font-mono whitespace-nowrap"
                 style={{
                   left: x + 3,
-                  top: 5,
-                  fontSize: "5px",
+                  top: 6,
+                  fontSize: "8px",
                   letterSpacing: ".2em",
-                  color: isActive ? `${p.hex}bb` : `${p.hex}38`,
+                  color: isActive ? `${p.hex}cc` : `${p.hex}55`,
                   transition: "color 0.4s",
                 }}
               >
@@ -286,9 +323,9 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
                     position: "absolute",
                     top: AXIS_Y + 7,
                     left: 2,
-                    fontSize: "5px",
+                    fontSize: "7px",
                     fontFamily: "monospace",
-                    color: "rgba(90,110,130,0.38)",
+                    color: "rgba(90,110,130,0.6)",
                     whiteSpace: "nowrap",
                   }}>
                     {yr}
@@ -300,10 +337,10 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
                     top: AXIS_Y + 7,
                     left: "50%",
                     transform: "translateX(-50%)",
-                    fontSize: "5px",
+                    fontSize: "7px",
                     fontFamily: "monospace",
                     fontWeight: "bold",
-                    color: "rgba(232,64,64,0.7)",
+                    color: "rgba(232,64,64,0.85)",
                     whiteSpace: "nowrap",
                   }}>
                     {NOW_YEAR}
@@ -348,9 +385,9 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
                 }} />
                 <p style={{
                   position: "absolute",
-                  fontSize: "5px", fontFamily: "monospace",
-                  color: col, opacity: 0.7,
-                  top: -8, left: "50%", transform: "translateX(-50%)",
+                  fontSize: "7px", fontFamily: "monospace",
+                  color: col, opacity: 0.8,
+                  top: -10, left: "50%", transform: "translateX(-50%)",
                   whiteSpace: "nowrap", letterSpacing: ".1em",
                 }}>
                   {gate.id}
@@ -446,7 +483,7 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
                   <p
                     className="absolute font-mono whitespace-nowrap"
                     style={{
-                      fontSize: "6px", fontWeight: "bold",
+                      fontSize: "8px", fontWeight: "bold",
                       color: col,
                       top: yearLabelY,
                       left: "50%", transform: "translateX(-50%)",
@@ -463,15 +500,15 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
                   <p
                     className="absolute font-syne whitespace-nowrap"
                     style={{
-                      fontSize: "7px", fontWeight: "600",
+                      fontSize: "9px", fontWeight: "600",
                       color: `${col}cc`,
                       top: nameLabelY,
                       left: "50%", transform: "translateX(-50%)",
-                      maxWidth: "120px", overflow: "hidden", textOverflow: "ellipsis",
+                      maxWidth: "140px", overflow: "hidden", textOverflow: "ellipsis",
                       textShadow: `0 0 12px ${col}55`,
                     }}
                   >
-                    {evt.label.length > 18 ? evt.label.slice(0, 16) + "…" : evt.label}
+                    {evt.label.length > 22 ? evt.label.slice(0, 20) + "…" : evt.label}
                   </p>
                 )}
 
@@ -480,7 +517,7 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
                   <p
                     className="absolute font-mono whitespace-nowrap"
                     style={{
-                      fontSize: "4.5px", color: `${col}35`,
+                      fontSize: "6px", color: `${col}50`,
                       top: yearLabelY, left: "50%", transform: "translateX(-50%)",
                     }}
                   >

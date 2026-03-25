@@ -194,7 +194,7 @@ export function WatchtowerGlobeShell() {
         {/* ── Protocol trigger — bottom left (desktop only) ────────────────── */}
         <div
           className="hidden sm:block absolute left-3 z-30"
-          style={{ bottom: timelineOpen ? "12px" : "48px", transition: "bottom 0.3s" }}
+          style={{ bottom: timelineOpen ? "12px" : "44px", transition: "bottom 0.3s" }}
         >
           <button
             onClick={(e) => { e.stopPropagation(); setProtocolOpen(!protocolOpen); }}
@@ -356,7 +356,7 @@ export function WatchtowerGlobeShell() {
         {timelineOpen && (
           <motion.div
             initial={{ height: 0 }}
-            animate={{ height: 120 }}
+            animate={{ height: 144 }}
             exit={{ height: 0 }}
             transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
             className="flex-shrink-0 overflow-hidden"

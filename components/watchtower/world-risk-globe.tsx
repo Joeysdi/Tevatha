@@ -450,6 +450,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
         background: ${col}20;
         box-shadow: 0 0 8px ${col}99, 0 0 2px ${col};
         cursor: pointer;
+        color: ${col};
         transform: rotate(45deg);
         transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
         border-radius: 1px;
@@ -547,10 +548,11 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
   useEffect(() => {
     const update = () => {
       if (containerRef.current) {
-        setDims({
-          w: containerRef.current.offsetWidth,
-          h: containerRef.current.offsetHeight,
-        });
+        const w = containerRef.current.offsetWidth;
+        const h = containerRef.current.offsetHeight;
+        // Only update when we have real dimensions — never let Globe unmount
+        // due to a transient 0×0 layout during rapid state changes
+        if (w > 0 && h > 0) setDims({ w, h });
       }
     };
     update();
@@ -617,8 +619,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
       };
       ctrl.autoRotate      = true;
       ctrl.autoRotateSpeed = 0.22;
-      ctrl.enableDamping   = true;
-      ctrl.dampingFactor   = 0.06;
+      ctrl.enableDamping   = false;
       ctrl.minDistance     = 180;
       ctrl.maxDistance     = 600;
     }
