@@ -768,7 +768,7 @@ export function GlobeInfoCards({
 }: GlobeInfoCardsProps) {
   // ── Card registry for real-time repulsion ─────────────────────────────────
   const registryRef = useRef<Map<string, RegistryEntry>>(new Map());
-  const CARD_W = 288, CARD_H = 260, PAD = 18;
+  const CARD_W = 288, CARD_H = 260, PAD = 12;
 
   const registerCard = useCallback((key: string, entry: RegistryEntry) => {
     registryRef.current.set(key, entry);
@@ -793,10 +793,10 @@ export function GlobeInfoCards({
       if (overlapX > 0 && overlapY > 0) {
         if (overlapX < overlapY) {
           const sign = ex >= mx ? 1 : -1;
-          entry.x.set(entry.x.get() + sign * Math.min(overlapX / 2 + 2, 22));
+          entry.x.set(entry.x.get() + sign * Math.min(overlapX * 0.18, 8));
         } else {
           const sign = ey >= my ? 1 : -1;
-          entry.y.set(entry.y.get() + sign * Math.min(overlapY / 2 + 2, 22));
+          entry.y.set(entry.y.get() + sign * Math.min(overlapY * 0.18, 8));
         }
       }
     }

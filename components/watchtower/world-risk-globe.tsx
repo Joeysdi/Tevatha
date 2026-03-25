@@ -271,8 +271,15 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
   const [countries,    setCountries]    = useState<GeoFeature[]>([]);
   const [hovered,      setHovered]      = useState<GeoFeature | null>(null);
   const [selectedFeat, setSelectedFeat] = useState<GeoFeature | null>(null);
-  const [globeReady,   setGlobeReady]   = useState(false);
+  const [globeReady,         setGlobeReady]         = useState(false);
+  const [minDisplayElapsed, setMinDisplayElapsed] = useState(false);
   const [selectedCityIdx, setSelectedCityIdx] = useState<number | null>(null);
+
+  // Guarantee the loading screen shows for at least 5.2 s so the clock animation plays fully
+  useEffect(() => {
+    const t = setTimeout(() => setMinDisplayElapsed(true), 5200);
+    return () => clearTimeout(t);
+  }, []);
   const { t } = useTranslation();
   const isHistorical = eraPhase !== "P4";
 
@@ -1432,9 +1439,9 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
         </p>
       </div>
 
-      {/* ── Loading veil — stays until globe + pins are ready, then fades ── */}
+      {/* ── Loading veil — stays until globe ready AND minimum display time elapsed ── */}
       <AnimatePresence>
-        {!globeReady && (
+        {(!globeReady || !minDisplayElapsed) && (
           <motion.div
             className="absolute inset-0 bg-void-0 z-30 flex flex-col items-center justify-center"
             initial={{ opacity: 1 }}
