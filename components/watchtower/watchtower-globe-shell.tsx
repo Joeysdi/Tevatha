@@ -15,8 +15,9 @@ import { LiveClock }              from "./live-clock";
 import type { IntelTab }          from "./globe-intel-panel";
 import type { ProvisionerTab }    from "./globe-provisioner-panel";
 import type { TimelineEvent }     from "@/lib/watchtower/data";
-import { SIGNALS }                from "@/lib/watchtower/data";
+import { SIGNALS, DOMAINS }       from "@/lib/watchtower/data";
 import { SCENARIO_IMPACTS }       from "@/lib/watchtower/scenario-impacts";
+import { DOMAIN_IMPACTS }         from "@/lib/watchtower/domain-impacts";
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -30,6 +31,15 @@ const PHASE_LABELS: Record<string, string> = {
 
 const EVT_COLORS: Record<string, string> = {
   red: "#e84040", warn: "#f0a500", info: "#38bdf8", pink: "#ff0055",
+};
+
+const DOMAIN_COLORS: Record<string, string> = {
+  "Nuclear / EMP":     "#e84040",
+  "Cyber / Tech":      "#00d4ff",
+  "Civil / Political": "#f0a500",
+  "Economic":          "#c9a84c",
+  "Biological":        "#1ae8a0",
+  "Climate":           "#38bdf8",
 };
 
 export function WatchtowerGlobeShell() {
@@ -51,7 +61,7 @@ export function WatchtowerGlobeShell() {
   // ── State (initialized from URL params) ────────────────────────────────────
   const [intelOpen,         setIntelOpen]         = useState(() => searchParams.get("panel") === "intel");
   const [provisionerOpen,   setProvisionerOpen]   = useState(() => searchParams.get("panel") === "shop");
-  const [intelTab,          setIntelTab]          = useState<IntelTab>("hub");
+  const [intelTab,          setIntelTab]          = useState<IntelTab>("scenarios");
   const [provisionerTab,    setProvisionerTab]    = useState<ProvisionerTab>("products");
   const [eraPhase,          setEraPhase]          = useState(() => searchParams.get("era") ?? "P4");
   const [timelineEvent,     setTimelineEvent]     = useState<TimelineEvent | null>(null);
@@ -62,6 +72,7 @@ export function WatchtowerGlobeShell() {
   const [psychologyMode,    setPsychologyMode]    = useState(() => searchParams.get("psych") === "1");
   const [protocolOpen,      setProtocolOpen]      = useState(() => searchParams.get("panel") === "protocol");
   const [selectedSignalIdx, setSelectedSignalIdx] = useState<number | null>(null);
+  const [domainId,          setDomainId]          = useState<string | null>(() => searchParams.get("domain"));
 
   const toggleIntel = () => {
     const next = !intelOpen;
@@ -94,6 +105,7 @@ export function WatchtowerGlobeShell() {
           scenarioId={scenarioId}
           showSignals={showSignals}
           psychologyMode={psychologyMode}
+          domainId={domainId}
           onSignalPinClick={setSelectedSignalIdx}
         />
 
@@ -245,6 +257,47 @@ export function WatchtowerGlobeShell() {
 
         {/* ── Globe mode controls — desktop only ───────────────────────────── */}
         <div className="hidden sm:flex absolute left-4 z-20 flex-col gap-1.5" style={{ top: "48px" }}>
+
+          {/* Threat domains */}
+          <div
+            className="rounded-xl overflow-hidden backdrop-blur-sm"
+            style={{ background: "rgba(11,13,24,0.88)", border: "1px solid rgba(255,255,255,0.07)" }}
+          >
+            <p className="font-mono text-[6.5px] tracking-[.2em] uppercase text-text-mute2/60 px-2.5 pt-2 pb-1">
+              Threat Domains
+            </p>
+            <div className="flex flex-col gap-0.5 px-1.5 pb-1.5">
+              {DOMAINS.map((d) => {
+                const active = domainId === d.id;
+                const col    = DOMAIN_COLORS[d.label] ?? "#c9a84c";
+                return (
+                  <button
+                    key={d.id}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const next = active ? null : d.id;
+                      setDomainId(next);
+                      updateUrl({ domain: next });
+                    }}
+                    aria-pressed={active}
+                    className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-left
+                                transition-all duration-150 font-mono text-[8px]
+                                ${active ? "border" : "text-text-mute2 hover:text-text-base hover:bg-white/[0.04] border border-transparent"}`}
+                    style={active ? { color: col, background: `${col}18`, borderColor: `${col}40` } : {}}
+                  >
+                    <span
+                      className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                      style={{ background: active ? col : "rgba(150,165,180,0.3)", boxShadow: active ? `0 0 6px ${col}` : "none" }}
+                    />
+                    <span className="text-[10px] leading-none">{d.icon}</span>
+                    <span className="truncate max-w-[90px]">{d.label}</span>
+                    <span className="ml-auto font-bold tabular-nums" style={{ color: active ? col : undefined }}>{d.score}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <div
             className="rounded-xl overflow-hidden backdrop-blur-sm"
             style={{ background: "rgba(11,13,24,0.88)", border: "1px solid rgba(255,255,255,0.07)" }}
@@ -361,6 +414,73 @@ export function WatchtowerGlobeShell() {
           </div>
         )}
 
+        {/* ── Domain info overlay ──────────────────────────────────────────── */}
+        {domainId && (() => {
+          const domain = DOMAINS.find(d => d.id === domainId);
+          const impact = DOMAIN_IMPACTS.find(d => d.id === domainId);
+          if (!domain) return null;
+          const col = DOMAIN_COLORS[domain.label] ?? "#c9a84c";
+          const primaryCount   = impact?.countries.filter(c => c.role === "primary").length ?? 0;
+          const secondaryCount = impact?.countries.filter(c => c.role === "secondary").length ?? 0;
+          return (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.2 }}
+              className="absolute left-1/2 -translate-x-1/2 z-20 w-[380px] max-w-[92vw]"
+              style={{ bottom: timelineOpen ? "12px" : "60px", transition: "bottom 0.3s" }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div
+                className="rounded-xl overflow-hidden backdrop-blur-md"
+                style={{ background: "rgba(11,13,24,0.96)", border: `1px solid ${col}44`, boxShadow: `0 8px 40px rgba(0,0,0,0.7), 0 0 24px ${col}0a` }}
+              >
+                <div className="h-px w-full" style={{ background: `linear-gradient(90deg,${col},transparent)` }} />
+                <div className="px-4 py-3">
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[18px] leading-none">{domain.icon}</span>
+                      <div>
+                        <p className="font-mono text-[7px] tracking-[.18em] uppercase mb-0.5" style={{ color: col }}>
+                          ARK SCORE · {domain.score} · {domain.trend}
+                        </p>
+                        <p className="font-syne font-bold text-[13px] text-text-base leading-none">{domain.label}</p>
+                      </div>
+                      <span
+                        className="font-mono text-[7px] px-1.5 py-0.5 rounded border font-bold ml-2"
+                        style={{ color: col, borderColor: `${col}40`, background: `${col}15` }}
+                      >
+                        {domain.level}
+                      </span>
+                    </div>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setDomainId(null); updateUrl({ domain: null }); }}
+                      aria-label="Close domain overlay"
+                      className="font-mono text-[9px] text-text-mute2 hover:text-text-base transition-colors flex-shrink-0 min-w-[32px] min-h-[32px] flex items-center justify-center"
+                    >✕</button>
+                  </div>
+                  <p className="font-mono text-[9px] text-text-dim leading-relaxed mb-2.5">{domain.summary}</p>
+                  <div className="space-y-1 mb-3">
+                    {domain.drivers.slice(0, 2).map((drv, i) => (
+                      <div key={i} className="flex items-start gap-1.5">
+                        <span className="font-mono text-[8px] flex-shrink-0 mt-0.5" style={{ color: col }}>→</span>
+                        <p className="font-mono text-[8px] text-text-mute2 leading-relaxed">{drv}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-3 pt-2 border-t" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
+                    <span className="font-mono text-[8px] text-text-mute2">
+                      <span className="font-bold" style={{ color: col }}>{primaryCount}</span> primary · <span className="font-bold text-amber-protocol">{secondaryCount}</span> secondary
+                    </span>
+                    <span className="font-mono text-[8px] text-text-mute2/50 ml-auto">click country for detail</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          );
+        })()}
+
         {/* ── UTC clock — desktop only ─────────────────────────────────────── */}
         <div className="hidden sm:block" onClick={(e) => e.stopPropagation()}>
           <LiveClock />
@@ -471,6 +591,30 @@ export function WatchtowerGlobeShell() {
           <span className={`w-1 h-1 rounded-full flex-shrink-0 ${protocolOpen ? "bg-cyan-DEFAULT animate-pulse" : "bg-text-mute2/40"}`} />
           {t("nav_protocol")}
         </button>
+
+        <div className="w-px h-4 bg-border-protocol/60 flex-shrink-0" />
+
+        {/* Domain buttons (mobile) */}
+        {DOMAINS.map((d) => {
+          const active = domainId === d.id;
+          const col    = DOMAIN_COLORS[d.label] ?? "#c9a84c";
+          return (
+            <button key={d.id}
+              onClick={() => {
+                const next = active ? null : d.id;
+                setDomainId(next);
+                updateUrl({ domain: next });
+              }}
+              aria-pressed={active}
+              className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-2.5 rounded-lg border font-mono text-[9px] transition-all min-h-[44px]`}
+              style={active
+                ? { color: col, background: `${col}18`, borderColor: `${col}40` }
+                : { background: undefined }}
+            >
+              <span className="text-[12px] leading-none">{d.icon}</span>
+            </button>
+          );
+        })}
 
         <div className="w-px h-4 bg-border-protocol/60 flex-shrink-0" />
 

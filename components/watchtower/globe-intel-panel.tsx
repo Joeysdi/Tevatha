@@ -4,13 +4,13 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  DOMAINS, SIGNALS, COLLAPSE_CLASSES, SCENARIOS, GEAR,
+  SIGNALS, SCENARIOS, GEAR,
   PSYCH_PILLARS, PSYCH_THREATS, TIMELINE_EVENTS, GATES,
 } from "@/lib/watchtower/data";
 import type { SevCode } from "@/lib/watchtower/data";
 import { useTranslation } from "@/lib/i18n/use-translation";
 
-export type IntelTab = "hub" | "scenarios" | "signals" | "gear" | "psych" | "timeline";
+export type IntelTab = "scenarios" | "signals" | "gear" | "psych" | "timeline";
 
 interface Props {
   open:        boolean;
@@ -20,7 +20,6 @@ interface Props {
 }
 
 const TABS: { id: IntelTab; label: string }[] = [
-  { id: "hub",       label: "⬡ Hub"      },
   { id: "scenarios", label: "⚠ Scenarios" },
   { id: "signals",   label: "📡 Signals"  },
   { id: "gear",      label: "⚙ Gear"     },
@@ -39,15 +38,6 @@ const SEV_STYLES: Record<SevCode, string> = {
 };
 const SEV_LABELS: Record<SevCode, string> = {
   EX: "EXISTENTIAL", CR: "CRITICAL", HI: "HIGH", EL: "ELEVATED", ME: "MEDIUM",
-};
-
-const DOMAIN_COLORS: Record<string, string> = {
-  "Nuclear / EMP":     "#e84040",
-  "Cyber / Tech":      "#00d4ff",
-  "Civil / Political": "#f0a500",
-  "Economic":          "#c9a84c",
-  "Biological":        "#1ae8a0",
-  "Climate":           "#38bdf8",
 };
 
 const TIER_BADGE: Record<string, string> = {
@@ -162,7 +152,6 @@ export function GlobeIntelPanel({ open, onClose, activeTab, onTabChange }: Props
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.16, ease: [0.4, 0, 0.2, 1] }}
               >
-                {activeTab === "hub"       && <HubTab />}
                 {activeTab === "scenarios" && <ScenariosTab />}
                 {activeTab === "signals"   && <SignalsTab />}
                 {activeTab === "gear"      && <GearTab />}
@@ -174,117 +163,6 @@ export function GlobeIntelPanel({ open, onClose, activeTab, onTabChange }: Props
         </motion.aside>
       )}
     </AnimatePresence>
-  );
-}
-
-// ── HUB TAB ───────────────────────────────────────────────────────────────────
-
-function HubTab() {
-  const { t } = useTranslation();
-
-  return (
-    <div className="divide-y divide-border-protocol/60">
-
-      {/* Doomsday clock */}
-      <div className="px-4 py-3 bg-red-protocol/6">
-        <p className="font-mono text-[7.5px] tracking-[.22em] uppercase text-red-bright/70 mb-1.5">
-          {t("intel_doomsday_header")}
-        </p>
-        <div className="flex items-baseline gap-2 mb-1">
-          <span className="font-syne font-extrabold text-[40px] leading-none text-red-bright tabular-nums">
-            85s
-          </span>
-          <span className="font-mono text-[11px] text-text-mute2">{t("intel_to_midnight")}</span>
-        </div>
-        <p className="font-mono text-[9px] text-text-dim leading-relaxed">
-          {t("intel_doomsday_body")}
-        </p>
-      </div>
-
-      {/* Threat domain scores */}
-      <div className="px-4 py-3">
-        <p className="font-mono text-[7.5px] tracking-[.2em] uppercase text-text-mute2 mb-2.5">
-          {t("intel_domains_header")}
-        </p>
-        <div className="space-y-2">
-          {DOMAINS.map((d) => {
-            const col = DOMAIN_COLORS[d.label] ?? "#c9a84c";
-            return (
-              <div key={d.id}>
-                <div className="flex items-center gap-1.5 mb-0.5">
-                  <span className="text-[12px] leading-none">{d.icon}</span>
-                  <span className="font-mono text-[9px] text-text-dim flex-1 truncate">{d.label}</span>
-                  <span className="font-mono text-[8.5px] font-bold tabular-nums" style={{ color: col }}>{d.score}</span>
-                  <span className="font-mono text-[9px]" style={{ color: col }}>{d.trend}</span>
-                </div>
-                <div className="h-1 rounded-full bg-void-3 overflow-hidden">
-                  <div
-                    className="h-full rounded-full"
-                    style={{ width: `${d.score}%`, background: col, boxShadow: `0 0 6px ${col}55` }}
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Collapse probability */}
-      <div className="px-4 py-3">
-        <p className="font-mono text-[7.5px] tracking-[.2em] uppercase text-text-mute2 mb-2.5">
-          {t("intel_collapse_header")}
-        </p>
-        <div className="space-y-2">
-          {COLLAPSE_CLASSES.map((c) => {
-            const col = c.sev === "EX" ? "#e84040"
-              : c.sev === "CR" ? "#e84040"
-              : c.sev === "HI" ? "#f0a500"
-              : "#38bdf8";
-            return (
-              <div key={c.cls} className="flex items-center gap-2">
-                <span className="font-mono text-[9px] font-bold w-3.5 flex-shrink-0" style={{ color: col }}>
-                  {c.cls}
-                </span>
-                <div className="flex-1 h-1 rounded-full bg-void-3 overflow-hidden">
-                  <div className="h-full rounded-full" style={{ width: `${c.prob}%`, background: col }} />
-                </div>
-                <span className="font-mono text-[9px] font-bold tabular-nums w-7 text-right flex-shrink-0" style={{ color: col }}>
-                  {c.prob}%
-                </span>
-                <span className="font-mono text-[8px] text-text-mute2 w-24 flex-shrink-0 truncate">{c.name}</span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Priority signals */}
-      <div className="px-4 py-3">
-        <p className="font-mono text-[7.5px] tracking-[.2em] uppercase text-text-mute2 mb-2.5">
-          {t("intel_signals_header")} {Math.min(SIGNALS.length, 7)}
-        </p>
-        <div className="space-y-2">
-          {[...SIGNALS].sort((a, b) => b.score - a.score).slice(0, 7).map((s, i) => (
-            <div key={i} className="flex items-start gap-2">
-              <span className={`flex-shrink-0 mt-0.5 px-1.5 py-0.5 rounded border
-                               font-mono text-[7px] font-bold ${TIER_BADGE[s.tier] ?? TIER_BADGE.t2}`}>
-                {s.tier.toUpperCase()}
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="font-mono text-[9px] text-text-base leading-snug line-clamp-2">{s.sig}</p>
-                <p className="font-mono text-[7.5px] text-text-mute2 mt-0.5">{s.domain}</p>
-              </div>
-              <span className="font-mono text-[9px] font-bold text-red-bright tabular-nums flex-shrink-0">
-                {s.score}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Language picker */}
-      <LanguagePicker />
-    </div>
   );
 }
 

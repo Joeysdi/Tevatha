@@ -21,6 +21,8 @@ import type { TimelineEvent } from "@/lib/watchtower/data";
 import { SCENARIO_IMPACTS } from "@/lib/watchtower/scenario-impacts";
 import type { ScenarioCountryImpact } from "@/lib/watchtower/scenario-impacts";
 import { SIGNAL_PINS } from "@/lib/watchtower/signal-pins";
+import { DOMAIN_IMPACTS } from "@/lib/watchtower/domain-impacts";
+import { DOMAINS } from "@/lib/watchtower/data";
 
 // ─── Dynamic import — WebGL requires browser environment ──────────────────────
 const Globe = dynamic(() => import("react-globe.gl"), {
@@ -265,11 +267,12 @@ interface Props {
   scenarioId:      string | null;
   showSignals:     boolean;
   psychologyMode:  boolean;
+  domainId:        string | null;
   onSignalPinClick:(sigIndex: number) => void;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
-export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignals, psychologyMode, onSignalPinClick }: Props) {
+export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignals, psychologyMode, domainId, onSignalPinClick }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const globeRef     = useRef<GlobeMethods | undefined>(undefined);
   const [dims,         setDims]         = useState({ w: 0, h: 0 });
@@ -291,6 +294,31 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
     return map;
   }, [scenarioId]);
 
+  // ── Domain map ────────────────────────────────────────────────────────────
+  const domainMap = useMemo<Record<string, "primary" | "secondary" | "watch"> | null>(() => {
+    if (!domainId) return null;
+    const impact = DOMAIN_IMPACTS.find(d => d.id === domainId);
+    if (!impact) return null;
+    const map: Record<string, "primary" | "secondary" | "watch"> = {};
+    for (const c of impact.countries) map[c.iso] = c.role;
+    return map;
+  }, [domainId]);
+
+  const domainColor = useMemo(() => {
+    if (!domainId) return "#c9a84c";
+    const domain = DOMAINS.find(d => d.id === domainId);
+    if (!domain) return "#c9a84c";
+    const DOMAIN_HEX: Record<string, string> = {
+      "Nuclear / EMP":     "#e84040",
+      "Cyber / Tech":      "#00d4ff",
+      "Civil / Political": "#f0a500",
+      "Economic":          "#c9a84c",
+      "Biological":        "#1ae8a0",
+      "Climate":           "#38bdf8",
+    };
+    return DOMAIN_HEX[domain.label] ?? "#c9a84c";
+  }, [domainId]);
+
   // ── Era lookup map ────────────────────────────────────────────────────────
   const eraByIso = useMemo<Record<string, EraCountry> | null>(() => {
     if (scenarioId) return null;
@@ -304,6 +332,24 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
 
   // ── Active rings ──────────────────────────────────────────────────────────
   const activeRings = useMemo(() => {
+    if (domainId && domainMap) {
+      const impact = DOMAIN_IMPACTS.find(d => d.id === domainId);
+      if (!impact) return PULSE_RINGS_P4;
+      return impact.countries
+        .filter(c => c.role === "primary" || c.role === "secondary")
+        .flatMap(c => {
+          const risk = riskByIso[c.iso];
+          if (!risk) return [];
+          return [{
+            lat:              risk.lat,
+            lng:              risk.lon,
+            maxR:             c.role === "primary" ? 4.0 : 2.5,
+            propagationSpeed: c.role === "primary" ? 1.8 : 1.2,
+            repeatPeriod:     c.role === "primary" ? 900 : 1400,
+            colFn:            () => c.role === "primary" ? RISK_COLORS.CRITICAL.glow : RISK_COLORS.HIGH.glow,
+          }];
+        });
+    }
     if (scenarioId) {
       const scenario = SCENARIO_IMPACTS.find(s => s.id === scenarioId);
       if (!scenario) return [];
@@ -337,6 +383,16 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
 
   // ── Active heatmap ────────────────────────────────────────────────────────
   const activeHeatPoints = useMemo(() => {
+    if (domainId && domainMap) {
+      const impact = DOMAIN_IMPACTS.find(d => d.id === domainId);
+      if (!impact) return ALL_HEAT_POINTS_P4;
+      return impact.countries.flatMap(c => {
+        const risk = riskByIso[c.iso];
+        if (!risk) return [];
+        const w = c.role === "primary" ? 0.9 : c.role === "secondary" ? 0.6 : 0.3;
+        return [{ lat: risk.lat, lng: risk.lon, weight: w }];
+      });
+    }
     if (scenarioId) {
       const scenario = SCENARIO_IMPACTS.find(s => s.id === scenarioId);
       if (!scenario) return [];
@@ -352,7 +408,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
 
   // ── Unified HTML elements for globe ──────────────────────────────────────
   type HtmlGlobeItem = {
-    type:        "signal" | "scenario-label" | "psych-zone" | "city";
+    type:        "signal" | "scenario-label" | "psych-zone" | "city" | "domain-label";
     lat:         number;
     lng:         number;
     // signal fields
@@ -371,6 +427,10 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
     cityIdx?:    number;
     cityName?:   string;
     cityScore?:  number;
+    // domain label fields
+    domainRole?:  "primary" | "secondary" | "watch";
+    domainLabel?: string;
+    domainHex?:   string;
   };
 
   const htmlGlobeData = useMemo<HtmlGlobeItem[]>(() => {
@@ -435,8 +495,27 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
       }
     }
 
+    // Domain country labels
+    if (domainId) {
+      const impact = DOMAIN_IMPACTS.find(d => d.id === domainId);
+      if (impact) {
+        for (const c of impact.countries) {
+          const risk = riskByIso[c.iso];
+          if (!risk) continue;
+          items.push({
+            type:        "domain-label",
+            lat:         risk.lat,
+            lng:         risk.lon,
+            domainRole:  c.role,
+            domainLabel: c.label,
+            domainHex:   domainColor,
+          });
+        }
+      }
+    }
+
     return items;
-  }, [showSignals, scenarioId, psychologyMode]);
+  }, [showSignals, scenarioId, psychologyMode, domainId, domainColor]);
 
   const htmlElement = useCallback((d: object) => {
     const el = document.createElement("div");
@@ -541,6 +620,29 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
                     margin-bottom:2px;">${item.threat ?? ""}</div>
         <div style="font-family:monospace;font-size:7px;color:rgba(255,255,255,0.7);
                     line-height:1.3;">${truncated}</div>
+      `;
+
+    } else if (item.type === "domain-label") {
+      const hex   = item.domainHex ?? "#c9a84c";
+      const role  = item.domainRole ?? "watch";
+      const badge = role === "primary" ? "PRIMARY" : role === "secondary" ? "SECONDARY" : "WATCH";
+      const alpha = role === "primary" ? "0.85" : role === "secondary" ? "0.75" : "0.60";
+      el.style.cssText = `
+        background: rgba(5,8,13,${alpha});
+        border: 1px solid ${hex}55;
+        border-left: 2px solid ${hex};
+        border-radius: 6px;
+        padding: 4px 7px;
+        pointer-events: none;
+        max-width: 148px;
+        backdrop-filter: blur(6px);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.6), 0 0 8px ${hex}22;
+      `;
+      el.innerHTML = `
+        <div style="font-family:monospace;font-size:6.5px;font-weight:bold;
+                    color:${hex};letter-spacing:.12em;margin-bottom:2px;">${badge}</div>
+        <div style="font-family:monospace;font-size:8px;font-weight:bold;
+                    color:rgba(215,220,230,0.95);letter-spacing:.06em;">${item.domainLabel ?? ""}</div>
       `;
     }
 
@@ -677,6 +779,13 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
       const iso = String(parseInt(String(f.id ?? "0"), 10));
       const isHov = hovered && String(f.id) === String(hovered.id);
 
+      if (domainMap) {
+        const role = domainMap[iso];
+        if (!role) return ERA_NEUTRAL_FILL;
+        const level: RiskLevel = role === "primary" ? "CRITICAL" : role === "secondary" ? "HIGH" : "ELEVATED";
+        return isHov ? RISK_COLORS[level].hover : RISK_COLORS[level].fill;
+      }
+
       if (scenarioMap) {
         const impact = scenarioMap[iso];
         if (!impact) return ERA_NEUTRAL_FILL;
@@ -694,7 +803,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
       if (!risk) return NO_DATA_FILL;
       return isHov ? RISK_COLORS[risk.level].hover : RISK_COLORS[risk.level].fill;
     },
-    [hovered, eraByIso, scenarioMap],
+    [hovered, eraByIso, scenarioMap, domainMap],
   );
 
   const altitude = useCallback(
@@ -704,6 +813,11 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
       const iso = String(parseInt(String(f.id ?? "0"), 10));
 
       const level: RiskLevel | null = (() => {
+        if (domainMap) {
+          const role = domainMap[iso];
+          if (!role) return null;
+          return role === "primary" ? "CRITICAL" : role === "secondary" ? "HIGH" : "ELEVATED";
+        }
         if (scenarioMap) {
           const impact = scenarioMap[iso];
           if (!impact) return null;

@@ -195,45 +195,45 @@ export default function TiersPage() {
         </div>
 
         <StaggerParent className="grid gap-3 sm:grid-cols-2">
-          {TIERS.map((t) => (
-            <StaggerChild key={t.id}>
+          {TIERS.map((tier) => (
+            <StaggerChild key={tier.id}>
               <button
-                onClick={() => setActiveTier(activeTier === t.id ? null : t.id as TierId)}
+                onClick={() => setActiveTier(activeTier === tier.id ? null : tier.id as TierId)}
                 className={`w-full text-left relative rounded-xl border p-5 overflow-hidden
                             transition-all duration-200 hover:-translate-y-0.5
-                            ${activeTier === t.id ? `${t.bg} ${t.border}` : "bg-void-1 border-border-protocol hover:border-border-bright/40"}`}
+                            ${activeTier === tier.id ? `${tier.bg} ${tier.border}` : "bg-void-1 border-border-protocol hover:border-border-bright/40"}`}
               >
                 <div
                   className="absolute top-0 left-0 right-0 h-px"
-                  style={{ background: activeTier === t.id ? `linear-gradient(90deg,${t.bar},transparent)` : "transparent" }}
+                  style={{ background: activeTier === tier.id ? `linear-gradient(90deg,${tier.bar},transparent)` : "transparent" }}
                 />
                 <div className="flex items-center justify-between mb-2">
                   <span className={`font-mono text-[10px] font-bold px-2 py-0.5 rounded
-                                   border ${t.border} ${t.bg} ${t.color}`}>
-                    {t.id}
+                                   border ${tier.border} ${tier.bg} ${tier.color}`}>
+                    {tier.id}
                   </span>
-                  <span className="font-mono text-[9px] text-text-mute2">{t.window}</span>
+                  <span className="font-mono text-[9px] text-text-mute2">{tier.window}</span>
                 </div>
-                <p className={`font-syne font-bold text-[16px] leading-tight mb-0.5 ${activeTier === t.id ? t.color : "text-text-base"}`}>
-                  {t.label}
+                <p className={`font-syne font-bold text-[16px] leading-tight mb-0.5 ${activeTier === tier.id ? tier.color : "text-text-base"}`}>
+                  {tier.label}
                 </p>
-                <p className={`font-mono text-[9px] tracking-[.1em] uppercase mb-3 ${activeTier === t.id ? t.color : "text-text-mute2"}`}>
-                  {t.sub}
+                <p className={`font-mono text-[9px] tracking-[.1em] uppercase mb-3 ${activeTier === tier.id ? tier.color : "text-text-mute2"}`}>
+                  {tier.sub}
                 </p>
                 <p className="font-mono text-[10.5px] text-text-dim leading-relaxed mb-3">
-                  {t.desc}
+                  {tier.desc}
                 </p>
 
-                {activeTier === t.id && (
+                {activeTier === tier.id && (
                   <div className="space-y-3 mt-3 pt-3 border-t border-white/[0.07]">
                     <div>
                       <p className="font-mono text-[8.5px] text-text-mute2 tracking-[.14em] uppercase mb-2">
                         {t("tiers_requirements")}
                       </p>
                       <ul className="space-y-1.5">
-                        {t.requirements.map((r, i) => (
+                        {tier.requirements.map((r, i) => (
                           <li key={i} className="flex items-start gap-2">
-                            <span className="font-mono text-[10px] flex-shrink-0 mt-px" style={{ color: t.bar }}>→</span>
+                            <span className="font-mono text-[10px] flex-shrink-0 mt-px" style={{ color: tier.bar }}>→</span>
                             <span className="font-mono text-[10px] text-text-dim leading-relaxed">{r}</span>
                           </li>
                         ))}
@@ -245,7 +245,7 @@ export default function TiersPage() {
                         {t("tiers_key_gear")}
                       </p>
                       <div className="flex flex-col gap-1.5">
-                        {t.skuLinks.map((s) => (
+                        {tier.skuLinks.map((s) => (
                           <Link
                             key={s.sku}
                             href="/provisioner"
@@ -263,7 +263,7 @@ export default function TiersPage() {
 
                     <div className="flex items-center justify-between pt-1">
                       <span className="font-mono text-[9px] text-text-mute2">{t("tiers_cost_label")}</span>
-                      <span className={`font-mono text-[13px] font-bold ${t.color}`}>{t.cost}</span>
+                      <span className={`font-mono text-[13px] font-bold ${tier.color}`}>{tier.cost}</span>
                     </div>
                   </div>
                 )}
