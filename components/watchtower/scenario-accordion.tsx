@@ -5,6 +5,7 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { StaggerParent, StaggerChild } from "@/components/ui/motion";
 import type { Scenario, SevCode } from "@/lib/watchtower/data";
+import { useTranslation } from "@/lib/i18n/use-translation";
 
 const SEV_STYLES: Record<SevCode, string> = {
   EX: "bg-[rgba(255,0,85,0.18)] text-[#ff0055] border border-[rgba(255,0,85,0.3)]",
@@ -25,6 +26,7 @@ interface ScenarioAccordionProps {
 }
 
 export function ScenarioAccordion({ scenarios }: ScenarioAccordionProps) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState<string | null>(null);
 
   const toggle = (id: string) =>
@@ -86,12 +88,12 @@ export function ScenarioAccordion({ scenarios }: ScenarioAccordionProps) {
                       className="font-mono text-[11px] font-bold tabular-nums"
                       style={{ color: barColor }}
                     >
-                      {s.prob}% prob
+                      {s.prob}{t("prob_suffix")}
                     </span>
                   </div>
 
                   <span className="font-mono text-[10px] text-text-mute2">
-                    Ark prep: {s.prepTime}
+                    {t("ark_prep")}: {s.prepTime}
                   </span>
                 </div>
               </div>
@@ -124,12 +126,12 @@ export function ScenarioAccordion({ scenarios }: ScenarioAccordionProps) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   {/* Triggers + Cascade */}
                   <div>
-                    <SectionLabel>Triggers</SectionLabel>
-                    {s.triggers.map((t, i) => (
-                      <BodyRow key={i} icon="▸" color="#f0a500">{t}</BodyRow>
+                    <SectionLabel>{t("section_triggers")}</SectionLabel>
+                    {s.triggers.map((trig, i) => (
+                      <BodyRow key={i} icon="▸" color="#f0a500">{trig}</BodyRow>
                     ))}
 
-                    <SectionLabel className="mt-3.5">Cascade Links</SectionLabel>
+                    <SectionLabel className="mt-3.5">{t("section_cascade")}</SectionLabel>
                     {s.cascade.map((c, i) => (
                       <BodyRow key={i} icon="→" color="#e84040">{c}</BodyRow>
                     ))}
@@ -137,11 +139,11 @@ export function ScenarioAccordion({ scenarios }: ScenarioAccordionProps) {
 
                   {/* Mitigation table */}
                   <div>
-                    <SectionLabel>Mitigation</SectionLabel>
+                    <SectionLabel>{t("section_mitigation")}</SectionLabel>
                     <table className="w-full border-collapse">
                       <thead>
                         <tr>
-                          {["Action","Pri.","Cost"].map((h) => (
+                          {[t("col_action"), t("col_priority"), t("col_cost")].map((h) => (
                             <th
                               key={h}
                               className="text-left font-mono text-[9.5px] tracking-[.12em]

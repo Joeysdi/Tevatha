@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useTranslation } from "@/lib/i18n/use-translation";
 import { FadeUp, StaggerParent, StaggerChild } from "@/components/ui/motion";
 
 // ── Tier definitions ─────────────────────────────────────────────────────────
@@ -126,6 +127,7 @@ const QUESTIONS = [
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 export default function TiersPage() {
+  const { t } = useTranslation();
   const [answers, setAnswers]       = useState<Record<string, boolean | null>>(
     Object.fromEntries(QUESTIONS.map((q) => [q.id, null]))
   );
@@ -168,16 +170,14 @@ export default function TiersPage() {
             style={{ background: "linear-gradient(90deg,transparent,#c9a84c,transparent)" }}
           />
           <p className="font-mono text-[9.5px] text-gold-protocol tracking-[.22em] uppercase mb-3">
-            Provisioner · Preparedness Assessment
+            {t("tiers_eyebrow")}
           </p>
           <h1 className="font-syne font-extrabold text-[clamp(22px,5vw,32px)] text-text-base leading-tight mb-2">
-            Tier{" "}
-            <span className="text-gold-protocol">Assessment</span>
+            {t("tiers_title")}{" "}
+            <span className="text-gold-protocol">{t("tiers_highlight")}</span>
           </h1>
           <p className="text-text-dim text-[13px] leading-relaxed max-w-xl mb-5">
-            Buying without knowing your tier wastes capital. Know where you
-            stand, identify your exact capability gap, and shop from a
-            prioritised list — not a generic starter kit.
+            {t("tiers_sub")}
           </p>
           <div className="inline-flex items-center gap-2 font-mono text-[9px] text-gold-protocol
                           border border-gold-protocol/30 bg-gold-glow px-3 py-1.5 rounded-lg tracking-[.1em]">
@@ -190,7 +190,7 @@ export default function TiersPage() {
       {/* Tier cards */}
       <section>
         <div className="flex items-center gap-3 mb-4">
-          <h2 className="font-syne font-bold text-[17px] text-text-base">Tier Framework</h2>
+          <h2 className="font-syne font-bold text-[17px] text-text-base">{t("tiers_section_framework")}</h2>
           <div className="flex-1 h-px bg-border-protocol" />
         </div>
 
@@ -228,7 +228,7 @@ export default function TiersPage() {
                   <div className="space-y-3 mt-3 pt-3 border-t border-white/[0.07]">
                     <div>
                       <p className="font-mono text-[8.5px] text-text-mute2 tracking-[.14em] uppercase mb-2">
-                        Requirements
+                        {t("tiers_requirements")}
                       </p>
                       <ul className="space-y-1.5">
                         {t.requirements.map((r, i) => (
@@ -242,7 +242,7 @@ export default function TiersPage() {
 
                     <div>
                       <p className="font-mono text-[8.5px] text-text-mute2 tracking-[.14em] uppercase mb-2">
-                        Key Gear
+                        {t("tiers_key_gear")}
                       </p>
                       <div className="flex flex-col gap-1.5">
                         {t.skuLinks.map((s) => (
@@ -262,7 +262,7 @@ export default function TiersPage() {
                     </div>
 
                     <div className="flex items-center justify-between pt-1">
-                      <span className="font-mono text-[9px] text-text-mute2">Estimated cost to reach this tier:</span>
+                      <span className="font-mono text-[9px] text-text-mute2">{t("tiers_cost_label")}</span>
                       <span className={`font-mono text-[13px] font-bold ${t.color}`}>{t.cost}</span>
                     </div>
                   </div>
@@ -277,7 +277,7 @@ export default function TiersPage() {
       <FadeUp delay={0.1}>
         <section>
           <div className="flex items-center gap-3 mb-4">
-            <h2 className="font-syne font-bold text-[17px] text-text-base">Find Your Tier</h2>
+            <h2 className="font-syne font-bold text-[17px] text-text-base">{t("tiers_section_quiz")}</h2>
             <div className="flex-1 h-px bg-border-protocol" />
             {answered > 0 && (
               <button
@@ -287,7 +287,7 @@ export default function TiersPage() {
                 }}
                 className="font-mono text-[9px] text-text-mute2 hover:text-text-base transition-colors flex-shrink-0"
               >
-                Reset
+                {t("tiers_reset")}
               </button>
             )}
           </div>
@@ -300,19 +300,19 @@ export default function TiersPage() {
               >
                 <p className="font-mono text-[11px] text-text-base leading-relaxed mb-3">{q.text}</p>
                 <div className="flex gap-2">
-                  {(["Yes", "No"] as const).map((v) => (
+                  {([true, false] as const).map((v) => (
                     <button
-                      key={v}
-                      onClick={() => setAnswers((a) => ({ ...a, [q.id]: v === "Yes" }))}
+                      key={String(v)}
+                      onClick={() => setAnswers((a) => ({ ...a, [q.id]: v }))}
                       className={`px-4 py-1.5 rounded-lg font-mono text-[11px] font-bold border transition-all duration-150
-                        ${answers[q.id] === (v === "Yes")
-                          ? v === "Yes"
+                        ${answers[q.id] === v
+                          ? v
                             ? "bg-green-dim border-green-bright/40 text-green-protocol"
                             : "bg-red-dim border-red-DEFAULT/30 text-red-bright"
                           : "border-border-protocol text-text-mute2 hover:border-border-bright hover:text-text-base"
                         }`}
                     >
-                      {v}
+                      {v ? t("tiers_yes") : t("tiers_no")}
                     </button>
                   ))}
                 </div>
@@ -330,8 +330,8 @@ export default function TiersPage() {
                            disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0"
               >
                 {answered < QUESTIONS.length
-                  ? `${QUESTIONS.length - answered} QUESTION${QUESTIONS.length - answered !== 1 ? "S" : ""} REMAINING`
-                  : "CALCULATE MY TIER →"}
+                  ? `${QUESTIONS.length - answered} ${t("tiers_questions_remaining")}`
+                  : t("tiers_calculate")}
               </button>
             </div>
           </div>
@@ -346,7 +346,7 @@ export default function TiersPage() {
                 style={{ background: `linear-gradient(90deg,${resultTier.bar},transparent)` }}
               />
               <p className="font-mono text-[9px] text-text-mute2 tracking-[.12em] uppercase mb-1">
-                Your Current Tier
+                {t("tiers_your_tier")}
               </p>
               <p className={`font-syne font-extrabold text-[32px] leading-none ${resultTier.color}`}>
                 {resultTier.id}
@@ -380,12 +380,12 @@ export default function TiersPage() {
                                text-void-0 bg-gold-protocol px-4 py-2 rounded-lg
                                hover:bg-gold-bright transition-colors"
                   >
-                    Shop {nextTier.id} Gap →
+                    {nextTier.id} {t("tiers_shop_gap")}
                   </Link>
                 </>
               ) : (
                 <p className="font-mono text-[11px] text-text-dim leading-relaxed">
-                  ✓ T4 capability confirmed. Maintain, document, and drill.
+                  {t("tiers_t4_complete")}
                 </p>
               )}
             </div>
@@ -398,14 +398,14 @@ export default function TiersPage() {
         <div className="border border-border-protocol rounded-xl px-5 py-4 flex items-center
                          justify-between gap-4 bg-void-1">
           <p className="font-mono text-[11px] text-text-mute2 leading-relaxed">
-            Browse all gear sorted by threat domain
+            {t("tiers_gear_cta_text")}
           </p>
           <Link
             href="/provisioner/gear"
             className="font-mono text-[10px] text-gold-protocol hover:text-gold-bright
                        transition-colors flex-shrink-0"
           >
-            Threat Domain Catalog →
+            {t("tiers_gear_cta_link")}
           </Link>
         </div>
       </FadeUp>

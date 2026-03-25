@@ -534,7 +534,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
       `;
       el.innerHTML = `
         <div style="font-family:monospace;font-size:7px;font-weight:bold;color:rgba(200,150,255,0.9);
-                    letter-spacing:.1em;margin-bottom:2px;">🧠 PSYCH RISK</div>
+                    letter-spacing:.1em;margin-bottom:2px;">🧠 ${t("globe_psych_risk")}</div>
         <div style="font-family:monospace;font-size:8.5px;font-weight:bold;color:#fff;
                     margin-bottom:2px;">${item.region ?? ""}</div>
         <div style="font-family:monospace;font-size:7px;color:rgba(200,150,255,0.85);
@@ -545,7 +545,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
     }
 
     return el;
-  }, []);
+  }, [t]);
 
   // ── Container sizing ─────────────────────────────────────────────────────
   useEffect(() => {

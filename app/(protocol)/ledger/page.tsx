@@ -17,22 +17,20 @@ import {
 import {
   encryptPayload, decryptPayload, toB64, fromB64,
 } from "@/lib/crypto/vault";
+import { useTranslation } from "@/lib/i18n/use-translation";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
 type ViewState = "pin-gate" | "pin-create" | "overview" | "add" | "view-entry";
 
-const CATEGORIES: { id: LedgerCategory; label: string; icon: string; encrypted: boolean }[] = [
-  { id:"crypto_custody",         label:"Crypto Custody",       icon:"🔐", encrypted:true  },
-  { id:"blueprint",              label:"Bunker Blueprints",     icon:"⬡",  encrypted:false },
-  { id:"emergency_contact",      label:"Emergency Contacts",    icon:"📡", encrypted:true  },
-  { id:"access_protocol",        label:"Access Protocols",      icon:"◉",  encrypted:true  },
-  { id:"financial_architecture", label:"Financial Architecture",icon:"◈",  encrypted:true  },
+const CATEGORIES_STATIC: { id: LedgerCategory; icon: string; encrypted: boolean }[] = [
+  { id:"crypto_custody",         icon:"🔐", encrypted:true  },
+  { id:"blueprint",              icon:"⬡",  encrypted:false },
+  { id:"emergency_contact",      icon:"📡", encrypted:true  },
+  { id:"access_protocol",        icon:"◉",  encrypted:true  },
+  { id:"financial_architecture", icon:"◈",  encrypted:true  },
 ];
 
-const PRIORITY_LABEL: Record<1|2|3, string> = {
-  1:"CRITICAL", 2:"HIGH", 3:"STANDARD",
-};
 const PRIORITY_COL: Record<1|2|3, string> = {
   1:"text-red-bright border-red-DEFAULT/30 bg-red-dim",
   2:"text-amber-protocol border-amber-DEFAULT/25 bg-amber-dim",
@@ -51,15 +49,16 @@ function MonoBadge({ children, className="" }: { children: ReactNode; className?
 }
 
 function SyncIndicator({ online, pending }: { online: boolean; pending: number }) {
+  const { t } = useTranslation();
   return (
     <div className="flex items-center gap-2">
       <span className={`w-1.5 h-1.5 rounded-full ${online ? "bg-green-protocol animate-pulse" : "bg-red-bright"}`}/>
       <span className="font-mono text-[9px] text-text-mute2 tracking-[.12em]">
-        {online ? "ONLINE" : "OFFLINE"}
+        {online ? t("ledger_sync_online") : t("ledger_sync_offline")}
       </span>
       {pending > 0 && (
         <span className="font-mono text-[9px] text-amber-protocol">
-          {pending} UNSYNCED
+          {pending} {t("ledger_sync_unsynced")}
         </span>
       )}
     </div>
@@ -69,6 +68,7 @@ function SyncIndicator({ online, pending }: { online: boolean; pending: number }
 // ── Main page ───────────────────────────────────────────────────────────────
 
 export default function LedgerPage() {
+  const { t } = useTranslation();
   const { user }  = useUser();
   const supabase  = useSupabaseClient();
 
@@ -90,6 +90,22 @@ export default function LedgerPage() {
 
   // PIN is held in a ref — never in React state (prevents accidental serialisation)
   const pinRef = useRef<string>("");
+
+  // Translated category labels & priority labels (derived from t)
+  const CAT_LABEL: Record<LedgerCategory, string> = {
+    crypto_custody:         t("cat_crypto"),
+    blueprint:              t("cat_blueprint"),
+    emergency_contact:      t("cat_contacts"),
+    access_protocol:        t("cat_access"),
+    financial_architecture: t("cat_financial"),
+  };
+  const PRIO_LABEL: Record<1|2|3, string> = {
+    1: t("priority_critical"),
+    2: t("priority_high"),
+    3: t("priority_standard"),
+  };
+
+  const CATEGORIES = CATEGORIES_STATIC.map((c) => ({ ...c, label: CAT_LABEL[c.id] }));
 
   // ── Check for existing PIN hash on mount ───────────────────────────────
   useEffect(() => {
@@ -117,14 +133,14 @@ export default function LedgerPage() {
 
   // ── Network status ─────────────────────────────────────────────────────
   useEffect(() => {
-    const online  = () => setOnline(true);
-    const offline = () => setOnline(false);
+    const on  = () => setOnline(true);
+    const off = () => setOnline(false);
     setOnline(navigator.onLine);
-    window.addEventListener("online",  online);
-    window.addEventListener("offline", offline);
+    window.addEventListener("online",  on);
+    window.addEventListener("offline", off);
     return () => {
-      window.removeEventListener("online",  online);
-      window.removeEventListener("offline", offline);
+      window.removeEventListener("online",  on);
+      window.removeEventListener("offline", off);
     };
   }, []);
 
@@ -172,7 +188,6 @@ export default function LedgerPage() {
     setLoading(true);
     try {
       if (online && user) {
-        // Attempt Supabase fetch
         const { data, error: sbErr } = await supabase
           .from("continuity_ledger")
           .select("*")
@@ -180,7 +195,6 @@ export default function LedgerPage() {
           .order("updated_at", { ascending: false });
 
         if (!sbErr && data) {
-          // Hydrate IDB with fresh server data
           for (const row of data) {
             const entry: LedgerEntry = {
               id:               row.id,
@@ -200,17 +214,16 @@ export default function LedgerPage() {
           }
         }
       }
-      // Always read final state from IDB (source of truth for display)
       const local = await getAllEntries();
       setEntries(local.sort((a, b) => a.priority - b.priority));
       const queue = await getSyncQueue();
       setPending(queue.length);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Load failed");
+      setError(e instanceof Error ? e.message : t("ledger_load_failed"));
     } finally {
       setLoading(false);
     }
-  }, [online, user, supabase]);
+  }, [online, user, supabase, t]);
 
   // ── PIN unlock (returning user) ─────────────────────────────────────────
   const handleUnlock = useCallback(async (pin: string) => {
@@ -219,27 +232,27 @@ export default function LedgerPage() {
     if (result === "invalid") {
       setPinShake(true);
       setTimeout(() => setPinShake(false), 500);
-      setError("Incorrect PIN");
+      setError(t("ledger_wrong_pin"));
       return;
     }
     setUnlocking(true);
-    await new Promise((r) => setTimeout(r, 650)); // padlock spring animation
+    await new Promise((r) => setTimeout(r, 650));
     pinRef.current = pin;
     await loadEntries();
     setView("overview");
-  }, [validatePin, loadEntries]);
+  }, [validatePin, loadEntries, t]);
 
   // ── PIN create (first-time user) ────────────────────────────────────────
   const handleCreatePin = useCallback(async (pin: string, confirm: string) => {
     setError(null);
     if (pin.length < 4) {
-      setError("PIN must be at least 4 characters");
+      setError(t("ledger_pin_too_short"));
       return;
     }
     if (pin !== confirm) {
       setPinShake(true);
       setTimeout(() => setPinShake(false), 500);
-      setError("PINs do not match");
+      setError(t("ledger_pin_mismatch"));
       return;
     }
     await setupPin(pin);
@@ -249,7 +262,7 @@ export default function LedgerPage() {
     pinRef.current = pin;
     await loadEntries();
     setView("overview");
-  }, [setupPin, loadEntries]);
+  }, [setupPin, loadEntries, t]);
 
   // ── Lock (wipe in-memory PIN) ───────────────────────────────────────────
   const lock = useCallback(() => {
@@ -293,7 +306,7 @@ export default function LedgerPage() {
     setError(null);
 
     try {
-      const catMeta = CATEGORIES.find((c) => c.id === draft.category)!;
+      const catMeta = CATEGORIES_STATIC.find((c) => c.id === draft.category)!;
       const now     = new Date().toISOString();
       const id      = crypto.randomUUID();
 
@@ -319,11 +332,9 @@ export default function LedgerPage() {
         updatedAt:        now,
       };
 
-      // Write to IDB immediately (offline-safe)
       await upsertEntry(entry);
       await enqueue("insert", entry);
 
-      // Attempt Supabase write
       if (online) {
         const { error: sbErr } = await supabase
           .from("continuity_ledger")
@@ -343,18 +354,18 @@ export default function LedgerPage() {
 
         if (!sbErr) {
           await markSynced(id);
-          await removeSyncItem(id); // not in queue yet, but safe
+          await removeSyncItem(id);
         }
       }
 
       await loadEntries();
       setView("overview");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to save entry");
+      setError(e instanceof Error ? e.message : t("ledger_save_failed"));
     } finally {
       setLoading(false);
     }
-  }, [user, online, supabase, loadEntries]);
+  }, [user, online, supabase, loadEntries, t]);
 
   // ── Filtered entries ────────────────────────────────────────────────────
   const visible = activeTab === "all"
@@ -408,15 +419,15 @@ export default function LedgerPage() {
           <div>
             <p className="font-mono text-[9.5px] text-gold-DEFAULT
                            tracking-[.22em] uppercase mb-3">
-              Protocol · Continuity Ledger
+              {t("ledger_eyebrow")}
             </p>
             <h1 className="font-syne font-extrabold text-[clamp(24px,5vw,34px)]
                             text-text-base leading-tight mb-2">
-              Zero-Hour{" "}
-              <span className="text-gold-DEFAULT">Continuity</span>
+              {t("ledger_title")}{" "}
+              <span className="text-gold-DEFAULT">{t("ledger_title_highlight")}</span>
             </h1>
             <p className="text-text-dim text-[13px] max-w-lg leading-relaxed">
-              Offline-capable. PIN-encrypted. Supabase-synced when online.
+              {t("ledger_subtitle")}
             </p>
           </div>
           <div className="flex flex-col items-end gap-3">
@@ -424,7 +435,7 @@ export default function LedgerPage() {
             <button onClick={lock}
               className="font-mono text-[9px] text-text-mute2 hover:text-red-bright
                          transition-colors tracking-[.1em]">
-              LOCK SESSION ×
+              {t("ledger_lock")}
             </button>
           </div>
         </div>
@@ -441,7 +452,7 @@ export default function LedgerPage() {
                           ${activeTab === id
                             ? "border-b-2 border-cyan-DEFAULT text-cyan-DEFAULT"
                             : "text-text-mute2 hover:text-text-base"}`}>
-              {cat ? `${cat.icon} ${cat.label}` : "All"}
+              {cat ? `${cat.icon} ${cat.label}` : t("ledger_all_tab")}
             </button>
           );
         })}
@@ -449,7 +460,7 @@ export default function LedgerPage() {
           className="ml-auto px-4 py-1.5 text-[10px] font-mono font-bold
                      tracking-[.1em] rounded-card bg-gold-DEFAULT text-void-0
                      hover:bg-gold-bright transition-colors">
-          + ADD ENTRY
+          {t("ledger_add_entry")}
         </button>
       </nav>
 
@@ -463,7 +474,7 @@ export default function LedgerPage() {
         <div className="text-center py-16 border border-border-protocol
                          rounded-card-lg bg-glass-DEFAULT">
           <p className="font-mono text-[10px] text-text-mute2 tracking-[.14em]">
-            NO ENTRIES — ADD YOUR FIRST LEDGER RECORD
+            {t("ledger_no_entries")}
           </p>
         </div>
       ) : (
@@ -488,18 +499,18 @@ export default function LedgerPage() {
                       <p className="font-mono text-[9.5px] text-text-mute2 mt-0.5">
                         {cat.label}
                         {cat.encrypted && (
-                          <span className="ml-2 text-cyan-DEFAULT">⟨encrypted⟩</span>
+                          <span className="ml-2 text-cyan-DEFAULT">{t("ledger_encrypted")}</span>
                         )}
                       </p>
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
                     <MonoBadge className={PRIORITY_COL[entry.priority]}>
-                      {PRIORITY_LABEL[entry.priority]}
+                      {PRIO_LABEL[entry.priority]}
                     </MonoBadge>
                     {!entry.synced && (
                       <MonoBadge className="text-amber-protocol border-amber-DEFAULT/25 bg-amber-dim">
-                        UNSYNCED
+                        {t("ledger_unsynced_badge")}
                       </MonoBadge>
                     )}
                   </div>
@@ -527,11 +538,11 @@ function PinGate({
   onUnlock:     (pin: string) => void;
   onCreatePin:  (pin: string, confirm: string) => void;
 }) {
+  const { t } = useTranslation();
   const [mode,    setMode]    = useState<"unlock" | "create" | null>(null);
   const [pin,     setPin]     = useState("");
   const [confirm, setConfirm] = useState("");
 
-  // Once hasPinAuth resolves, set initial mode
   useEffect(() => {
     if (hasPinAuth === null) return;
     setMode(hasPinAuth ? "unlock" : "create");
@@ -568,12 +579,10 @@ function PinGate({
           </div>
 
           <h2 className="font-syne font-bold text-[17px] text-cyan-DEFAULT text-center mb-1">
-            {isCreate ? "CREATE VAULT PIN" : "UNLOCK VAULT"}
+            {isCreate ? t("ledger_create_pin") : t("ledger_unlock_vault")}
           </h2>
           <p className="font-mono text-[9.5px] text-text-mute2 text-center mb-6">
-            {isCreate
-              ? "First-time setup · PIN never leaves your device"
-              : "Protocol · Continuity Ledger"}
+            {isCreate ? t("ledger_first_time") : t("ledger_eyebrow")}
           </p>
 
           {/* Shake wrapper */}
@@ -584,7 +593,7 @@ function PinGate({
           >
             <input
               type="password"
-              placeholder={isCreate ? "New PIN" : "· · · ·"}
+              placeholder={isCreate ? t("ledger_new_pin") : "· · · ·"}
               value={pin}
               onChange={(e) => setPin(e.target.value)}
               onKeyDown={(e) => {
@@ -605,7 +614,7 @@ function PinGate({
             {isCreate && (
               <input
                 type="password"
-                placeholder="Confirm PIN"
+                placeholder={t("ledger_confirm_pin")}
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && onCreatePin(pin, confirm)}
@@ -629,7 +638,7 @@ function PinGate({
                        hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,212,255,0.2)]
                        transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            {unlocking ? "OPENING…" : isCreate ? "CREATE VAULT" : "UNLOCK VAULT"}
+            {unlocking ? t("ledger_opening") : isCreate ? t("ledger_create_vault") : t("ledger_unlock_vault")}
           </button>
 
           {!isCreate && (
@@ -638,13 +647,13 @@ function PinGate({
               className="mt-3 w-full font-mono text-[10px] text-text-mute2
                          hover:text-text-dim transition-colors text-center"
             >
-              Create new vault ↗
+              {t("ledger_new_vault")}
             </button>
           )}
 
           {isCreate && (
             <p className="font-mono text-[9px] text-text-mute2 text-center mt-3">
-              There is no recovery method. Remember this PIN.
+              {t("ledger_no_recovery")}
             </p>
           )}
         </div>
@@ -658,14 +667,25 @@ function PinGate({
 function EntryDetail({
   entry, decrypted, onBack,
 }: { entry: LedgerEntry; decrypted: string | null; onBack: () => void }) {
-  const cat = CATEGORIES.find((c) => c.id === entry.category)!;
+  const { t } = useTranslation();
+  const CAT_LABEL: Record<LedgerCategory, string> = {
+    crypto_custody:         t("cat_crypto"),
+    blueprint:              t("cat_blueprint"),
+    emergency_contact:      t("cat_contacts"),
+    access_protocol:        t("cat_access"),
+    financial_architecture: t("cat_financial"),
+  };
+  const PRIO_LABEL: Record<1|2|3, string> = {
+    1: t("priority_critical"), 2: t("priority_high"), 3: t("priority_standard"),
+  };
+  const cat = CATEGORIES_STATIC.find((c) => c.id === entry.category)!;
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-10 space-y-6">
       <button onClick={onBack}
         className="font-mono text-[10px] text-text-mute2 hover:text-gold-DEFAULT
                    transition-colors tracking-[.1em]">
-        ← BACK TO LEDGER
+        {t("ledger_back")}
       </button>
 
       <header className="border-b border-border-protocol pb-6">
@@ -673,14 +693,14 @@ function EntryDetail({
           <span className="text-2xl">{cat.icon}</span>
           <div>
             <p className="font-mono text-[9px] text-text-mute2 tracking-[.12em] uppercase">
-              {cat.label}
+              {CAT_LABEL[cat.id]}
             </p>
             <h1 className="font-syne font-extrabold text-[22px] text-text-base">
               {entry.title}
             </h1>
           </div>
           <MonoBadge className={`ml-auto ${PRIORITY_COL[entry.priority]}`}>
-            {PRIORITY_LABEL[entry.priority]}
+            {PRIO_LABEL[entry.priority]}
           </MonoBadge>
         </div>
         <p className="font-mono text-[9px] text-text-mute2">
@@ -694,7 +714,7 @@ function EntryDetail({
         <div className="bg-glass-protocol border border-border-protocol
                          rounded-card-lg p-5">
           <p className="font-mono text-[9px] text-cyan-DEFAULT tracking-[.14em]
-                         uppercase mb-3">Decrypted Content</p>
+                         uppercase mb-3">{t("ledger_decrypted")}</p>
           {decrypted ? (
             <pre className="font-mono text-[12px] text-text-base whitespace-pre-wrap
                              leading-relaxed bg-void-3 rounded-card p-4
@@ -703,7 +723,7 @@ function EntryDetail({
             </pre>
           ) : (
             <p className="font-mono text-[11px] text-text-mute2 animate-pulse">
-              Decrypting…
+              {t("ledger_decrypting")}
             </p>
           )}
         </div>
@@ -720,12 +740,13 @@ function EntryDetail({
 // ── Blueprint Panel ─────────────────────────────────────────────────────────
 
 function BlueprintPanel({ data }: { data: BlueprintData }) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-4">
       <div className="bg-glass-protocol border border-border-protocol
                        rounded-card-lg p-5">
         <p className="font-mono text-[9px] text-gold-DEFAULT tracking-[.14em]
-                       uppercase mb-3">Location</p>
+                       uppercase mb-3">{t("ledger_location")}</p>
         <p className="font-syne font-bold text-[15px] text-text-base mb-1">
           {data.location}
         </p>
@@ -744,7 +765,7 @@ function BlueprintPanel({ data }: { data: BlueprintData }) {
         <div className="bg-glass-protocol border border-border-protocol
                          rounded-card-lg p-5">
           <p className="font-mono text-[9px] text-gold-DEFAULT tracking-[.14em]
-                         uppercase mb-3">Access Routes</p>
+                         uppercase mb-3">{t("ledger_routes")}</p>
           <div className="space-y-2">
             {data.accessRoutes.map((r, i) => (
               <div key={i} className="flex items-start gap-3 text-[12px]">
@@ -767,7 +788,7 @@ function BlueprintPanel({ data }: { data: BlueprintData }) {
         <div className="bg-glass-protocol border border-border-protocol
                          rounded-card-lg p-5">
           <p className="font-mono text-[9px] text-gold-DEFAULT tracking-[.14em]
-                         uppercase mb-3">Utilities</p>
+                         uppercase mb-3">{t("ledger_utilities")}</p>
           <div className="grid gap-2">
             {data.utilities.map((u, i) => (
               <div key={i}
@@ -802,26 +823,39 @@ function AddEntryForm({
   loading:  boolean;
   error:    string | null;
 }) {
+  const { t } = useTranslation();
   const [category,  setCat ]    = useState<LedgerCategory>("crypto_custody");
   const [title,     setTitle]   = useState("");
   const [plaintext, setPlain]   = useState("");
   const [priority,  setPri]     = useState<1|2|3>(1);
 
-  const catMeta = CATEGORIES.find((c) => c.id === category)!;
+  const CAT_LABEL: Record<LedgerCategory, string> = {
+    crypto_custody:         t("cat_crypto"),
+    blueprint:              t("cat_blueprint"),
+    emergency_contact:      t("cat_contacts"),
+    access_protocol:        t("cat_access"),
+    financial_architecture: t("cat_financial"),
+  };
+  const PRIO_LABEL: Record<1|2|3, string> = {
+    1: t("priority_critical"), 2: t("priority_high"), 3: t("priority_standard"),
+  };
+  const CATEGORIES = CATEGORIES_STATIC.map((c) => ({ ...c, label: CAT_LABEL[c.id] }));
+
+  const catMeta = CATEGORIES_STATIC.find((c) => c.id === category)!;
 
   return (
     <div className="max-w-2xl mx-auto px-6 py-10 space-y-6">
       <button onClick={onCancel}
         className="font-mono text-[10px] text-text-mute2 hover:text-gold-DEFAULT
                    transition-colors tracking-[.1em]">
-        ← CANCEL
+        {t("ledger_cancel")}
       </button>
 
       <header>
         <p className="font-mono text-[9.5px] text-gold-DEFAULT tracking-[.22em]
-                       uppercase mb-2">New Ledger Entry</p>
+                       uppercase mb-2">{t("ledger_new_entry_eyebrow")}</p>
         <h1 className="font-syne font-extrabold text-[24px] text-text-base">
-          Add Record
+          {t("ledger_add_record")}
         </h1>
       </header>
 
@@ -829,7 +863,7 @@ function AddEntryForm({
         {/* Category */}
         <div>
           <label className="block font-mono text-[9px] text-text-mute2
-                             tracking-[.12em] uppercase mb-2">Category</label>
+                             tracking-[.12em] uppercase mb-2">{t("ledger_category")}</label>
           <div className="flex flex-wrap gap-2">
             {CATEGORIES.map((c) => (
               <button key={c.id} onClick={() => setCat(c.id)}
@@ -847,7 +881,7 @@ function AddEntryForm({
         {/* Title */}
         <div>
           <label className="block font-mono text-[9px] text-text-mute2
-                             tracking-[.12em] uppercase mb-2">Title</label>
+                             tracking-[.12em] uppercase mb-2">{t("ledger_title_field")}</label>
           <input value={title} onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g. Primary Hardware Wallet — Ledger X"
             className="w-full bg-void-3 border border-border-protocol rounded-card
@@ -861,8 +895,8 @@ function AddEntryForm({
           <div>
             <label className="block font-mono text-[9px] text-text-mute2
                                tracking-[.12em] uppercase mb-2">
-              Sensitive Content
-              <span className="ml-2 text-cyan-DEFAULT">⟨ encrypted with your PIN ⟩</span>
+              {t("ledger_sensitive_content")}
+              <span className="ml-2 text-cyan-DEFAULT">{t("ledger_content_hint")}</span>
             </label>
             <textarea value={plaintext} onChange={(e) => setPlain(e.target.value)}
               rows={6}
@@ -877,7 +911,7 @@ function AddEntryForm({
         {/* Priority */}
         <div>
           <label className="block font-mono text-[9px] text-text-mute2
-                             tracking-[.12em] uppercase mb-2">Priority</label>
+                             tracking-[.12em] uppercase mb-2">{t("ledger_priority")}</label>
           <div className="flex gap-2">
             {([1,2,3] as const).map((p) => (
               <button key={p} onClick={() => setPri(p)}
@@ -886,7 +920,7 @@ function AddEntryForm({
                             ${priority === p
                               ? PRIORITY_COL[p]
                               : "text-text-mute2 border-border-protocol"}`}>
-                {PRIORITY_LABEL[p]}
+                {PRIO_LABEL[p]}
               </button>
             ))}
           </div>
@@ -903,7 +937,7 @@ function AddEntryForm({
                       text-[11px] tracking-[.1em] py-3 rounded-card
                       hover:bg-gold-bright transition-colors
                       disabled:opacity-40 disabled:cursor-not-allowed">
-          {loading ? "ENCRYPTING & SAVING…" : "SAVE TO LEDGER →"}
+          {loading ? t("ledger_saving") : t("ledger_save")}
         </button>
       </div>
     </div>

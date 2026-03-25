@@ -1,9 +1,9 @@
 // app/(protocol)/protocol/page.tsx  →  URL: /protocol
-import type { Metadata } from "next";
-import Link from "next/link";
-import { FadeUp, StaggerParent, StaggerChild } from "@/components/ui/motion";
+"use client";
 
-export const metadata: Metadata = { title: "Protocol" };
+import Link from "next/link";
+import { useTranslation } from "@/lib/i18n/use-translation";
+import { FadeUp, StaggerParent, StaggerChild } from "@/components/ui/motion";
 
 const MODULES = [
   {
@@ -25,6 +25,8 @@ const MODULES = [
 ];
 
 export default function ProtocolHubPage() {
+  const { t } = useTranslation();
+
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10 space-y-8">
 
@@ -32,16 +34,15 @@ export default function ProtocolHubPage() {
       <FadeUp>
         <header className="border-b border-border-protocol pb-8">
           <p className="font-mono text-[9.5px] text-cyan-DEFAULT tracking-[.22em] uppercase mb-3">
-            Tevatha · Protocol
+            {t("proto_hub_eyebrow")}
           </p>
           <h1 className="font-syne font-extrabold text-[clamp(26px,5vw,36px)]
                           text-text-base leading-tight mb-2">
-            Zero-Hour{" "}
-            <span className="text-cyan-DEFAULT">Continuity</span>
+            {t("proto_hub_title")}{" "}
+            <span className="text-cyan-DEFAULT">{t("proto_hub_highlight")}</span>
           </h1>
           <p className="text-text-dim text-[13px] leading-relaxed max-w-xl">
-            Offline-first infrastructure. PIN-encrypted vault. Ambassador network.
-            The layer that runs when nothing else does.
+            {t("proto_hub_sub")}
           </p>
         </header>
       </FadeUp>
@@ -64,7 +65,7 @@ export default function ProtocolHubPage() {
 
                 <div className="flex items-center justify-between mb-3">
                   <p className="font-mono text-[9px] text-cyan-DEFAULT tracking-[.14em] uppercase">
-                    Module {m.num}
+                    {t("proto_hub_module")} {m.num}
                   </p>
                   <span className="font-mono text-[8px] text-text-mute2 tracking-[.1em]
                                    border border-border-protocol px-2 py-0.5 rounded">
@@ -115,7 +116,7 @@ export default function ProtocolHubPage() {
             href="/watchtower"
             className="font-mono text-[11px] text-text-mute2 hover:text-text-base transition-colors"
           >
-            ← Back to Watchtower
+            {t("proto_hub_back")}
           </Link>
         </div>
       </FadeUp>

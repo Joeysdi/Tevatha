@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { StaggerParent, StaggerChild } from "@/components/ui/motion";
 import type { ThreatDomain, ThreatLevel } from "@/lib/watchtower/data";
+import { useTranslation } from "@/lib/i18n/use-translation";
 
 const LEVEL_STYLES: Record<ThreatLevel, string> = {
   CRITICAL: "border-l-red-protocol text-red-bright bg-red-dim border border-red-protocol/28",
@@ -44,6 +45,7 @@ export function ThreatGrid({ domains }: ThreatGridProps) {
 }
 
 function DomainCard({ domain: d }: { domain: ThreatDomain }) {
+  const { t } = useTranslation();
   const scoreColor  = SCORE_COLORS[d.level];
   const borderColor = BORDER_COLORS[d.level];
 
@@ -84,7 +86,7 @@ function DomainCard({ domain: d }: { domain: ThreatDomain }) {
         {/* Ark Score row */}
         <div className="flex items-center justify-between mb-2">
           <span className="font-mono text-[9.5px] tracking-[.1em] text-text-mute2 uppercase">
-            Ark Score
+            {t("threat_ark_score")}
           </span>
           <span
             className="font-mono text-[13px] font-bold tabular-nums"
@@ -137,7 +139,7 @@ function DomainCard({ domain: d }: { domain: ThreatDomain }) {
             className="font-mono text-[9px] tracking-[.1em] uppercase"
             style={{ color: scoreColor }}
           >
-            Full analysis →
+            {t("threat_full_analysis")}
           </span>
         </div>
       </motion.article>
