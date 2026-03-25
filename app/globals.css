@@ -21,3 +21,9 @@
   from { transform: translateX(-100%); }
   to   { transform: translateX(400%); }
 }
+
+/* City pin pulse for high-threat cities */
+@keyframes city-pulse {
+  0%, 100% { box-shadow: 0 0 8px currentColor, 0 0 2px currentColor; }
+  50%       { box-shadow: 0 0 18px currentColor, 0 0 6px currentColor; }
+}
