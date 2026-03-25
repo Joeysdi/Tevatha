@@ -7,12 +7,12 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "@/lib/i18n/use-translation";
 import { WorldRiskGlobe }         from "./world-risk-globe";
 import { GlobeProvisionerPanel }  from "./globe-provisioner-panel";
+import { GlobeInfoCards }         from "./globe-info-cards";
 import { LiveClock }              from "./live-clock";
 
 import type { ProvisionerTab }    from "./globe-provisioner-panel";
-import { SIGNALS, DOMAINS, SCENARIOS, PSYCH_PILLARS, GEAR, GATES, TIMELINE_EVENTS } from "@/lib/watchtower/data";
+import { DOMAINS, TIMELINE_EVENTS, GATES } from "@/lib/watchtower/data";
 import { SCENARIO_IMPACTS }       from "@/lib/watchtower/scenario-impacts";
-import { DOMAIN_IMPACTS }         from "@/lib/watchtower/domain-impacts";
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -107,13 +107,30 @@ export function WatchtowerGlobeShell() {
   const [selectedPsychZone, setSelectedPsychZone] = useState<{ region: string; threat: string; note: string } | null>(null);
   const [selectedGateId,    setSelectedGateId]    = useState<string | null>(null);
 
+  const globeContainerRef = useRef<HTMLDivElement>(null);
+  const [containerW, setContainerW] = useState(800);
+  const [containerH, setContainerH] = useState(600);
+
+  useEffect(() => {
+    const el = globeContainerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => {
+      setContainerW(el.offsetWidth);
+      setContainerH(el.offsetHeight);
+    });
+    ro.observe(el);
+    setContainerW(el.offsetWidth);
+    setContainerH(el.offsetHeight);
+    return () => ro.disconnect();
+  }, []);
+
   const isHistorical = eraPhase !== "P4";
 
   return (
     <div className="w-full h-full flex flex-col bg-void-0">
 
       {/* ── Globe area ───────────────────────────────────────────────────── */}
-      <div className="flex-1 relative overflow-hidden min-h-0">
+      <div ref={globeContainerRef} className="flex-1 relative overflow-hidden min-h-0">
         {/* Globe */}
         <WorldRiskGlobe
           eraPhase={eraPhase}
@@ -319,315 +336,23 @@ export function WatchtowerGlobeShell() {
           </div>
         </div>
 
-        {/* ── Signal info overlay ──────────────────────────────────────────── */}
-        {selectedSignalIdx !== null && SIGNALS[selectedSignalIdx] && (
-          <div
-            className="absolute left-1/2 -translate-x-1/2 z-20 w-[340px] max-w-[92vw]"
-            style={{ bottom: "80px" }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div
-              className="rounded-xl overflow-hidden backdrop-blur-md"
-              style={{ background: "rgba(11,13,24,0.95)", border: "1px solid rgba(240,165,0,0.35)", boxShadow: "0 8px 40px rgba(0,0,0,0.7)" }}
-            >
-              <div className="h-px w-full" style={{ background: "linear-gradient(90deg,#f0a500,transparent)" }} />
-              <div className="px-4 py-3">
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className={`font-mono text-[7px] px-1.5 py-0.5 rounded border font-bold
-                      ${SIGNALS[selectedSignalIdx].tier === "t4" ? "text-red-bright border-red-protocol/40 bg-red-protocol/10"
-                        : SIGNALS[selectedSignalIdx].tier === "t3" ? "text-amber-protocol border-amber-DEFAULT/30 bg-amber-dim"
-                        : "text-blue-DEFAULT border-blue-DEFAULT/30 bg-blue-dim"}`}>
-                      {SIGNALS[selectedSignalIdx].tier.toUpperCase()}
-                    </span>
-                    <p className="font-mono text-[7.5px] tracking-[.14em] uppercase text-text-mute2">
-                      {SIGNALS[selectedSignalIdx].domain} · Score {SIGNALS[selectedSignalIdx].score}
-                    </p>
-                  </div>
-                  <button onClick={() => setSelectedSignalIdx(null)} aria-label="Close signal details" className="font-mono text-[9px] text-text-mute2 hover:text-text-base transition-colors flex-shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center sm:min-w-0 sm:min-h-0">✕</button>
-                </div>
-                <p className="font-mono text-[10px] text-text-base leading-relaxed mb-2">{SIGNALS[selectedSignalIdx].sig}</p>
-                <a href={SIGNALS[selectedSignalIdx].sourceUrl} target="_blank" rel="noopener noreferrer"
-                   className="font-mono text-[8px] text-text-mute2/60 hover:text-amber-protocol/70 transition-colors">
-                  {SIGNALS[selectedSignalIdx].source} ↗
-                </a>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ── Domain info overlay ──────────────────────────────────────────── */}
-        {domainId && (() => {
-          const domain = DOMAINS.find(d => d.id === domainId);
-          const impact = DOMAIN_IMPACTS.find(d => d.id === domainId);
-          if (!domain) return null;
-          const col = DOMAIN_COLORS[domain.label] ?? "#c9a84c";
-          const primaryCount   = impact?.countries.filter(c => c.role === "primary").length ?? 0;
-          const secondaryCount = impact?.countries.filter(c => c.role === "secondary").length ?? 0;
-          return (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              transition={{ duration: 0.2 }}
-              className="absolute left-1/2 -translate-x-1/2 z-20 w-[380px] max-w-[92vw]"
-              style={{ bottom: "80px" }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div
-                className="rounded-xl overflow-hidden backdrop-blur-md"
-                style={{ background: "rgba(11,13,24,0.96)", border: `1px solid ${col}44`, boxShadow: `0 8px 40px rgba(0,0,0,0.7), 0 0 24px ${col}0a` }}
-              >
-                <div className="h-px w-full" style={{ background: `linear-gradient(90deg,${col},transparent)` }} />
-                <div className="px-4 py-3">
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[18px] leading-none">{domain.icon}</span>
-                      <div>
-                        <p className="font-mono text-[7px] tracking-[.18em] uppercase mb-0.5" style={{ color: col }}>
-                          ARK SCORE · {domain.score} · {domain.trend}
-                        </p>
-                        <p className="font-syne font-bold text-[13px] text-text-base leading-none">{domain.label}</p>
-                      </div>
-                      <span
-                        className="font-mono text-[7px] px-1.5 py-0.5 rounded border font-bold ml-2"
-                        style={{ color: col, borderColor: `${col}40`, background: `${col}15` }}
-                      >
-                        {domain.level}
-                      </span>
-                    </div>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); setDomainId(null); updateUrl({ domain: null }); }}
-                      aria-label="Close domain overlay"
-                      className="font-mono text-[9px] text-text-mute2 hover:text-text-base transition-colors flex-shrink-0 min-w-[32px] min-h-[32px] flex items-center justify-center"
-                    >✕</button>
-                  </div>
-                  <p className="font-mono text-[9px] text-text-dim leading-relaxed mb-2.5">{domain.summary}</p>
-                  <div className="space-y-1 mb-3">
-                    {domain.drivers.slice(0, 2).map((drv, i) => (
-                      <div key={i} className="flex items-start gap-1.5">
-                        <span className="font-mono text-[8px] flex-shrink-0 mt-0.5" style={{ color: col }}>→</span>
-                        <p className="font-mono text-[8px] text-text-mute2 leading-relaxed">{drv}</p>
-                      </div>
-                    ))}
-                  </div>
-                  {(() => {
-                    const DOMAIN_GEAR_CATS: Record<string, string[]> = {
-                      nuclear:   ["Communications"],
-                      cyber:     ["Communications", "Energy"],
-                      civil:     ["Communications", "Mobility"],
-                      economic:  ["Medical", "Energy"],
-                      bio:       ["Medical"],
-                      climate:   ["Energy", "Medical"],
-                    };
-                    const cats = DOMAIN_GEAR_CATS[domainId] ?? [];
-                    const gearItems = GEAR
-                      .filter(cat => cats.includes(cat.cat))
-                      .flatMap(cat => cat.items.filter(item => item.critical))
-                      .slice(0, 3);
-                    if (gearItems.length === 0) return null;
-                    return (
-                      <div className="space-y-1 mb-2.5">
-                        <p className="font-mono text-[7px] tracking-[.12em] uppercase text-text-mute2/60 mb-1">Key Gear</p>
-                        {gearItems.map((item, i) => (
-                          <div key={i} className="flex items-center gap-2">
-                            <span className="font-mono text-[7px] px-1 py-0.5 rounded text-text-mute2 border border-border-protocol bg-void-3">
-                              {item.tier}
-                            </span>
-                            <span className="font-mono text-[8px] text-text-base flex-1 truncate">{item.name}</span>
-                            <span className="font-mono text-[7.5px] text-gold-protocol flex-shrink-0">{item.price}</span>
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  })()}
-                  <div className="flex items-center gap-3 pt-2 border-t" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
-                    <span className="font-mono text-[8px] text-text-mute2">
-                      <span className="font-bold" style={{ color: col }}>{primaryCount}</span> primary · <span className="font-bold text-amber-protocol">{secondaryCount}</span> secondary
-                    </span>
-                    <span className="font-mono text-[8px] text-text-mute2/50 ml-auto">click country for detail</span>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          );
-        })()}
-
-        {/* ── Scenario detail card ──────────────────────────────────────────── */}
-        {scenarioId && (() => {
-          const si = SCENARIO_IMPACTS.find(s => s.id === scenarioId);
-          const sc = SCENARIOS.find(s => s.id === scenarioId);
-          if (!si || !sc) return null;
-          const sevCol = sc.sev === "EX" || sc.sev === "CR" ? "#e84040" : sc.sev === "HI" ? "#f0a500" : "#38bdf8";
-          return (
-            <motion.div
-              key={scenarioId}
-              initial={{ opacity: 0, x: 16 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 16 }}
-              transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
-              className="absolute z-20 hidden sm:block"
-              style={{ right: "1rem", top: "5rem", width: 300, maxHeight: "calc(100vh - 160px)" }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div
-                className="rounded-xl overflow-hidden backdrop-blur-md flex flex-col"
-                style={{ background: "rgba(11,13,24,0.96)", border: `1px solid ${sevCol}40`, boxShadow: `0 8px 40px rgba(0,0,0,0.7), 0 0 24px ${sevCol}0a`, maxHeight: "inherit" }}
-              >
-                <div className="h-px w-full flex-shrink-0" style={{ background: `linear-gradient(90deg,${sevCol},transparent)` }} />
-                <div className="px-3.5 py-3 flex-shrink-0">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[16px]">{sc.icon}</span>
-                      <div>
-                        <p className="font-mono text-[7px] tracking-[.16em] uppercase mb-0.5" style={{ color: sevCol }}>
-                          {sc.prob}% PROB · {sc.window}
-                        </p>
-                        <p className="font-syne font-bold text-[13px] text-text-base leading-none">{sc.title}</p>
-                      </div>
-                    </div>
-                    <button onClick={() => setScenarioId(null)} className="font-mono text-[9px] text-text-mute2 hover:text-text-base transition-colors flex-shrink-0">✕</button>
-                  </div>
-                </div>
-                <div className="overflow-y-auto px-3.5 pb-3 space-y-3 flex-1" style={{ scrollbarWidth: "thin" }}>
-                  <p className="font-mono text-[8.5px] text-text-dim leading-relaxed">{sc.summary}</p>
-                  <div>
-                    <p className="font-mono text-[7px] tracking-[.14em] uppercase mb-1.5" style={{ color: sevCol }}>Triggers</p>
-                    <div className="space-y-1">
-                      {sc.triggers.map((tr, i) => (
-                        <div key={i} className="flex items-start gap-1.5">
-                          <span className="font-mono text-[8px] flex-shrink-0 mt-0.5" style={{ color: sevCol }}>→</span>
-                          <p className="font-mono text-[8px] text-text-mute2 leading-relaxed">{tr}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <p className="font-mono text-[7px] tracking-[.14em] uppercase mb-1.5 text-amber-protocol">Cascade</p>
-                    <div className="flex flex-wrap gap-1">
-                      {sc.cascade.map((c, i) => (
-                        <span key={i} className="font-mono text-[7.5px] px-1.5 py-0.5 rounded border border-amber-DEFAULT/25 bg-amber-dim text-amber-protocol">{c}</span>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <p className="font-mono text-[7px] tracking-[.14em] uppercase mb-1.5 text-green-protocol">Mitigation</p>
-                    <div className="space-y-1">
-                      {sc.mitigation.map((m, i) => (
-                        <div key={i} className="flex items-start gap-1.5">
-                          <span className="font-mono text-[7px] font-bold px-1 py-0.5 rounded flex-shrink-0"
-                                style={{ color: m.pri === "1" ? "#e84040" : m.pri === "2" ? "#f0a500" : "#38bdf8",
-                                         background: m.pri === "1" ? "rgba(232,64,64,0.1)" : m.pri === "2" ? "rgba(240,165,0,0.1)" : "rgba(56,189,248,0.1)" }}>
-                            P{m.pri}
-                          </span>
-                          <div>
-                            <p className="font-mono text-[8px] text-text-dim leading-snug">{m.action}</p>
-                            <p className="font-mono text-[7px] text-text-mute2">{m.cost}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          );
-        })()}
-
-        {/* ── Psych zone detail card ────────────────────────────────────────── */}
-        <AnimatePresence>
-          {selectedPsychZone && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              transition={{ duration: 0.2 }}
-              className="absolute z-20 hidden sm:block"
-              style={{ right: "1rem", bottom: "80px", width: 280, maxWidth: "calc(100vw - 80px)" }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div
-                className="rounded-xl overflow-hidden backdrop-blur-md"
-                style={{ background: "rgba(11,13,24,0.96)", border: "1px solid rgba(138,43,226,0.45)", boxShadow: "0 8px 40px rgba(0,0,0,0.7), 0 0 24px rgba(138,43,226,0.08)" }}
-              >
-                <div className="h-px w-full" style={{ background: "linear-gradient(90deg,rgba(138,43,226,0.9),transparent)" }} />
-                <div className="px-3.5 py-3">
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <div>
-                      <p className="font-mono text-[7px] tracking-[.16em] uppercase text-purple-300/70 mb-0.5">🧠 PSYCH THREAT</p>
-                      <p className="font-syne font-bold text-[13px] text-text-base">{selectedPsychZone.region}</p>
-                      <p className="font-mono text-[8px] text-purple-300 mt-0.5">{selectedPsychZone.threat}</p>
-                    </div>
-                    <button onClick={() => setSelectedPsychZone(null)} className="font-mono text-[9px] text-text-mute2 hover:text-text-base transition-colors flex-shrink-0">✕</button>
-                  </div>
-                  <p className="font-mono text-[8.5px] text-text-dim leading-relaxed mb-3">{selectedPsychZone.note}</p>
-                  <div className="border-t border-white/[0.05] pt-2.5">
-                    <p className="font-mono text-[7px] tracking-[.12em] uppercase text-purple-300/60 mb-2">Ark Response</p>
-                    <div className="space-y-1.5">
-                      {PSYCH_PILLARS.slice(0, 2).map((p) => (
-                        <div key={p.name} className="flex items-start gap-1.5">
-                          <span className="text-[10px] flex-shrink-0">{p.icon}</span>
-                          <div>
-                            <p className="font-mono text-[8px] font-bold text-text-base">{p.name}</p>
-                            <p className="font-mono text-[7.5px] text-text-mute2 leading-snug">{p.tactics[0]}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* ── Gate detail card ──────────────────────────────────────────────── */}
-        <AnimatePresence>
-          {selectedGateId && (() => {
-            const gate = GATES.find(g => g.id === selectedGateId);
-            if (!gate) return null;
-            const col = gate.tier === "t4" ? "#e84040" : gate.tier === "t3" ? "#f0a500" : "#38bdf8";
-            return (
-              <motion.div
-                key={selectedGateId}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                transition={{ duration: 0.2 }}
-                className="absolute z-20"
-                style={{ left: "1rem", bottom: "80px", width: 300, maxWidth: "calc(100vw - 80px)" }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div
-                  className="rounded-xl overflow-hidden backdrop-blur-md"
-                  style={{ background: "rgba(11,13,24,0.96)", border: `1px solid ${col}45`, boxShadow: `0 8px 40px rgba(0,0,0,0.7)` }}
-                >
-                  <div className="h-px w-full" style={{ background: `linear-gradient(90deg,${col},transparent)` }} />
-                  <div className="px-3.5 py-3">
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-[7.5px] px-1.5 py-0.5 rounded border font-bold"
-                              style={{ color: col, borderColor: `${col}40`, background: `${col}15` }}>
-                          {gate.id} · {gate.tier.toUpperCase()}
-                        </span>
-                        <span className="font-mono text-[7px] text-text-mute2">{gate.window}</span>
-                      </div>
-                      <button onClick={() => setSelectedGateId(null)} className="font-mono text-[9px] text-text-mute2 hover:text-text-base transition-colors flex-shrink-0">✕</button>
-                    </div>
-                    <p className="font-mono text-[8px] tracking-[.08em] uppercase mb-2 font-bold" style={{ color: col }}>
-                      TRIGGER
-                    </p>
-                    <p className="font-mono text-[9px] text-text-base leading-relaxed mb-3">{gate.trigger}</p>
-                    <div className="border-t pt-2.5" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
-                      <p className="font-mono text-[7px] tracking-[.1em] uppercase text-text-mute2 mb-1">Action</p>
-                      <p className="font-mono text-[9px] font-bold leading-relaxed" style={{ color: col }}>{gate.action}</p>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })()}
-        </AnimatePresence>
+        {/* ── Globe info cards (draggable multi-card system) ────────────────── */}
+        <GlobeInfoCards
+          containerRef={globeContainerRef as React.RefObject<HTMLElement>}
+          containerW={containerW}
+          containerH={containerH}
+          domainId={domainId}
+          scenarioId={scenarioId}
+          selectedSignalIdx={selectedSignalIdx}
+          selectedPsychZone={selectedPsychZone}
+          selectedGateId={selectedGateId}
+          onCloseDomain={() => { setDomainId(null); updateUrl({ domain: null }); }}
+          onCloseScenario={() => { setScenarioId(null); updateUrl({ scenario: null }); }}
+          onCloseSignal={() => setSelectedSignalIdx(null)}
+          onClosePsych={() => setSelectedPsychZone(null)}
+          onCloseGate={() => setSelectedGateId(null)}
+          onOpenShop={() => { setProvisionerOpen(true); updateUrl({ panel: "shop" }); }}
+        />
 
         {/* ── UTC clock — desktop only ─────────────────────────────────────── */}
         <div className="hidden sm:block" onClick={(e) => e.stopPropagation()}>
