@@ -1,8 +1,9 @@
 // components/watchtower/globe-info-cards.tsx
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { motion, AnimatePresence, useMotionValue } from "framer-motion";
+import type { MotionValue } from "framer-motion";
 import type { RefObject } from "react";
 import { DOMAINS, SIGNALS, SCENARIOS, PSYCH_PILLARS, GEAR, GATES } from "@/lib/watchtower/data";
 
@@ -216,16 +217,42 @@ function getGateDomain(gateId: string): string {
   return "cyber";
 }
 
-// ── Drag card wrapper ─────────────────────────────────────────────────────────
+// ── Card registry types ───────────────────────────────────────────────────────
+interface RegistryEntry {
+  initX: number;
+  initY: number;
+  x: MotionValue<number>;
+  y: MotionValue<number>;
+}
+
+// ── Drag card wrapper (registry-aware) ───────────────────────────────────────
 function DragCard({
-  x, y, containerRef, width = 288, children,
+  cardKey, initX, initY, containerRef, width = 288, children,
+  onRegister, onUnregister, onCardDrag,
 }: {
-  x: number;
-  y: number;
+  cardKey:      string;
+  initX:        number;
+  initY:        number;
   containerRef: RefObject<HTMLElement>;
-  width?: number;
-  children: React.ReactNode;
+  width?:       number;
+  children:     React.ReactNode;
+  onRegister:   (key: string, entry: RegistryEntry) => void;
+  onUnregister: (key: string) => void;
+  onCardDrag:   (key: string) => void;
 }) {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  // Register motion values with parent so repulsion can write to them
+  useEffect(() => {
+    onRegister(cardKey, { initX, initY, x, y });
+    return () => onUnregister(cardKey);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cardKey, initX, initY]);
+
+  // Reset offset when spawn position changes (mode switch)
+  useEffect(() => { x.set(0); y.set(0); }, [initX, initY, x, y]);
+
   return (
     <motion.div
       drag
@@ -236,8 +263,9 @@ function DragCard({
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.84 }}
       transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
-      style={{ position: "absolute", left: x, top: y, width, zIndex: 25, userSelect: "none", touchAction: "none" }}
+      style={{ position: "absolute", left: initX, top: initY, x, y, width, zIndex: 25, userSelect: "none", touchAction: "none" }}
       whileDrag={{ zIndex: 30 }}
+      onDrag={() => onCardDrag(cardKey)}
       onClick={(e) => e.stopPropagation()}
     >
       {children}
@@ -738,6 +766,44 @@ export function GlobeInfoCards({
   onCloseDomain, onCloseScenario, onCloseSignal, onClosePsych, onCloseGate,
   onOpenShop,
 }: GlobeInfoCardsProps) {
+  // ── Card registry for real-time repulsion ─────────────────────────────────
+  const registryRef = useRef<Map<string, RegistryEntry>>(new Map());
+  const CARD_W = 288, CARD_H = 260, PAD = 18;
+
+  const registerCard = useCallback((key: string, entry: RegistryEntry) => {
+    registryRef.current.set(key, entry);
+  }, []);
+
+  const unregisterCard = useCallback((key: string) => {
+    registryRef.current.delete(key);
+  }, []);
+
+  const handleCardDrag = useCallback((movingKey: string) => {
+    const moving = registryRef.current.get(movingKey);
+    if (!moving) return;
+    const mx = moving.initX + moving.x.get();
+    const my = moving.initY + moving.y.get();
+
+    for (const [key, entry] of registryRef.current) {
+      if (key === movingKey) continue;
+      const ex = entry.initX + entry.x.get();
+      const ey = entry.initY + entry.y.get();
+      const overlapX = CARD_W + PAD - Math.abs(mx - ex);
+      const overlapY = CARD_H + PAD - Math.abs(my - ey);
+      if (overlapX > 0 && overlapY > 0) {
+        if (overlapX < overlapY) {
+          const sign = ex >= mx ? 1 : -1;
+          entry.x.set(entry.x.get() + sign * Math.min(overlapX / 2 + 2, 22));
+        } else {
+          const sign = ey >= my ? 1 : -1;
+          entry.y.set(entry.y.get() + sign * Math.min(overlapY / 2 + 2, 22));
+        }
+      }
+    }
+  }, [CARD_W, CARD_H, PAD]);
+
+  // Shorthand so every DragCard gets the same three callbacks
+  const dragProps = { onRegister: registerCard, onUnregister: unregisterCard, onCardDrag: handleCardDrag };
 
   // ── Domain ─────────────────────────────────────────────────────────────────
   const domainCards = (() => {
@@ -751,15 +817,15 @@ export function GlobeInfoCards({
     const pos = spreadPositions(n, geo.angle, containerW, containerH, 288, 260, anchorX, anchorY);
     return (
       <>
-        <DragCard key="domain-info" x={pos[0].x} y={pos[0].y} containerRef={containerRef}>
+        <DragCard key="domain-info" cardKey="domain-info" initX={pos[0].x} initY={pos[0].y} containerRef={containerRef} {...dragProps}>
           <DomainInfoCard domainId={domainId} col={col} onClose={onCloseDomain} />
         </DragCard>
         {hasGates && (
-          <DragCard key="domain-gates" x={pos[1].x} y={pos[1].y} containerRef={containerRef}>
+          <DragCard key="domain-gates" cardKey="domain-gates" initX={pos[1].x} initY={pos[1].y} containerRef={containerRef} {...dragProps}>
             <DomainGatesCard domainId={domainId} col={col} />
           </DragCard>
         )}
-        <DragCard key="domain-gear" x={pos[n - 1].x} y={pos[n - 1].y} containerRef={containerRef}>
+        <DragCard key="domain-gear" cardKey="domain-gear" initX={pos[n - 1].x} initY={pos[n - 1].y} containerRef={containerRef} {...dragProps}>
           <GearCard domainId={domainId} col={col} onOpenShop={onOpenShop} />
         </DragCard>
       </>
@@ -779,13 +845,13 @@ export function GlobeInfoCards({
     const pos = spreadPositions(3, geo.angle, containerW, containerH, 288, 260, anchorX, anchorY);
     return (
       <>
-        <DragCard key="sc-overview" x={pos[0].x} y={pos[0].y} containerRef={containerRef}>
+        <DragCard key="sc-overview" cardKey="sc-overview" initX={pos[0].x} initY={pos[0].y} containerRef={containerRef} {...dragProps}>
           <ScenarioOverviewCard scenarioId={scenarioId} col={col} onClose={onCloseScenario} />
         </DragCard>
-        <DragCard key="sc-mitigation" x={pos[1].x} y={pos[1].y} containerRef={containerRef}>
+        <DragCard key="sc-mitigation" cardKey="sc-mitigation" initX={pos[1].x} initY={pos[1].y} containerRef={containerRef} {...dragProps}>
           <ScenarioMitigationCard scenarioId={scenarioId} col={col} />
         </DragCard>
-        <DragCard key="sc-gear" x={pos[2].x} y={pos[2].y} containerRef={containerRef}>
+        <DragCard key="sc-gear" cardKey="sc-gear" initX={pos[2].x} initY={pos[2].y} containerRef={containerRef} {...dragProps}>
           <GearCard domainId={gearDomain} col={col} onOpenShop={onOpenShop} />
         </DragCard>
       </>
@@ -806,15 +872,15 @@ export function GlobeInfoCards({
     const pos = spreadPositions(n, geo.angle, containerW, containerH, 288, 260, anchorX, anchorY);
     return (
       <>
-        <DragCard key="sig-detail" x={pos[0].x} y={pos[0].y} containerRef={containerRef}>
+        <DragCard key="sig-detail" cardKey="sig-detail" initX={pos[0].x} initY={pos[0].y} containerRef={containerRef} {...dragProps}>
           <SignalDetailCard signalIdx={selectedSignalIdx} col={col} onClose={onCloseSignal} />
         </DragCard>
         {hasGate && (
-          <DragCard key="sig-gate" x={pos[1].x} y={pos[1].y} containerRef={containerRef}>
+          <DragCard key="sig-gate" cardKey="sig-gate" initX={pos[1].x} initY={pos[1].y} containerRef={containerRef} {...dragProps}>
             <SignalGateCard signalIdx={selectedSignalIdx} col={col} />
           </DragCard>
         )}
-        <DragCard key="sig-gear" x={pos[n - 1].x} y={pos[n - 1].y} containerRef={containerRef}>
+        <DragCard key="sig-gear" cardKey="sig-gear" initX={pos[n - 1].x} initY={pos[n - 1].y} containerRef={containerRef} {...dragProps}>
           <GearCard domainId={domId} col={col} onOpenShop={onOpenShop} />
         </DragCard>
       </>
@@ -825,16 +891,15 @@ export function GlobeInfoCards({
   const psychCards = (() => {
     if (!selectedPsychZone) return null;
     const col = "#8b2be2";
-    // Anchor near Europe / North Atlantic — center of the default view
     const anchorX = containerW * 0.52;
     const anchorY = containerH * 0.30;
     const pos = spreadPositions(2, 120, containerW, containerH, 288, 260, anchorX, anchorY);
     return (
       <>
-        <DragCard key="psych-detail" x={pos[0].x} y={pos[0].y} containerRef={containerRef}>
+        <DragCard key="psych-detail" cardKey="psych-detail" initX={pos[0].x} initY={pos[0].y} containerRef={containerRef} {...dragProps}>
           <PsychDetailCard psychZone={selectedPsychZone} onClose={onClosePsych} />
         </DragCard>
-        <DragCard key="psych-gear" x={pos[1].x} y={pos[1].y} containerRef={containerRef}>
+        <DragCard key="psych-gear" cardKey="psych-gear" initX={pos[1].x} initY={pos[1].y} containerRef={containerRef} {...dragProps}>
           <GearCard domainId="bio" col={col} onOpenShop={onOpenShop} />
         </DragCard>
       </>
@@ -854,10 +919,10 @@ export function GlobeInfoCards({
     const pos = spreadPositions(2, geo.angle, containerW, containerH, 288, 260, anchorX, anchorY);
     return (
       <>
-        <DragCard key="gate-detail" x={pos[0].x} y={pos[0].y} containerRef={containerRef}>
+        <DragCard key="gate-detail" cardKey="gate-detail" initX={pos[0].x} initY={pos[0].y} containerRef={containerRef} {...dragProps}>
           <GateDetailCard gateId={selectedGateId} onClose={onCloseGate} />
         </DragCard>
-        <DragCard key="gate-gear" x={pos[1].x} y={pos[1].y} containerRef={containerRef}>
+        <DragCard key="gate-gear" cardKey="gate-gear" initX={pos[1].x} initY={pos[1].y} containerRef={containerRef} {...dragProps}>
           <GearCard domainId={gearDomain} col={col} onOpenShop={onOpenShop} />
         </DragCard>
       </>

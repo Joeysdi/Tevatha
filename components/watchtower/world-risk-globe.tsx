@@ -5,6 +5,7 @@ import { useRef, useEffect, useState, useCallback, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import { useTranslation } from "@/lib/i18n/use-translation";
+import { GlobeLoadingScreen } from "./globe-loading-screen";
 import type { GlobeMethods } from "react-globe.gl";
 import {
   COUNTRY_RISK,
@@ -27,19 +28,7 @@ import { GATE_PINS } from "@/lib/watchtower/gate-pins";
 // ─── Dynamic import — WebGL requires browser environment ──────────────────────
 const Globe = dynamic(() => import("react-globe.gl"), {
   ssr: false,
-  loading: () => (
-    <div className="w-full h-full flex items-center justify-center bg-void-0">
-      <div className="text-center space-y-3">
-        <p className="font-mono text-[10px] text-text-mute2 tracking-[.22em] animate-pulse">
-          LOADING GLOBE...
-        </p>
-        <div className="w-40 h-px bg-border-protocol mx-auto relative overflow-hidden">
-          <div className="absolute inset-y-0 w-24 bg-gradient-to-r from-transparent via-red-bright/60 to-transparent"
-               style={{ animation: "slideRight 1.4s ease-in-out infinite" }} />
-        </div>
-      </div>
-    </div>
-  ),
+  loading: () => <GlobeLoadingScreen />,
 });
 
 // ─── City pins data ───────────────────────────────────────────────────────────
