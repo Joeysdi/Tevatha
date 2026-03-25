@@ -2,6 +2,7 @@
 "use client";
 
 import { useRef, useEffect, useState, useCallback, useMemo } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import { useTranslation } from "@/lib/i18n/use-translation";
 import type { GlobeMethods } from "react-globe.gl";
@@ -609,25 +610,38 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
 
   // ── Globe ready ───────────────────────────────────────────────────────────
   const handleGlobeReady = useCallback(() => {
-    setGlobeReady(true);
-    if (globeRef.current) {
-      globeRef.current.pointOfView({ lat: 20, lng: 15, altitude: 2.4 }, 1200);
-      const ctrl = globeRef.current.controls() as {
-        autoRotate:      boolean;
-        autoRotateSpeed: number;
-        enableDamping:   boolean;
-        dampingFactor:   number;
-        minDistance:     number;
-        maxDistance:     number;
-      };
-      const prefersReduced = typeof window !== "undefined"
-        && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      ctrl.autoRotate      = !prefersReduced;
-      ctrl.autoRotateSpeed = 0.22;
-      ctrl.enableDamping   = false;
-      ctrl.minDistance     = 180;
-      ctrl.maxDistance     = 600;
-    }
+    if (!globeRef.current) return;
+
+    // Snap camera to far altitude instantly (no animation) so the reveal
+    // looks like zooming in from deep space
+    globeRef.current.pointOfView({ lat: 20, lng: 15, altitude: 7 }, 0);
+
+    const ctrl = globeRef.current.controls() as {
+      autoRotate:      boolean;
+      autoRotateSpeed: number;
+      enableDamping:   boolean;
+      dampingFactor:   number;
+      minDistance:     number;
+      maxDistance:     number;
+    };
+    const prefersReduced = typeof window !== "undefined"
+      && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    ctrl.autoRotate      = !prefersReduced;
+    ctrl.autoRotateSpeed = 0.22;
+    ctrl.enableDamping   = false;
+    ctrl.minDistance     = 180;
+    ctrl.maxDistance     = 600;
+
+    // Begin zoom — quick sharp 1.2s fly-in from space
+    setTimeout(() => {
+      globeRef.current?.pointOfView({ lat: 20, lng: 15, altitude: 2.4 }, 1200);
+    }, 60);
+
+    // Dismiss loading veil mid-zoom (500ms in) so the veil fades
+    // while Earth is already rushing toward the viewer
+    setTimeout(() => {
+      setGlobeReady(true);
+    }, 500);
   }, []);
 
   // ── Fly to timeline event region when selected ────────────────────────────
@@ -700,8 +714,8 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
       })();
 
       if (!level) return 0.006;
-      if (level === "CRITICAL") return 0.032;
-      if (level === "HIGH")     return 0.018;
+      if (level === "CRITICAL") return 0.014;
+      if (level === "HIGH")     return 0.010;
       if (level === "ELEVATED") return 0.008;
       return 0.006;
     },
@@ -829,8 +843,8 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
 
           polygonsData={countries}
           polygonCapColor={capColor}
-          polygonSideColor={() => "rgba(0,212,255,0.04)"}
-          polygonStrokeColor={() => "rgba(0,212,255,0.55)"}
+          polygonSideColor={capColor}
+          polygonStrokeColor={() => "rgba(255,255,255,0.06)"}
           polygonAltitude={altitude}
           polygonCapCurvatureResolution={5}
           onPolygonHover={handleHover as (f: object | null, p: object | null) => void}
@@ -1239,46 +1253,57 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
         </p>
       </div>
 
-      {/* ── Loading veil — doomsday clock while globe initializes ──────── */}
-      {!globeReady && (
-        <div className="absolute inset-0 bg-void-0 z-30 flex items-center justify-center">
-          <div className="flex flex-col items-center gap-6">
+      {/* ── Loading veil — stays until globe + pins are ready, then fades ── */}
+      <AnimatePresence>
+        {!globeReady && (
+          <motion.div
+            className="absolute inset-0 bg-void-0 z-30 flex flex-col items-center justify-center"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.55, ease: [0.4, 0, 0.2, 1] }}
+          >
+            {/* Top red accent line */}
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-red-protocol via-red-bright/40 to-transparent" />
 
-            <div className="w-64 h-px overflow-hidden relative">
+            {/* Scanline */}
+            <div className="w-64 h-px overflow-hidden relative mb-8">
               <div className="absolute inset-y-0 w-1/2 bg-gradient-to-r from-transparent via-red-bright/50 to-transparent"
                    style={{ animation: "slideRight 1.4s ease-in-out infinite" }} />
             </div>
 
-            <div className="text-center">
-              <p className="font-mono text-[8px] tracking-[.28em] uppercase text-red-bright/50 mb-4">
-                ☢ {t("doomsday_label")}
+            <div className="flex flex-col items-center gap-3">
+              {/* Title */}
+              <p className="font-mono text-[9px] tracking-[.3em] uppercase text-text-mute2/60">
+                TEVATHA WATCHTOWER
               </p>
-              <div className="flex items-baseline justify-center gap-4 mb-3">
+
+              {/* Clock */}
+              <div className="flex items-center gap-3 my-1">
+                <span className="w-2.5 h-2.5 rounded-full bg-red-protocol flex-shrink-0
+                                 shadow-[0_0_14px_rgba(232,64,64,0.9)] animate-pulse" />
                 <span className="font-syne font-extrabold leading-none text-red-bright tabular-nums"
                       style={{ fontSize: "clamp(64px,18vw,96px)", textShadow: "0 0 60px rgba(232,64,64,0.55)" }}>
                   85s
                 </span>
-                <span className="font-mono text-[14px] text-text-mute2 leading-snug">
-                  {t("doomsday_to")}<br />{t("doomsday_midnight")}
-                </span>
               </div>
-              <p className="font-mono text-[9px] text-text-dim/70 max-w-[240px] leading-relaxed mx-auto">
-                {t("doomsday_note")}
+
+              <p className="font-mono text-[13px] text-text-mute2 tracking-[.12em] uppercase">
+                to midnight
               </p>
             </div>
 
-            <div className="w-64 h-px overflow-hidden relative">
+            {/* Bottom scanline */}
+            <div className="w-64 h-px overflow-hidden relative mt-8">
               <div className="absolute inset-y-0 w-1/2 bg-gradient-to-r from-transparent via-red-bright/50 to-transparent"
                    style={{ animation: "slideRight 1.4s ease-in-out infinite", animationDelay: "0.7s" }} />
             </div>
 
-            <p className="font-mono text-[7px] tracking-[.22em] uppercase text-text-mute2/30 animate-pulse">
+            <p className="font-mono text-[7px] tracking-[.22em] uppercase text-text-mute2/30 animate-pulse mt-6">
               {t("loading_init")}
             </p>
-
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
