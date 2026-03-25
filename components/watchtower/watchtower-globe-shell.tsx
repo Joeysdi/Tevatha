@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useTranslation } from "@/lib/i18n/use-translation";
 import { WorldRiskGlobe }         from "./world-risk-globe";
 import { GlobeIntelPanel }        from "./globe-intel-panel";
 import { GlobeProvisionerPanel }  from "./globe-provisioner-panel";
@@ -31,6 +32,7 @@ const EVT_COLORS: Record<string, string> = {
 };
 
 export function WatchtowerGlobeShell() {
+  const { t } = useTranslation();
   const [intelOpen,         setIntelOpen]         = useState(false);
   const [provisionerOpen,   setProvisionerOpen]   = useState(false);
   const [intelTab,          setIntelTab]          = useState<IntelTab>("hub");
@@ -82,7 +84,7 @@ export function WatchtowerGlobeShell() {
           <PanelTrigger
             open={intelOpen}
             onClick={(e) => { e.stopPropagation(); toggleIntel(); }}
-            label="Intel"
+            label={t("nav_intel")}
             openColor="red"
             side="left"
           />
@@ -98,7 +100,7 @@ export function WatchtowerGlobeShell() {
               setProvisionerOpen(true);
               setIntelOpen(false);
             }}
-            label="Shop"
+            label={t("nav_shop")}
             openColor="gold"
             side="right"
           />
@@ -113,14 +115,14 @@ export function WatchtowerGlobeShell() {
             >
               <span className="w-1.5 h-1.5 rounded-full bg-amber-DEFAULT animate-pulse" />
               <p className="font-mono text-[8.5px] tracking-[.14em] uppercase text-amber-protocol">
-                Historical · {PHASE_LABELS[eraPhase] ?? eraPhase}
+                {t("badge_historical")} · {PHASE_LABELS[eraPhase] ?? eraPhase}
               </p>
               <button
                 className="pointer-events-auto font-mono text-[9px] text-text-mute2
                            hover:text-amber-protocol transition-colors ml-1"
                 onClick={(e) => { e.stopPropagation(); setEraPhase("P4"); setTimelineEvent(null); }}
               >
-                ✕ back to now
+                ✕ {t("nav_back_to_now")}
               </button>
             </div>
           </div>
@@ -205,7 +207,7 @@ export function WatchtowerGlobeShell() {
                         }`}
           >
             <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${protocolOpen ? "bg-cyan-DEFAULT animate-pulse" : "bg-text-mute2/40"}`} />
-            Protocol
+            {t("nav_protocol")}
           </button>
         </div>
 
@@ -216,7 +218,7 @@ export function WatchtowerGlobeShell() {
             style={{ background: "rgba(11,13,24,0.88)", border: "1px solid rgba(255,255,255,0.07)" }}
           >
             <p className="font-mono text-[6.5px] tracking-[.2em] uppercase text-text-mute2/60 px-2.5 pt-2 pb-1">
-              Scenarios
+              {t("nav_scenarios")}
             </p>
             <div className="flex flex-col gap-0.5 px-1.5 pb-1.5">
               {SCENARIO_IMPACTS.map((s) => {
@@ -251,7 +253,7 @@ export function WatchtowerGlobeShell() {
             style={{ background: psychologyMode ? "rgba(138,43,226,0.15)" : "rgba(11,13,24,0.88)" }}
           >
             <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${psychologyMode ? "bg-purple-400 animate-pulse" : "bg-text-mute2/30"}`} />
-            🧠 Psychology
+            🧠 {t("nav_psychology")}
           </button>
 
           <button
@@ -265,7 +267,7 @@ export function WatchtowerGlobeShell() {
             style={{ background: showSignals ? "rgba(232,64,64,0.12)" : "rgba(11,13,24,0.88)" }}
           >
             <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${showSignals ? "bg-red-bright animate-pulse" : "bg-text-mute2/30"}`} />
-            📡 Signals
+            📡 {t("nav_signals")}
           </button>
         </div>
 
@@ -335,7 +337,7 @@ export function WatchtowerGlobeShell() {
               className="font-mono text-[8px] tracking-[.22em] uppercase transition-colors"
               style={{ color: timelineOpen ? "#e84040cc" : "rgba(140,155,170,0.65)" }}
             >
-              Timeline
+              {t("nav_timeline")}
             </span>
             <motion.span
               animate={{ rotate: timelineOpen ? 180 : 0 }}
@@ -366,7 +368,7 @@ export function WatchtowerGlobeShell() {
               <div className="flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-red-protocol animate-pulse" />
                 <span className="font-mono text-[7.5px] tracking-[.22em] uppercase text-red-bright/60">
-                  Timeline · Scroll to explore history &amp; forecast
+                  {t("nav_timeline")} · {t("timeline_scroll_hint")}
                 </span>
               </div>
               <button
@@ -398,7 +400,7 @@ export function WatchtowerGlobeShell() {
                       ${protocolOpen ? "bg-cyan-DEFAULT/12 border-cyan-border text-cyan-DEFAULT" : "bg-void-3 border-border-protocol text-text-mute2"}`}
         >
           <span className={`w-1 h-1 rounded-full flex-shrink-0 ${protocolOpen ? "bg-cyan-DEFAULT animate-pulse" : "bg-text-mute2/40"}`} />
-          Protocol
+          {t("nav_protocol")}
         </button>
 
         <div className="w-px h-4 bg-border-protocol/60 flex-shrink-0" />
@@ -420,14 +422,14 @@ export function WatchtowerGlobeShell() {
           className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg border font-mono text-[9px] transition-all
                       ${psychologyMode ? "border-purple-500/50 text-purple-300" : "bg-void-3 border-border-protocol text-text-mute2"}`}
           style={{ background: psychologyMode ? "rgba(138,43,226,0.15)" : undefined }}>
-          🧠 Psych
+          🧠 {t("nav_psychology")}
         </button>
 
         <button onClick={() => setShowSignals(!showSignals)}
           className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg border font-mono text-[9px] transition-all
                       ${showSignals ? "border-red-protocol/50 text-red-bright" : "bg-void-3 border-border-protocol text-text-mute2"}`}
           style={{ background: showSignals ? "rgba(232,64,64,0.12)" : undefined }}>
-          📡 Signals
+          📡 {t("nav_signals")}
         </button>
 
         {/* Mobile timeline toggle */}
@@ -435,7 +437,7 @@ export function WatchtowerGlobeShell() {
         <button onClick={() => setTimelineOpen((o) => !o)}
           className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg border font-mono text-[9px] transition-all
                       ${timelineOpen ? "bg-red-protocol/15 border-red-protocol/40 text-red-bright" : "bg-void-3 border-border-protocol text-text-mute2"}`}>
-          ◐ Timeline
+          ◐ {t("nav_timeline")}
         </button>
       </div>
 
@@ -451,6 +453,7 @@ function PanelTrigger({
   open: boolean; onClick: (e: React.MouseEvent) => void;
   label: string; openColor: "red" | "gold"; side: "left" | "right";
 }) {
+  const { t } = useTranslation();
   const colorMap = {
     red:  { active: "bg-red-protocol/18 border-red-protocol/55 text-red-bright",
             idle:   "bg-void-1/78 border-border-protocol text-text-mute2 hover:border-red-protocol/30 hover:text-text-base" },
@@ -469,7 +472,7 @@ function PanelTrigger({
                   ${open ? cls.active : cls.idle}`}
     >
       <span className="font-mono text-[7.5px] [writing-mode:vertical-rl] rotate-180 tracking-[.18em] uppercase leading-none">
-        {open ? "Close" : label}
+        {open ? t("nav_close") : label}
       </span>
       <span className="text-[9px]">{arrow}</span>
     </button>

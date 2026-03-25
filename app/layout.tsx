@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { cinzel, inter, jetbrains, syne } from "@/lib/fonts";
+import { LanguageProvider } from "@/lib/i18n/use-translation";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -43,7 +44,9 @@ export default function RootLayout({
         `}
       >
         <body className="bg-void-0 text-text-base font-sans antialiased overscroll-none">
-          {children}
+          <LanguageProvider>
+            {children}
+          </LanguageProvider>
         </body>
       </html>
     </ClerkProvider>

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   DOMAINS, SIGNALS, COLLAPSE_CLASSES,
 } from "@/lib/watchtower/data";
+import { useTranslation } from "@/lib/i18n/use-translation";
 
 export type IntelTab = "hub";
 
@@ -43,6 +44,8 @@ export function GlobeIntelPanel({
   activeTab,
   onTabChange,
 }: Props) {
+  const { t } = useTranslation();
+
   return (
     <AnimatePresence>
       {open && (
@@ -65,7 +68,7 @@ export function GlobeIntelPanel({
           <div className="flex items-center justify-between px-4 py-3
                           border-b border-border-protocol flex-shrink-0">
             <p className="font-mono text-[8.5px] tracking-[.24em] uppercase text-red-bright">
-              Watchtower · Intel
+              Watchtower · {t("nav_intel")}
             </p>
             <button
               onClick={onClose}
@@ -80,18 +83,18 @@ export function GlobeIntelPanel({
 
           {/* Tab strip */}
           <div className="flex border-b border-border-protocol flex-shrink-0">
-            {TABS.map((t) => (
+            {TABS.map((tab) => (
               <button
-                key={t.id}
-                onClick={() => onTabChange(t.id)}
+                key={tab.id}
+                onClick={() => onTabChange(tab.id)}
                 className={`flex-1 py-2.5 font-mono text-[9.5px] font-bold tracking-[.07em]
                             transition-colors duration-150
-                            ${activeTab === t.id
+                            ${activeTab === tab.id
                               ? "text-red-bright border-b-2 border-red-protocol bg-red-protocol/6"
                               : "text-text-mute2 hover:text-text-base border-b-2 border-transparent"
                             }`}
               >
-                {t.label}
+                {tab.label}
               </button>
             ))}
           </div>
@@ -119,31 +122,31 @@ export function GlobeIntelPanel({
 // ── HUB TAB ──────────────────────────────────────────────────────────────────
 
 function HubTab() {
+  const { t } = useTranslation();
+
   return (
     <div className="divide-y divide-border-protocol/60">
 
       {/* Doomsday clock */}
       <div className="px-4 py-3 bg-red-protocol/6">
         <p className="font-mono text-[7.5px] tracking-[.22em] uppercase text-red-bright/70 mb-1.5">
-          Doomsday Clock · BAS Jan 2026
+          {t("intel_doomsday_header")}
         </p>
         <div className="flex items-baseline gap-2 mb-1">
           <span className="font-syne font-extrabold text-[40px] leading-none text-red-bright tabular-nums">
             85s
           </span>
-          <span className="font-mono text-[11px] text-text-mute2">to midnight</span>
+          <span className="font-mono text-[11px] text-text-mute2">{t("intel_to_midnight")}</span>
         </div>
         <p className="font-mono text-[9px] text-text-dim leading-relaxed">
-          All-time record. Nuclear risk, climate, and disruptive tech each assessed
-          as existential. New START expired Feb 5 2026 — no arms control treaty for
-          first time in 50+ years.
+          {t("intel_doomsday_body")}
         </p>
       </div>
 
       {/* Threat domain scores */}
       <div className="px-4 py-3">
         <p className="font-mono text-[7.5px] tracking-[.2em] uppercase text-text-mute2 mb-2.5">
-          Ark Score · Threat Domains
+          {t("intel_domains_header")}
         </p>
         <div className="space-y-2">
           {DOMAINS.map((d) => {
@@ -171,7 +174,7 @@ function HubTab() {
       {/* Collapse probability */}
       <div className="px-4 py-3">
         <p className="font-mono text-[7.5px] tracking-[.2em] uppercase text-text-mute2 mb-2.5">
-          Collapse Probability Matrix
+          {t("intel_collapse_header")}
         </p>
         <div className="space-y-2">
           {COLLAPSE_CLASSES.map((c) => {
@@ -200,7 +203,7 @@ function HubTab() {
       {/* Priority signals */}
       <div className="px-4 py-3">
         <p className="font-mono text-[7.5px] tracking-[.2em] uppercase text-text-mute2 mb-2.5">
-          Priority Signals — Top {Math.min(SIGNALS.length, 7)}
+          {t("intel_signals_header")} {Math.min(SIGNALS.length, 7)}
         </p>
         <div className="space-y-2">
           {[...SIGNALS].sort((a, b) => b.score - a.score).slice(0, 7).map((s, i) => (
@@ -221,7 +224,56 @@ function HubTab() {
         </div>
       </div>
 
+      {/* Language picker */}
+      <LanguagePicker />
+
     </div>
   );
 }
 
+// ── LANGUAGE PICKER ───────────────────────────────────────────────────────────
+
+function LanguagePicker() {
+  const { locale, setLocale, locales, meta, t } = useTranslation();
+
+  return (
+    <div className="px-4 py-4">
+      {/* Section header */}
+      <div className="flex items-center gap-3 mb-3">
+        <p className="font-mono text-[7.5px] tracking-[.2em] uppercase text-text-mute2">
+          {t("language_label")}
+        </p>
+        <div className="flex-1 h-px bg-border-protocol/60" />
+        <span className="font-mono text-[8px] text-text-mute2/50 uppercase tracking-[.1em]">
+          {meta[locale].flag} {meta[locale].nativeName}
+        </span>
+      </div>
+
+      {/* Language grid — 3 columns */}
+      <div className="grid grid-cols-3 gap-1.5">
+        {locales.map((loc) => {
+          const active = loc === locale;
+          return (
+            <button
+              key={loc}
+              onClick={() => setLocale(loc)}
+              className={`flex items-center gap-1.5 px-2 py-2 rounded-lg
+                          border font-mono text-[8.5px] transition-all duration-150 text-left
+                          ${active
+                            ? "border-gold-protocol/55 bg-gold-glow text-gold-bright"
+                            : "border-border-protocol/60 text-text-mute2 hover:border-border-bright/40 hover:text-text-base hover:bg-white/[0.025]"
+                          }`}
+            >
+              <span className="text-[11px] leading-none flex-shrink-0">{meta[loc].flag}</span>
+              <span className="leading-none truncate">{meta[loc].nativeName}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      <p className="font-mono text-[7px] text-text-mute2/35 mt-3 text-center tracking-[.1em]">
+        UI ONLY · Intelligence data remains in English
+      </p>
+    </div>
+  );
+}

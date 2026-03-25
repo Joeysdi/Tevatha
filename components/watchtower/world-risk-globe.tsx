@@ -3,6 +3,7 @@
 
 import { useRef, useEffect, useState, useCallback, useMemo } from "react";
 import dynamic from "next/dynamic";
+import { useTranslation } from "@/lib/i18n/use-translation";
 import type { GlobeMethods } from "react-globe.gl";
 import {
   COUNTRY_RISK,
@@ -276,7 +277,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
   const [selectedFeat, setSelectedFeat] = useState<GeoFeature | null>(null);
   const [globeReady,   setGlobeReady]   = useState(false);
   const [selectedCityIdx, setSelectedCityIdx] = useState<number | null>(null);
-
+  const { t } = useTranslation();
   const isHistorical = eraPhase !== "P4";
 
   // ── Scenario map ──────────────────────────────────────────────────────────
@@ -865,7 +866,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
           >
             <span className="w-1.5 h-1.5 rounded-full bg-red-bright animate-pulse" />
             <p className="font-mono text-[8.5px] tracking-[.14em] uppercase text-red-bright">
-              Scenario · {SCENARIO_IMPACTS.find(s => s.id === scenarioId)?.title ?? scenarioId}
+              {t("badge_scenario")} · {SCENARIO_IMPACTS.find(s => s.id === scenarioId)?.title ?? scenarioId}
             </p>
           </div>
         </div>
@@ -879,7 +880,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
                style={{ background: "rgba(11,13,24,0.88)", border: "1px solid rgba(138,43,226,0.4)" }}>
             <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "#8b2be2" }} />
             <p className="font-mono text-[8.5px] tracking-[.14em] uppercase" style={{ color: "#c084fc" }}>
-              Psychology · Stress Zone Overlay
+              {t("badge_psych_overlay")}
             </p>
           </div>
         </div>
@@ -932,7 +933,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
 
               <div>
                 <p className="font-mono text-[7.5px] tracking-[.18em] uppercase text-text-mute2 mb-2">
-                  {scenarioId ? "Scenario Impact" : isHistorical ? "Historical Context" : "Active Incidents"}
+                  {scenarioId ? t("card_scenario_impact") : isHistorical ? t("card_historical") : t("card_active_incidents")}
                 </p>
                 <div className="space-y-2">
                   {hoveredCard.incidents.map((inc, i) => (
@@ -947,7 +948,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
 
               <div className="mt-3 pt-2.5 border-t border-border-protocol/40">
                 <p className="font-mono text-[7.5px] text-text-mute2/40 text-center tracking-[.1em]">
-                  Click to open full report + news
+                  {t("card_hint")}
                 </p>
               </div>
             </div>
@@ -1017,7 +1018,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
 
               <div className="mb-3">
                 <p className="font-mono text-[7.5px] tracking-[.18em] uppercase text-text-mute2 mb-2">
-                  {scenarioId ? "Scenario Impact" : isHistorical ? "Historical Context" : "Active Incidents"}
+                  {scenarioId ? t("card_scenario_impact") : isHistorical ? t("card_historical") : t("card_active_incidents")}
                 </p>
                 <div className="space-y-1.5">
                   {selectedCard.incidents.map((inc, i) => (
@@ -1032,7 +1033,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
 
               <div className="border-t border-border-protocol/40 pt-3 space-y-2">
                 <p className="font-mono text-[7px] tracking-[.2em] uppercase text-text-mute2/60 mb-2">
-                  Latest News
+                  {t("card_news_header")}
                 </p>
                 <a href={`https://news.google.com/search?q=${encodeURIComponent(selectedCard.name + " security military threat")}`}
                    target="_blank" rel="noopener noreferrer"
@@ -1041,7 +1042,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
                               text-red-bright font-mono text-[9px] font-bold
                               hover:border-red-protocol/55 hover:bg-red-protocol/14
                               transition-all duration-150">
-                  <span>☢ Threat &amp; Security</span>
+                  <span>☢ {t("card_news_threat")}</span>
                   <span className="text-[10px] opacity-70">↗</span>
                 </a>
                 <a href={`https://news.google.com/search?q=${encodeURIComponent(selectedCard.name + " economy finance sanctions")}`}
@@ -1051,7 +1052,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
                               text-gold-protocol font-mono text-[9px] font-bold
                               hover:border-gold-protocol/55 hover:bg-gold-glow
                               transition-all duration-150">
-                  <span>💰 Economy &amp; Finance</span>
+                  <span>💰 {t("card_news_economy")}</span>
                   <span className="text-[10px] opacity-70">↗</span>
                 </a>
                 <a href={`https://news.google.com/search?q=${encodeURIComponent(selectedCard.name)}`}
@@ -1061,7 +1062,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
                               text-text-mute2 font-mono text-[9px]
                               hover:border-border-bright/40 hover:text-text-base
                               transition-all duration-150">
-                  <span>🌐 All Latest News</span>
+                  <span>🌐 {t("card_news_all")}</span>
                   <span className="text-[10px] opacity-60">↗</span>
                 </a>
               </div>
@@ -1090,7 +1091,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
                 <div className="min-w-0 flex-1">
                   <p className="font-mono text-[8px] tracking-[.2em] uppercase mb-0.5"
                      style={{ color: cityThreatColor(selectedCity.threatScore) }}>
-                    {selectedCity.flag} {selectedCity.country} · City Intel
+                    {selectedCity.flag} {selectedCity.country} · {t("city_intel")}
                   </p>
                   <h3 className="font-syne font-bold text-[16px] text-text-base leading-snug">
                     {selectedCity.name}
@@ -1128,7 +1129,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
 
               {/* Population */}
               <div className="flex items-center gap-2 mb-3 pb-3 border-b border-border-protocol/30">
-                <span className="font-mono text-[8px] text-text-mute2 tracking-[.14em] uppercase">Population</span>
+                <span className="font-mono text-[8px] text-text-mute2 tracking-[.14em] uppercase">{t("city_population")}</span>
                 <span className="font-mono text-[11px] font-bold text-text-base ml-auto tabular-nums">
                   {selectedCity.pop >= 10
                     ? `${selectedCity.pop.toFixed(0)}M`
@@ -1139,7 +1140,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
               {/* Intel note */}
               <div className="mb-3">
                 <p className="font-mono text-[7.5px] tracking-[.18em] uppercase text-text-mute2 mb-2">
-                  Active Intel
+                  {t("city_active_intel")}
                 </p>
                 <div className="flex items-start gap-1.5">
                   <span className="font-mono text-[9px] mt-[2px] flex-shrink-0"
@@ -1153,7 +1154,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
               {/* News links */}
               <div className="border-t border-border-protocol/40 pt-3 space-y-1.5">
                 <p className="font-mono text-[7px] tracking-[.2em] uppercase text-text-mute2/60 mb-2">
-                  Latest News
+                  {t("card_news_header")}
                 </p>
                 <a href={`https://news.google.com/search?q=${encodeURIComponent(selectedCity.name + " security threat attack")}`}
                    target="_blank" rel="noopener noreferrer"
@@ -1162,7 +1163,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
                               text-red-bright font-mono text-[9px] font-bold
                               hover:border-red-protocol/55 hover:bg-red-protocol/14
                               transition-all duration-150">
-                  <span>☢ Threat &amp; Security</span>
+                  <span>☢ {t("card_news_threat")}</span>
                   <span className="text-[10px] opacity-70">↗</span>
                 </a>
                 <a href={`https://news.google.com/search?q=${encodeURIComponent(selectedCity.name + " " + selectedCity.country)}`}
@@ -1172,7 +1173,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
                               text-text-mute2 font-mono text-[9px]
                               hover:border-border-bright/40 hover:text-text-base
                               transition-all duration-150">
-                  <span>🌐 All City News</span>
+                  <span>🌐 {t("city_all_news")}</span>
                   <span className="text-[10px] opacity-60">↗</span>
                 </a>
               </div>
@@ -1222,7 +1223,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
       <div className="absolute bottom-[100px] right-4 z-20 pointer-events-none">
         <p className="font-mono text-[7.5px] text-text-mute2/35 text-right leading-relaxed">
           SIPRI · IAEA · ACLED · UN OCHA · CFR<br />
-          INTELLIGENCE UPDATED MARCH 2026
+          {t("intel_credits")}
         </p>
       </div>
 
@@ -1238,7 +1239,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
 
             <div className="text-center">
               <p className="font-mono text-[8px] tracking-[.28em] uppercase text-red-bright/50 mb-4">
-                ☢ Doomsday Clock · BAS Jan 27, 2026
+                ☢ {t("doomsday_label")}
               </p>
               <div className="flex items-baseline justify-center gap-4 mb-3">
                 <span className="font-syne font-extrabold leading-none text-red-bright tabular-nums"
@@ -1246,11 +1247,11 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
                   85s
                 </span>
                 <span className="font-mono text-[14px] text-text-mute2 leading-snug">
-                  to<br />midnight
+                  {t("doomsday_to")}<br />{t("doomsday_midnight")}
                 </span>
               </div>
               <p className="font-mono text-[9px] text-text-dim/70 max-w-[240px] leading-relaxed mx-auto">
-                All-time record. No nuclear arms control treaty in force since 1972.
+                {t("doomsday_note")}
               </p>
             </div>
 
@@ -1260,7 +1261,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
             </div>
 
             <p className="font-mono text-[7px] tracking-[.22em] uppercase text-text-mute2/30 animate-pulse">
-              Globe Initializing…
+              {t("loading_init")}
             </p>
 
           </div>
