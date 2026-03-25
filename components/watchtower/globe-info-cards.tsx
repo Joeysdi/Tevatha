@@ -38,10 +38,16 @@ const SIGNAL_DOMAIN_ID: Record<string, string> = {
   Geopolitical: "civil", Biological: "bio", Climate: "climate",
 };
 
-// ── Start angles (geography-inspired) ────────────────────────────────────────
-const DOMAIN_ANGLE: Record<string, number> = {
-  nuclear: -55, cyber: -80, civil: -15,
-  economic: 15, bio: 90,   climate: 125,
+// ── Geographic anchors — screen positions for default globe view (lat:20,lng:15)
+// xPct/yPct = where the primary affected region appears on screen
+// angle = fan direction (degrees, 0=right, 90=down) — opens cards toward globe center
+const DOMAIN_GEO: Record<string, { xPct: number; yPct: number; angle: number }> = {
+  nuclear:  { xPct: 0.74, yPct: 0.20, angle: 210 }, // Russia + N. Korea — upper right → fan lower-left
+  cyber:    { xPct: 0.22, yPct: 0.28, angle:  30 }, // USA (left face) — fan lower-right
+  civil:    { xPct: 0.64, yPct: 0.38, angle: 185 }, // Middle East / Taiwan — fan left
+  economic: { xPct: 0.50, yPct: 0.16, angle: 100 }, // US + EU (top center) — fan downward
+  bio:      { xPct: 0.56, yPct: 0.58, angle: 280 }, // Africa + SE Asia — fan upward
+  climate:  { xPct: 0.44, yPct: 0.10, angle: 105 }, // Arctic (top) — fan downward
 };
 
 const TIER_HEX: Record<string, string> = {
@@ -133,10 +139,15 @@ function spreadPositions(
   containerH: number,
   cardW = 288,
   cardH = 260,
+  anchorX?: number, // pixel anchor override (default: container center)
+  anchorY?: number,
 ) {
-  const cx = containerW / 2;
-  const cy = containerH / 2;
-  const radius = Math.min(containerW, containerH) * 0.32;
+  const cx = anchorX ?? containerW / 2;
+  const cy = anchorY ?? containerH / 2;
+  // Smaller radius when near a geo anchor — cards cluster around the region
+  const radius = anchorX !== undefined
+    ? Math.min(containerW, containerH) * 0.18
+    : Math.min(containerW, containerH) * 0.32;
   const totalSpread = n <= 1 ? 0 : 95;
   const step = n <= 1 ? 0 : totalSpread / (n - 1);
   const offset = -totalSpread / 2;
@@ -732,10 +743,12 @@ export function GlobeInfoCards({
   const domainCards = (() => {
     if (!domainId) return null;
     const col = DOMAIN_COLORS[domainId] ?? "#c9a84c";
-    const angle = DOMAIN_ANGLE[domainId] ?? -45;
+    const geo = DOMAIN_GEO[domainId] ?? { xPct: 0.5, yPct: 0.5, angle: 100 };
+    const anchorX = geo.xPct * containerW;
+    const anchorY = geo.yPct * containerH;
     const hasGates = (DOMAIN_GATES[domainId] ?? []).length > 0;
     const n = hasGates ? 3 : 2;
-    const pos = spreadPositions(n, angle, containerW, containerH);
+    const pos = spreadPositions(n, geo.angle, containerW, containerH, 288, 260, anchorX, anchorY);
     return (
       <>
         <DragCard key="domain-info" x={pos[0].x} y={pos[0].y} containerRef={containerRef}>
@@ -760,7 +773,10 @@ export function GlobeInfoCards({
     if (!sc) return null;
     const col = "#e84040";
     const gearDomain = SCENARIO_DOMAIN[scenarioId] ?? "cyber";
-    const pos = spreadPositions(3, -40, containerW, containerH);
+    const geo = DOMAIN_GEO[gearDomain] ?? { xPct: 0.5, yPct: 0.5, angle: 100 };
+    const anchorX = geo.xPct * containerW;
+    const anchorY = geo.yPct * containerH;
+    const pos = spreadPositions(3, geo.angle, containerW, containerH, 288, 260, anchorX, anchorY);
     return (
       <>
         <DragCard key="sc-overview" x={pos[0].x} y={pos[0].y} containerRef={containerRef}>
@@ -782,10 +798,12 @@ export function GlobeInfoCards({
     const sig = SIGNALS[selectedSignalIdx];
     const domId = SIGNAL_DOMAIN_ID[sig.domain] ?? "cyber";
     const col = DOMAIN_COLORS[domId] ?? "#c9a84c";
-    const angle = DOMAIN_ANGLE[domId] ?? -60;
+    const geo = DOMAIN_GEO[domId] ?? { xPct: 0.5, yPct: 0.5, angle: 100 };
+    const anchorX = geo.xPct * containerW;
+    const anchorY = geo.yPct * containerH;
     const hasGate = (DOMAIN_GATES[domId] ?? []).length > 0;
     const n = hasGate ? 3 : 2;
-    const pos = spreadPositions(n, angle, containerW, containerH);
+    const pos = spreadPositions(n, geo.angle, containerW, containerH, 288, 260, anchorX, anchorY);
     return (
       <>
         <DragCard key="sig-detail" x={pos[0].x} y={pos[0].y} containerRef={containerRef}>
@@ -807,7 +825,10 @@ export function GlobeInfoCards({
   const psychCards = (() => {
     if (!selectedPsychZone) return null;
     const col = "#8b2be2";
-    const pos = spreadPositions(2, 155, containerW, containerH);
+    // Anchor near Europe / North Atlantic — center of the default view
+    const anchorX = containerW * 0.52;
+    const anchorY = containerH * 0.30;
+    const pos = spreadPositions(2, 120, containerW, containerH, 288, 260, anchorX, anchorY);
     return (
       <>
         <DragCard key="psych-detail" x={pos[0].x} y={pos[0].y} containerRef={containerRef}>
@@ -827,7 +848,10 @@ export function GlobeInfoCards({
     if (!gate) return null;
     const col = TIER_HEX[gate.tier] ?? "#c9a84c";
     const gearDomain = getGateDomain(selectedGateId);
-    const pos = spreadPositions(2, -60, containerW, containerH);
+    const geo = DOMAIN_GEO[gearDomain] ?? { xPct: 0.5, yPct: 0.5, angle: 100 };
+    const anchorX = geo.xPct * containerW;
+    const anchorY = geo.yPct * containerH;
+    const pos = spreadPositions(2, geo.angle, containerW, containerH, 288, 260, anchorX, anchorY);
     return (
       <>
         <DragCard key="gate-detail" x={pos[0].x} y={pos[0].y} containerRef={containerRef}>
