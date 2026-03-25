@@ -438,8 +438,10 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
   }, [showSignals, scenarioId, psychologyMode]);
 
   const htmlElement = useCallback((d: object) => {
-    const item = d as HtmlGlobeItem;
     const el = document.createElement("div");
+    if (!d) return el;
+    const item = d as HtmlGlobeItem;
+    if (!item.type) return el;
 
     if (item.type === "city") {
       const col = cityThreatColor(item.cityScore ?? 0);
@@ -600,8 +602,9 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
           type:     string;
           features: GeoFeature[];
         };
-        setCountries(geo.features);
-      });
+        setCountries(geo.features ?? []);
+      })
+      .catch((err) => console.error("[Globe] Failed to load world-50m.json:", err));
   }, []);
 
   // ── Globe ready ───────────────────────────────────────────────────────────
@@ -640,8 +643,8 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
   }, [timelineEvent, eraPhase]);
 
   // ── Hover handler ─────────────────────────────────────────────────────────
-  const handleHover = useCallback((feat: GeoFeature | null) => {
-    setHovered(feat ?? null);
+  const handleHover = useCallback((feat: GeoFeature | null | object) => {
+    setHovered((feat as GeoFeature) ?? null);
     if (globeRef.current) {
       (globeRef.current.controls() as { autoRotate: boolean }).autoRotate = !feat;
     }
@@ -650,6 +653,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
   // ── Color + altitude accessors ────────────────────────────────────────────
   const capColor = useCallback(
     (feat: object): string => {
+      if (!feat) return NO_DATA_FILL;
       const f   = feat as GeoFeature;
       const iso = String(parseInt(String(f.id ?? "0"), 10));
       const isHov = hovered && String(f.id) === String(hovered.id);
@@ -676,6 +680,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
 
   const altitude = useCallback(
     (feat: object): number => {
+      if (!feat) return 0.001;
       const f   = feat as GeoFeature;
       const iso = String(parseInt(String(f.id ?? "0"), 10));
 
@@ -937,7 +942,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
                   {scenarioId ? t("card_scenario_impact") : isHistorical ? t("card_historical") : t("card_active_incidents")}
                 </p>
                 <div className="space-y-2">
-                  {hoveredCard.incidents.map((inc, i) => (
+                  {(hoveredCard.incidents ?? []).map((inc, i) => (
                     <div key={i} className="flex items-start gap-1.5">
                       <span className="font-mono text-[9px] mt-[2px] flex-shrink-0"
                             style={{ color: RISK_COLORS[hoveredCard.level].fill }}>▸</span>
@@ -1022,7 +1027,7 @@ export function WorldRiskGlobe({ eraPhase, timelineEvent, scenarioId, showSignal
                   {scenarioId ? t("card_scenario_impact") : isHistorical ? t("card_historical") : t("card_active_incidents")}
                 </p>
                 <div className="space-y-1.5">
-                  {selectedCard.incidents.map((inc, i) => (
+                  {(selectedCard.incidents ?? []).map((inc, i) => (
                     <div key={i} className="flex items-start gap-1.5">
                       <span className="font-mono text-[9px] mt-[2px] flex-shrink-0"
                             style={{ color: RISK_COLORS[selectedCard.level].fill }}>▸</span>

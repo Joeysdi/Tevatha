@@ -69,7 +69,7 @@ const config: Config = {
           dim: "#7a8a96",
           dim2: "#8a8680",
           mute: "#3a4a54",
-          mute2: "#3d3c3a",
+          mute2: "#7c7a74", // raised from #3d3c3a — WCAG AA ~4.7:1 vs void-0
         },
         // Glass / Surface
         glass: {
