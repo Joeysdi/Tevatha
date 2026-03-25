@@ -7,7 +7,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "@/lib/i18n/use-translation";
 import { WorldRiskGlobe }         from "./world-risk-globe";
 import { GlobeProvisionerPanel }  from "./globe-provisioner-panel";
-import { GlobeProtocolPanel }     from "./globe-protocol-panel";
 import { LiveClock }              from "./live-clock";
 
 import type { ProvisionerTab }    from "./globe-provisioner-panel";
@@ -94,8 +93,8 @@ export function WatchtowerGlobeShell() {
   }, [searchParams, router]);
 
   // ── State (initialized from URL params) ────────────────────────────────────
-  const [provisionerOpen,   setProvisionerOpen]   = useState(() => searchParams.get("panel") === "shop");
-  const [provisionerTab,    setProvisionerTab]    = useState<ProvisionerTab>("products");
+  const [provisionerOpen, setProvisionerOpen] = useState(() => searchParams.get("panel") === "shop");
+  const [provisionerTab,  setProvisionerTab]  = useState<ProvisionerTab>("products");
   const [eraPhase,          setEraPhase]          = useState(() => searchParams.get("era") ?? "P4");
   const [livePhase,         setLivePhase]         = useState(() => searchParams.get("era") ?? "P4");
   const [scrubVelocity,     setScrubVelocity]     = useState(0);
@@ -103,7 +102,6 @@ export function WatchtowerGlobeShell() {
   const [scenarioId,        setScenarioId]        = useState<string | null>(() => searchParams.get("scenario"));
   const [showSignals,       setShowSignals]       = useState(() => searchParams.get("signals") === "1");
   const [psychologyMode,    setPsychologyMode]    = useState(() => searchParams.get("psych") === "1");
-  const [protocolOpen,      setProtocolOpen]      = useState(() => searchParams.get("panel") === "protocol");
   const [selectedSignalIdx, setSelectedSignalIdx] = useState<number | null>(null);
   const [domainId,          setDomainId]          = useState<string | null>(() => searchParams.get("domain"));
   const [selectedPsychZone, setSelectedPsychZone] = useState<{ region: string; threat: string; note: string } | null>(null);
@@ -129,22 +127,6 @@ export function WatchtowerGlobeShell() {
           onPsychZoneClick={setSelectedPsychZone}
           onGatePinClick={setSelectedGateId}
         />
-
-        {/* ── Protocol (left) panel trigger ──────────────────────────────── */}
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-0.5">
-          <PanelTrigger
-            open={protocolOpen}
-            onClick={(e) => {
-              e.stopPropagation();
-              const next = !protocolOpen;
-              setProtocolOpen(next);
-              updateUrl({ panel: next ? "protocol" : null });
-            }}
-            label={t("nav_protocol")}
-            openColor="cyan"
-            side="left"
-          />
-        </div>
 
         {/* ── Provisioner (right) panel trigger ──────────────────────────── */}
         <div className="absolute right-0 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-0.5">
@@ -654,7 +636,6 @@ export function WatchtowerGlobeShell() {
 
         {/* ── Side panels ──────────────────────────────────────────────────── */}
         <GlobeProvisionerPanel open={provisionerOpen} onClose={() => setProvisionerOpen(false)} activeTab={provisionerTab} onTabChange={setProvisionerTab} />
-        <GlobeProtocolPanel open={protocolOpen} onClose={() => setProtocolOpen(false)} />
 
         {/* ── Era detail card — floats above scrubber when not at P4 ─────────── */}
         <AnimatePresence>
@@ -781,21 +762,6 @@ export function WatchtowerGlobeShell() {
       <div className="flex sm:hidden flex-shrink-0 items-center gap-1.5 px-2 py-1.5
                       bg-void-1 border-t border-border-protocol/60 overflow-x-auto"
            style={{ scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch" } as React.CSSProperties}>
-
-        <button
-          onClick={() => {
-            const next = !protocolOpen;
-            setProtocolOpen(next);
-            updateUrl({ panel: next ? "protocol" : null });
-          }}
-          aria-pressed={protocolOpen}
-          aria-label={t("nav_protocol")}
-          className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-2.5 rounded-lg border font-mono text-[9px] transition-all min-h-[44px]
-                      ${protocolOpen ? "bg-cyan-DEFAULT/12 border-cyan-border text-cyan-DEFAULT" : "bg-void-3 border-border-protocol text-text-mute2"}`}
-        >
-          <span className={`w-1 h-1 rounded-full flex-shrink-0 ${protocolOpen ? "bg-cyan-DEFAULT animate-pulse" : "bg-text-mute2/40"}`} />
-          {t("nav_protocol")}
-        </button>
 
         <div className="w-px h-4 bg-border-protocol/60 flex-shrink-0" />
 

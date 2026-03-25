@@ -98,8 +98,8 @@ export function GlobeProvisionerPanel({ open, onClose, activeTab, onTabChange }:
             ))}
           </div>
 
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto overscroll-contain">
+          {/* Scrollable product content */}
+          <div className="flex-1 overflow-y-auto overscroll-contain min-h-0">
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={activeTab}
@@ -250,6 +250,84 @@ export function GlobeProvisionerPanel({ open, onClose, activeTab, onTabChange }:
                 )}
               </motion.div>
             </AnimatePresence>
+          </div>
+          {/* ── Protocol section — always visible at bottom ───────────────── */}
+          <div
+            className="flex-shrink-0 border-t border-border-protocol"
+            style={{ background: "rgba(0,212,255,0.03)" }}
+          >
+            {/* Section header */}
+            <div className="relative flex items-center gap-2 px-4 pt-3 pb-2">
+              <div className="absolute top-0 left-0 right-0 h-px pointer-events-none"
+                   style={{ background: "linear-gradient(90deg,#00d4ff44,transparent)" }} />
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-DEFAULT animate-pulse flex-shrink-0" />
+              <p className="font-mono text-[7.5px] tracking-[.22em] uppercase text-cyan-DEFAULT">
+                Protocol · Continuity Vault
+              </p>
+            </div>
+
+            {/* Continuity Ledger row */}
+            <div className="px-4 pb-3 flex items-start gap-3">
+              <div className="flex-1 min-w-0">
+                <p className="font-syne font-bold text-[11.5px] text-text-base mb-0.5">
+                  Continuity Ledger
+                </p>
+                <p className="font-mono text-[8.5px] text-text-dim leading-relaxed mb-1.5">
+                  AES-256-GCM encrypted offline vault. Stores critical data — accounts,
+                  contacts, documents — that survives infrastructure collapse. PIN-gated.
+                  Zero connectivity required.
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {[
+                    { label: "AES-256-GCM",  col: "text-cyan-DEFAULT border-cyan-border/60" },
+                    { label: "OFFLINE FIRST", col: "text-cyan-DEFAULT border-cyan-border/60" },
+                    { label: "PIN GATED",     col: "text-gold-protocol border-gold-dim/60"   },
+                  ].map((b) => (
+                    <span key={b.label}
+                      className={`font-mono text-[7px] tracking-[.08em] px-1.5 py-0.5 rounded border ${b.col}`}>
+                      {b.label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <Link
+                href="/ledger"
+                className="flex-shrink-0 font-mono text-[9px] font-bold
+                           bg-cyan-DEFAULT/10 border border-cyan-border
+                           text-cyan-DEFAULT rounded-xl px-3 py-2.5 mt-0.5
+                           hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(0,212,255,0.2)]
+                           transition-all duration-200 whitespace-nowrap"
+              >
+                Open Vault →
+              </Link>
+            </div>
+
+            {/* Envoy Network row */}
+            <div
+              className="px-4 py-3 flex items-center justify-between gap-3 border-t"
+              style={{ borderColor: "rgba(0,212,255,0.08)" }}
+            >
+              <div className="min-w-0 flex-1">
+                <p className="font-syne font-bold text-[11.5px] text-text-base mb-0.5">
+                  Envoy Network
+                </p>
+                <p className="font-mono text-[8.5px] text-text-dim leading-relaxed">
+                  Earn commission on every tier upgrade you refer. Active referrals
+                  visible at checkout.
+                </p>
+              </div>
+              <Link
+                href="/envoy"
+                className="flex-shrink-0 font-mono text-[9px]
+                           border border-cyan-border/50 text-cyan-DEFAULT/80
+                           rounded-xl px-3 py-2.5
+                           hover:border-cyan-border hover:text-cyan-DEFAULT
+                           hover:-translate-y-0.5
+                           transition-all duration-200 whitespace-nowrap"
+              >
+                View Envoy →
+              </Link>
+            </div>
           </div>
         </motion.aside>
       )}
