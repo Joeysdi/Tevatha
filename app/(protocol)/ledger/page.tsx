@@ -480,7 +480,8 @@ export default function LedgerPage() {
       ) : (
         <StaggerParent className="grid gap-3">
           {visible.map((entry) => {
-            const cat = CATEGORIES.find((c) => c.id === entry.category)!;
+            const cat = CATEGORIES.find((c) => c.id === entry.category)
+              ?? { id: entry.category, icon: "❓", label: entry.category, encrypted: false };
             return (
               <StaggerChild key={entry.id}>
               <button onClick={() => void viewEntry(entry)}
@@ -678,7 +679,8 @@ function EntryDetail({
   const PRIO_LABEL: Record<1|2|3, string> = {
     1: t("priority_critical"), 2: t("priority_high"), 3: t("priority_standard"),
   };
-  const cat = CATEGORIES_STATIC.find((c) => c.id === entry.category)!;
+  const cat = CATEGORIES_STATIC.find((c) => c.id === entry.category)
+    ?? { id: entry.category, icon: "❓", encrypted: false };
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-10 space-y-6">
@@ -693,7 +695,7 @@ function EntryDetail({
           <span className="text-2xl">{cat.icon}</span>
           <div>
             <p className="font-mono text-[9px] text-text-mute2 tracking-[.12em] uppercase">
-              {CAT_LABEL[cat.id]}
+              {CAT_LABEL[cat.id as LedgerCategory] ?? cat.id}
             </p>
             <h1 className="font-syne font-extrabold text-[22px] text-text-base">
               {entry.title}
