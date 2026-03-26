@@ -1588,19 +1588,25 @@ export const riskByIso = Object.fromEntries(
 
 // Name-based lookup for TopoJSON features that have no ISO numeric id
 // Keys match the `properties.name` values used in world-110m.json
-export const riskByName: Record<string, CountryRisk> = {
-  "Kosovo":    COUNTRY_RISK.find((c) => c.iso === "xk")!,
-  "N. Cyprus": COUNTRY_RISK.find((c) => c.iso === "nc-cy")!,
-  "Somaliland":COUNTRY_RISK.find((c) => c.iso === "so-sl")!,
-  "Antarctica":       COUNTRY_RISK.find((c) => c.iso === "010")!,
-  "Guam":             COUNTRY_RISK.find((c) => c.iso === "316")!,
-  "French Polynesia": COUNTRY_RISK.find((c) => c.iso === "258")!,
-  "Marshall Is.":     COUNTRY_RISK.find((c) => c.iso === "584")!,
-  "Micronesia":       COUNTRY_RISK.find((c) => c.iso === "585")!,
-  "Nauru":            COUNTRY_RISK.find((c) => c.iso === "520")!,
-  "Tuvalu":           COUNTRY_RISK.find((c) => c.iso === "798")!,
-  "Papua New Guinea": COUNTRY_RISK.find((c) => c.iso === "598")!,
-};
+// Build name→risk map, omitting entries whose ISO isn't in COUNTRY_RISK
+const _nameEntries: [string, CountryRisk][] = (
+  [
+    ["Kosovo",           COUNTRY_RISK.find((c) => c.iso === "xk")],
+    ["N. Cyprus",        COUNTRY_RISK.find((c) => c.iso === "nc-cy")],
+    ["Somaliland",       COUNTRY_RISK.find((c) => c.iso === "so-sl")],
+    ["Antarctica",       COUNTRY_RISK.find((c) => c.iso === "010")],
+    ["Guam",             COUNTRY_RISK.find((c) => c.iso === "316")],
+    ["French Polynesia", COUNTRY_RISK.find((c) => c.iso === "258")],
+    ["Marshall Is.",     COUNTRY_RISK.find((c) => c.iso === "584")],
+    ["Micronesia",       COUNTRY_RISK.find((c) => c.iso === "585")],
+    ["Nauru",            COUNTRY_RISK.find((c) => c.iso === "520")],
+    ["Tuvalu",           COUNTRY_RISK.find((c) => c.iso === "798")],
+    ["Papua New Guinea", COUNTRY_RISK.find((c) => c.iso === "598")],
+  ] as [string, CountryRisk | undefined][]
+).filter((e): e is [string, CountryRisk] => e[1] !== undefined);
+
+export const riskByName: Record<string, CountryRisk> =
+  Object.fromEntries(_nameEntries);
 
 export const riskStats = {
   critical:  COUNTRY_RISK.filter((c) => c.level === "CRITICAL").length,

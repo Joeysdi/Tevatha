@@ -147,11 +147,11 @@ export default function TiersPage() {
   }
 
   const result = showResult ? computeTier() : null;
-  const resultTier = result ? TIERS.find((t) => t.id === result)! : null;
+  const resultTier = result ? (TIERS.find((t) => t.id === result) ?? null) : null;
   const nextTierIdx = result ? TIERS.findIndex((t) => t.id === result) + 1 : null;
   const nextTier = nextTierIdx !== null && nextTierIdx < TIERS.length ? TIERS[nextTierIdx] : null;
 
-  const displayTier = activeTier ? TIERS.find((t) => t.id === activeTier)! : null;
+  const displayTier = activeTier ? (TIERS.find((t) => t.id === activeTier) ?? null) : null;
 
   return (
     <div className="space-y-7">

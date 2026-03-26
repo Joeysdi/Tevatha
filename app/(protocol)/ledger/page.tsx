@@ -306,7 +306,8 @@ export default function LedgerPage() {
     setError(null);
 
     try {
-      const catMeta = CATEGORIES_STATIC.find((c) => c.id === draft.category)!;
+      const catMeta = CATEGORIES_STATIC.find((c) => c.id === draft.category)
+        ?? CATEGORIES_STATIC[0];
       const now     = new Date().toISOString();
       const id      = crypto.randomUUID();
 
@@ -843,7 +844,8 @@ function AddEntryForm({
   };
   const CATEGORIES = CATEGORIES_STATIC.map((c) => ({ ...c, label: CAT_LABEL[c.id] }));
 
-  const catMeta = CATEGORIES_STATIC.find((c) => c.id === category)!;
+  const catMeta = CATEGORIES_STATIC.find((c) => c.id === category)
+    ?? CATEGORIES_STATIC[0];
 
   return (
     <div className="max-w-2xl mx-auto px-6 py-10 space-y-6">
