@@ -16,9 +16,9 @@ const SEGMENTS = [
   { yearStart: 2015, yearEnd: 2022, pxPerYear: 24 },
   { yearStart: 2022, yearEnd: 2028, pxPerYear: 36 },
   { yearStart: 2028, yearEnd: 2035, pxPerYear: 16 },
-  { yearStart: 2035, yearEnd: 2050, pxPerYear: 6  },
-  { yearStart: 2050, yearEnd: 2075, pxPerYear: 4  },
-  { yearStart: 2075, yearEnd: 2100, pxPerYear: 3  },
+  { yearStart: 2035, yearEnd: 2050, pxPerYear: 20 },
+  { yearStart: 2050, yearEnd: 2075, pxPerYear: 16 },
+  { yearStart: 2075, yearEnd: 2100, pxPerYear: 12 },
 ] as const;
 
 // Cumulative px offset for each segment start
@@ -75,6 +75,19 @@ function parseYear(y: string): number {
   return isNaN(n) ? NOW_YEAR : n;
 }
 
+// ── Resolved event positions — fractional year offsets for same-year events ──
+// Events sharing a year get spread at 0.4-year intervals so each has its own scroll stop.
+
+const RESOLVED_EVENTS: Array<{ evt: TimelineEvent; displayYear: number }> = (() => {
+  const counts = new Map<number, number>();
+  return TIMELINE_EVENTS.map((evt) => {
+    const yr  = parseYear(evt.year);
+    const idx = counts.get(yr) ?? 0;
+    counts.set(yr, idx + 1);
+    return { evt, displayYear: yr + idx * 0.4 };
+  });
+})();
+
 // ── Phase metadata (for axis coloring) ────────────────────────────────────────
 
 const PHASES = [
@@ -122,12 +135,14 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
   const { t } = useTranslation();
   const containerRef  = useRef<HTMLDivElement>(null);
   const scrollRef     = useRef<HTMLDivElement>(null);
-  const debounceRef   = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isDragging    = useRef(false);
-  const dragStartX    = useRef(0);
+  const debounceRef    = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isDragging     = useRef(false);
+  const dragStartX     = useRef(0);
   const dragScrollLeft = useRef(0);
+  const isSnapping     = useRef(false);
   const [activeEvt,  setActiveEvt]  = useState<TimelineEvent | null>(null);
   const [gateHov,    setGateHov]    = useState<DecisionGate | null>(null);
+  const [evtHov,     setEvtHov]     = useState<TimelineEvent | null>(null);
   const [scrollYear, setScrollYear] = useState(NOW_YEAR);
 
   // Scroll NOW into center on mount
@@ -190,6 +205,7 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
   }, []);
 
   const handleScroll = useCallback(() => {
+    if (isSnapping.current) return;
     const el = scrollRef.current;
     if (!el) return;
 
@@ -202,18 +218,28 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
       const phase = PHASES.find(p => centerYear >= p.yearStart && centerYear < p.yearEnd);
       if (phase) onPhaseSelect(phase.id);
 
-      let closest: TimelineEvent | null = null;
-      let minDist = Infinity;
-      for (const evt of TIMELINE_EVENTS) {
-        const dist = Math.abs(parseYear(evt.year) - centerYear);
-        if (dist < minDist) { minDist = dist; closest = evt; }
+      // Find nearest resolved event
+      let closestR = RESOLVED_EVENTS[0];
+      let minDist  = Infinity;
+      for (const r of RESOLVED_EVENTS) {
+        const dist = Math.abs(r.displayYear - centerYear);
+        if (dist < minDist) { minDist = dist; closestR = r; }
       }
-      if (closest && minDist < 4) {
-        setActiveEvt(closest);
-        onEventSelect(closest);
+      if (minDist < 3) {
+        setActiveEvt(closestR.evt);
+        onEventSelect(closestR.evt);
       } else {
         setActiveEvt(null);
         onEventSelect(null);
+      }
+
+      // Snap to nearest event
+      const targetLeft = yrToPx(closestR.displayYear) - el.clientWidth / 2;
+      if (Math.abs(targetLeft - el.scrollLeft) > 4) {
+        setScrollYear(Math.round(closestR.displayYear));
+        isSnapping.current = true;
+        el.scrollTo({ left: targetLeft, behavior: "smooth" });
+        setTimeout(() => { isSnapping.current = false; }, 800);
       }
     }, 160);
   }, [onPhaseSelect, onEventSelect]);
@@ -473,14 +499,50 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
             </div>
           )}
 
+          {/* Event tooltip */}
+          {evtHov && (
+            <div
+              className="fixed bottom-[82px] left-1/2 -translate-x-1/2 z-50
+                         rounded-xl px-3 py-2.5 pointer-events-none max-w-[300px]"
+              style={{
+                background: "rgba(6,8,14,0.97)",
+                border: `1px solid ${EVENT_COLORS[evtHov.colKey]}35`,
+                boxShadow: "0 8px 32px rgba(0,0,0,0.8)",
+              }}
+            >
+              {/* Header: year + sev badge */}
+              <div className="flex items-center gap-1.5 mb-1.5 font-mono tracking-[.14em] uppercase"
+                   style={{ fontSize: "7.5px", color: EVENT_COLORS[evtHov.colKey] }}>
+                <span>{evtHov.predicted ? "~" : ""}{evtHov.year}</span>
+                <span
+                  className="px-1.5 py-0.5 rounded font-bold"
+                  style={{
+                    fontSize: "7px",
+                    background: `${EVENT_COLORS[evtHov.colKey]}20`,
+                    color: EVENT_COLORS[evtHov.colKey],
+                    border: `1px solid ${EVENT_COLORS[evtHov.colKey]}35`,
+                  }}
+                >
+                  {evtHov.sev.toUpperCase()}
+                </span>
+              </div>
+              {/* Label */}
+              <p className="font-syne font-bold text-text-base mb-1.5" style={{ fontSize: "12px" }}>{evtHov.label}</p>
+              {/* Divider */}
+              <div style={{ height: 1, background: "rgba(255,255,255,0.08)", marginBottom: "6px" }} />
+              {/* Signal */}
+              <p className="font-mono text-text-dim leading-relaxed" style={{ fontSize: "8.5px" }}>{evtHov.signal}</p>
+            </div>
+          )}
+
           {/* ── Event dots + floating labels — no boxes at all ── */}
-          {TIMELINE_EVENTS.map((evt, i) => {
-            const yr       = parseYear(evt.year);
-            const x        = yrToPx(yr);
+          {RESOLVED_EVENTS.map(({ evt, displayYear }, i) => {
+            const x        = yrToPx(displayYear);
             const col      = EVENT_COLORS[evt.colKey] ?? "#c9a84c";
             const isActive = activeEvt === evt;
             const isPred   = evt.predicted === true;
             const above    = i % 2 === 0;
+            const baseYear = parseYear(evt.year);
 
             const dotR     = isActive ? 4 : 2.5;
             const stemLen  = isActive ? 14 : 8;
@@ -522,8 +584,9 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
 
                 {/* Dot */}
                 <div
-                  className="absolute rounded-full transition-all duration-200"
+                  className="absolute rounded-full transition-all duration-200 cursor-pointer"
                   style={{
+                    pointerEvents: "auto",
                     left: -dotR, top: dotCY - dotR,
                     width: dotR * 2, height: dotR * 2,
                     background: isPred ? "transparent" : isActive ? col : `${col}aa`,
@@ -533,6 +596,8 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
                     boxShadow: isActive ? `0 0 6px ${col}, 0 0 14px ${col}44` : `0 0 3px ${col}44`,
                     opacity: isPred && !isActive ? 0.45 : 1,
                   }}
+                  onMouseEnter={() => setEvtHov(evt)}
+                  onMouseLeave={() => setEvtHov(null)}
                 />
 
                 {/* Year label — floating text, no background */}
@@ -548,7 +613,7 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
                       textShadow: `0 0 8px ${col}88`,
                     }}
                   >
-                    {evt.isNow ? "NOW" : `${yr}${isPred ? "~" : ""}`}
+                    {evt.isNow ? "NOW" : `${baseYear}${isPred ? "~" : ""}`}
                   </p>
                 )}
 
@@ -578,7 +643,7 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
                       top: yearLabelY, left: "50%", transform: "translateX(-50%)",
                     }}
                   >
-                    {yr}~
+                    {baseYear}~
                   </p>
                 )}
 
