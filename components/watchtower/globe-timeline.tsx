@@ -16,7 +16,9 @@ const SEGMENTS = [
   { yearStart: 2015, yearEnd: 2022, pxPerYear: 24 },
   { yearStart: 2022, yearEnd: 2028, pxPerYear: 36 },
   { yearStart: 2028, yearEnd: 2035, pxPerYear: 16 },
-  { yearStart: 2035, yearEnd: 2038, pxPerYear: 6  },
+  { yearStart: 2035, yearEnd: 2050, pxPerYear: 6  },
+  { yearStart: 2050, yearEnd: 2075, pxPerYear: 4  },
+  { yearStart: 2075, yearEnd: 2100, pxPerYear: 3  },
 ] as const;
 
 // Cumulative px offset for each segment start
@@ -39,7 +41,7 @@ const TOTAL_W  = SIDE_PAD + CONTENT_W + SIDE_PAD;
 
 const NOW_YEAR   = 2026;
 const START_YEAR = 1942;
-const END_YEAR   = 2038;
+const END_YEAR   = 2100;
 const AXIS_Y     = 52;   // px from container top — axis position
 const HEIGHT     = 100;
 
@@ -339,7 +341,7 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
           })}
 
           {/* ── Era/decade ticks — sparse for compressed zones ── */}
-          {[1945, 1950, 1960, 1970, 1980, 1990, 2000, 2005, 2010, 2015, 2018, 2020, 2022, 2024, 2026, 2028, 2030, 2032, 2035, 2038].map((yr) => {
+          {[1945, 1950, 1960, 1970, 1980, 1990, 2000, 2005, 2010, 2015, 2018, 2020, 2022, 2024, 2026, 2028, 2030, 2032, 2035, 2038, 2040, 2045, 2050, 2055, 2060, 2065, 2070, 2075, 2080, 2085, 2090, 2095, 2100].map((yr) => {
             const isMajor = yr % 10 === 0 || yr === NOW_YEAR;
             return (
               <div key={yr} className="absolute pointer-events-none" style={{ left: yrToPx(yr) }}>
