@@ -21,7 +21,10 @@ const PHASE_LABELS: Record<string, string> = {
   P2: "Expansion  1971–08",
   P3: "Stress  2008–20",
   P5: "Cascade  2027–32",
-  P6: "Resolve  2032+",
+  P6: "Resolve  2032–38",
+  P7: "Emergence  2038–59",
+  P8: "Divergence  2059–79",
+  P9: "Terminus  2079–2100",
 };
 
 const SCRUB_PHASES = [
@@ -56,10 +59,28 @@ const SCRUB_PHASES = [
     yearStart: 2027, yearEnd: 2032,
   },
   {
-    id: "P6", hex: "#64748b", label: "RESOLVE", yearRange: "2032+",
+    id: "P6", hex: "#64748b", label: "RESOLVE", yearRange: "2032–38",
     desc: "Post-USD multipolar order. Climate cascade locks in. AI autonomous weapons. New equilibrium or collapse.",
     gateIds: ["G1","G2","G3","G4","G5","G6","G7","G8"],
     yearStart: 2032, yearEnd: 2038,
+  },
+  {
+    id: "P7", hex: "#7c3aed", label: "EMERGENCE", yearRange: "2038–59",
+    desc: "AGI threshold crossed. Post-labor economy restructures. Off-world colonies attempt. Engineered biology democratized. Nation-state model gives way to new power structures.",
+    gateIds: [] as string[],
+    yearStart: 2038, yearEnd: 2059,
+  },
+  {
+    id: "P8", hex: "#374151", label: "DIVERGENCE", yearRange: "2059–79",
+    desc: "Humanity splits into augmented and unaugmented tracks. Longevity escape velocity for elites. AI legal personhood. Post-scarcity energy. Two civilizations begin to drift irreconcilably apart.",
+    gateIds: [] as string[],
+    yearStart: 2059, yearEnd: 2079,
+  },
+  {
+    id: "P9", hex: "#111827", label: "TERMINUS", yearRange: "2079–2100",
+    desc: "Final verdict on the human civilizational arc. Neural interface merger normalized. Climate outcome determined. Whether this resolves as survival, transcendence, or extinction becomes clear.",
+    gateIds: [] as string[],
+    yearStart: 2079, yearEnd: 2100,
   },
 ] as const;
 

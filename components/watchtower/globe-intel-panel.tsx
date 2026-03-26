@@ -71,6 +71,9 @@ const PHASES = [
   { id: "P4", yearStart: 2020, yearEnd: 2027, hex: "#e84040", label: "NOW"       },
   { id: "P5", yearStart: 2027, yearEnd: 2032, hex: "#ff0055", label: "CASCADE"   },
   { id: "P6", yearStart: 2032, yearEnd: 2038, hex: "#64748b", label: "RESOLVE"   },
+  { id: "P7", yearStart: 2038, yearEnd: 2059, hex: "#7c3aed", label: "EMERGENCE" },
+  { id: "P8", yearStart: 2059, yearEnd: 2079, hex: "#374151", label: "DIVERGENCE" },
+  { id: "P9", yearStart: 2079, yearEnd: 2100, hex: "#111827", label: "TERMINUS"  },
 ];
 
 const NOW_YEAR = 2026;
@@ -570,7 +573,7 @@ function TimelineTab() {
               className="font-mono text-[7.5px] tracking-[.16em] uppercase font-bold"
               style={{ color: phase.hex }}
             >
-              {phase.label} · {phase.yearStart}–{phase.yearEnd === 2038 ? "+" : phase.yearEnd}
+              {phase.label} · {phase.yearStart}–{phase.yearEnd}
             </span>
           </div>
 

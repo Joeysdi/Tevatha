@@ -97,6 +97,9 @@ const PHASES = [
   { id:"P4", labelKey:null,                              yearStart:2020, yearEnd:2027, hex:"#e84040", isNow:true },
   { id:"P5", labelKey:"era_cascade"   as TranslationKey, yearStart:2027, yearEnd:2032, hex:"#ff0055" },
   { id:"P6", labelKey:"era_resolve"   as TranslationKey, yearStart:2032, yearEnd:2038, hex:"#64748b" },
+  { id:"P7", labelKey:"era_emergence" as TranslationKey, yearStart:2038, yearEnd:2059, hex:"#7c3aed" },
+  { id:"P8", labelKey:"era_divergence" as TranslationKey, yearStart:2059, yearEnd:2079, hex:"#374151" },
+  { id:"P9", labelKey:"era_terminus"  as TranslationKey, yearStart:2079, yearEnd:2100, hex:"#111827" },
 ] as const;
 
 const EVENT_COLORS: Record<string, string> = {
