@@ -95,6 +95,17 @@ const TIER_HEX: Record<string, string> = {
   t4: "#e84040", t3: "#f0a500", t2: "#38bdf8", t1: "#1ae8a0",
 };
 
+const GATE_YEARS: Record<string, number> = {
+  G1: 2026.2,  // nuclear detonation — ongoing risk NOW
+  G2: 2026.5,  // DEFCON 2
+  G6: 2026.9,  // WHO PHEIC — H5N1 window
+  G3: 2027.3,  // NATO Article 5
+  G7: 2027.7,  // repo rate >5% sustained
+  G4: 2028.3,  // bank bail-in
+  G8: 2029.0,  // CBDC mandatory (EU Digital Euro 2029)
+  G5: 2030.0,  // Doomsday Clock 75s
+};
+
 // ── Props ──────────────────────────────────────────────────────────────────────
 
 interface Props {
@@ -242,12 +253,21 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
 
       {/* ── Year readout ── */}
       <div className="absolute top-1.5 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
-        <p
-          className="font-mono tabular-nums"
-          style={{ fontSize: "10px", letterSpacing: ".1em", color: `${activePhaseHex}cc`, transition: "color 0.5s" }}
-        >
-          {scrollYear > NOW_YEAR ? `${scrollYear} ▸ ${t("timeline_forecast")}` : scrollYear < NOW_YEAR ? `◂ ${scrollYear}` : "▸ now  2026"}
-        </p>
+        {scrollYear === NOW_YEAR ? (
+          <span className="inline-flex items-center gap-1 font-mono tabular-nums"
+                style={{ fontSize: "10px", letterSpacing: ".12em", color: "#e84040" }}>
+            <span className="inline-block w-1.5 h-1.5 rounded-full animate-pulse"
+                  style={{ background: "#e84040" }} />
+            NOW · 2026
+          </span>
+        ) : (
+          <p
+            className="font-mono tabular-nums"
+            style={{ fontSize: "10px", letterSpacing: ".1em", color: `${activePhaseHex}cc`, transition: "color 0.5s" }}
+          >
+            {scrollYear > NOW_YEAR ? `${scrollYear} ▸ ${t("timeline_forecast")}` : `◂ ${scrollYear}`}
+          </p>
+        )}
       </div>
 
       {/* ── Scrollable canvas ── */}
@@ -276,11 +296,15 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
                 style={{
                   left: x, width: w,
                   top: AXIS_Y,
-                  height: 1,
+                  height: isActive ? 2 : 1,
                   background: isActive
                     ? `linear-gradient(90deg, ${p.hex}20, ${p.hex}aa, ${p.hex}aa, ${p.hex}20)`
                     : `${p.hex}25`,
-                  boxShadow: isActive ? `0 0 4px ${p.hex}55` : "none",
+                  boxShadow: isActive
+                    ? p.id === "P4"
+                      ? `0 0 8px ${p.hex}88, 0 0 16px ${p.hex}33`
+                      : `0 0 4px ${p.hex}55`
+                    : "none",
                   transition: "all 0.5s",
                 }}
               />
@@ -298,13 +322,18 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
                 style={{
                   left: x + 3,
                   top: 6,
-                  fontSize: "8px",
+                  fontSize: p.id === "P4" && isActive ? "9px" : "8px",
+                  fontWeight: p.id === "P4" && isActive ? "bold" : undefined,
                   letterSpacing: ".2em",
                   color: isActive ? `${p.hex}cc` : `${p.hex}55`,
                   transition: "color 0.4s",
                 }}
               >
-                {"isNow" in p && p.isNow ? "▶ " : ""}{p.labelKey ? t(p.labelKey) : "NOW"}
+                {p.id === "P4" && isActive
+                  ? "▶ NOW · CRITICAL"
+                  : p.id === "P4"
+                  ? "▶ NOW"
+                  : p.labelKey ? t(p.labelKey) : "NOW"}
               </p>
             );
           })}
@@ -358,17 +387,17 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
             className="absolute pointer-events-none z-10"
             style={{
               left: yrToPx(NOW_YEAR),
-              top: AXIS_Y - 10,
+              top: 0,
               width: 1,
-              height: 20,
-              background: "linear-gradient(to bottom, transparent, #e84040dd, transparent)",
+              height: HEIGHT,
+              background: "linear-gradient(to bottom, transparent 0%, #e84040cc 45%, #e84040cc 55%, transparent 100%)",
               boxShadow: "0 0 6px rgba(232,64,64,0.5)",
             }}
           />
 
           {/* ── Decision gate markers ── */}
-          {GATES.map((gate, i) => {
-            const gateYear = NOW_YEAR + 0.4 + i * 0.75;
+          {GATES.map((gate) => {
+            const gateYear = GATE_YEARS[gate.id] ?? NOW_YEAR + 1;
             const x = yrToPx(gateYear);
             const col = TIER_HEX[gate.tier] ?? "#c9a84c";
             return (
@@ -399,23 +428,46 @@ export function GlobeTimeline({ activePhase, onPhaseSelect, onEventSelect }: Pro
             );
           })}
 
-          {/* Gate tooltip — no box, just clean text */}
+          {/* Gate tooltip */}
           {gateHov && (
             <div
               className="fixed bottom-[82px] left-1/2 -translate-x-1/2 z-50
-                         rounded-xl px-3 py-2 pointer-events-none max-w-[260px]"
+                         rounded-xl px-3 py-2.5 pointer-events-none max-w-[300px]"
               style={{
                 background: "rgba(6,8,14,0.97)",
                 border: `1px solid ${TIER_HEX[gateHov.tier]}35`,
                 boxShadow: "0 8px 32px rgba(0,0,0,0.8)",
               }}
             >
-              <p className="font-mono text-[7.5px] tracking-[.14em] uppercase mb-1"
-                 style={{ color: TIER_HEX[gateHov.tier] }}>
-                {gateHov.id} · {gateHov.tier.toUpperCase()} · {gateHov.window}
+              {/* Header: ID · tier badge · window */}
+              <div className="flex items-center gap-1.5 mb-1.5 font-mono tracking-[.14em] uppercase"
+                   style={{ fontSize: "7.5px", color: TIER_HEX[gateHov.tier] }}>
+                <span>{gateHov.id}</span>
+                <span
+                  className="px-1.5 py-0.5 rounded font-bold"
+                  style={{
+                    fontSize: "7px",
+                    ...(gateHov.tier === "t4"
+                      ? { background: "rgba(232,64,64,0.2)", color: "#e05050", border: "1px solid rgba(232,64,64,0.3)" }
+                      : gateHov.tier === "t3"
+                      ? { background: "rgba(240,165,0,0.15)", color: "#f0c842", border: "1px solid rgba(240,165,0,0.25)" }
+                      : { background: "rgba(56,189,248,0.15)", color: "#38bdf8", border: "1px solid rgba(56,189,248,0.25)" }),
+                  }}
+                >
+                  {gateHov.tier.toUpperCase()} TIER
+                </span>
+                <span>· {gateHov.window}</span>
+              </div>
+              {/* Trigger */}
+              <p className="font-syne font-bold text-text-base mb-1.5" style={{ fontSize: "12px" }}>{gateHov.trigger}</p>
+              {/* Divider */}
+              <div style={{ height: 1, background: "rgba(255,255,255,0.08)", marginBottom: "6px" }} />
+              {/* Action */}
+              <p className="font-mono text-text-dim leading-relaxed mb-1.5" style={{ fontSize: "8.5px" }}>{gateHov.action}</p>
+              {/* Expected window */}
+              <p className="font-mono tracking-[.1em]" style={{ fontSize: "7px", color: "#c9a84c" }}>
+                EXPECTED WINDOW: ~{Math.floor(GATE_YEARS[gateHov.id] ?? NOW_YEAR + 1)}
               </p>
-              <p className="font-syne font-bold text-[11px] text-text-base mb-0.5">{gateHov.trigger}</p>
-              <p className="font-mono text-[8.5px] text-text-dim leading-relaxed">{gateHov.action}</p>
             </div>
           )}
 
