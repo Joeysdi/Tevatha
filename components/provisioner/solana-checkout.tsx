@@ -103,7 +103,7 @@ export function SolanaCheckout({
             INVOICE
           </span>
           <span className="font-mono text-[10px] text-cyan-DEFAULT">
-            {invoice.invoiceId.slice(0, 8).toUpperCase()}
+            {(invoice.invoiceId ?? "").slice(0, 8).toUpperCase()}
           </span>
         </div>
         <div className="space-y-1.5 text-[12px]">

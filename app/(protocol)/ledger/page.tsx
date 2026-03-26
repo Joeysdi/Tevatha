@@ -777,7 +777,7 @@ function BlueprintPanel({ data }: { data: BlueprintData }) {
                   r.condition === "secondary" ? "text-gold-DEFAULT border-gold-dim bg-gold-glow" :
                   "text-amber-protocol border-amber-DEFAULT/25 bg-amber-dim"
                 }>
-                  {r.condition.toUpperCase()}
+                  {(r.condition ?? "").toUpperCase()}
                 </MonoBadge>
                 <span className="text-text-dim">{r.direction} · {r.distance}</span>
                 <span className="text-text-mute2 ml-auto">{r.landmark}</span>
@@ -802,7 +802,7 @@ function BlueprintPanel({ data }: { data: BlueprintData }) {
                 <span className={`font-mono text-[9px] font-bold
                   ${u.status==="operational" ? "text-green-protocol" :
                     u.status==="standby"     ? "text-amber-protocol" : "text-text-mute2"}`}>
-                  {u.status.toUpperCase()}
+                  {(u.status ?? "").toUpperCase()}
                 </span>
                 <span className="text-text-dim">{u.capacity}</span>
                 {u.notes && <span className="text-text-mute2 ml-auto text-[11px]">{u.notes}</span>}

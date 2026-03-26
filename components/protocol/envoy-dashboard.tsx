@@ -177,13 +177,13 @@ export function EnvoyDashboard({ commissions, stats, ambassadorTier, userId }: P
                       {new Date(c.created_at).toLocaleDateString("en-GB")}
                     </span>
                     <span className={`inline-block px-2 py-0.5 rounded text-[9px]
-                                      font-bold tracking-[.08em] border ${STATUS_COLOR[c.status]}`}>
-                      {c.status.toUpperCase()}
+                                      font-bold tracking-[.08em] border ${STATUS_COLOR[c.status] ?? ""}`}>
+                      {(c.status ?? "—").toUpperCase()}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="font-mono text-[11px] text-text-base font-bold">
-                      {c.commission_usdc.toFixed(2)} USDC
+                      {(c.commission_usdc ?? 0).toFixed(2)} USDC
                     </span>
                     <span className="font-mono text-[10px] text-text-mute2">
                       T{c.commission_tier} · {c.order_id?.slice(0,8).toUpperCase() ?? "—"}
@@ -219,12 +219,12 @@ export function EnvoyDashboard({ commissions, stats, ambassadorTier, userId }: P
                       </td>
                       <td className="px-4 py-3 text-text-mute2">T{c.commission_tier}</td>
                       <td className="px-4 py-3 text-gold-bright font-bold">
-                        {c.commission_usdc.toFixed(2)} USDC
+                        {(c.commission_usdc ?? 0).toFixed(2)} USDC
                       </td>
                       <td className="px-4 py-3">
                         <span className={`inline-block px-2 py-0.5 rounded text-[9px]
-                                          font-bold tracking-[.08em] border ${STATUS_COLOR[c.status]}`}>
-                          {c.status.toUpperCase()}
+                                          font-bold tracking-[.08em] border ${STATUS_COLOR[c.status] ?? ""}`}>
+                          {(c.status ?? "—").toUpperCase()}
                         </span>
                       </td>
                     </tr>
