@@ -346,7 +346,7 @@ export function WatchtowerGlobeShell() {
 
         {/* ── Globe mode controls — desktop only ───────────────────────────── */}
         <div
-          className="hidden sm:flex absolute left-4 z-20 flex-col gap-1.5 overflow-y-auto [&::-webkit-scrollbar]:hidden"
+          className="hidden sm:flex absolute left-4 z-20 overflow-y-auto [&::-webkit-scrollbar]:hidden"
           style={{
             top: "48px",
             maxHeight: `${Math.max(200, (containerH - 64) / panelScale)}px`,
@@ -355,209 +355,191 @@ export function WatchtowerGlobeShell() {
             transformOrigin: "top left",
           }}
         >
-
-          {/* Threat domains */}
+          {/* Unified Palantir-style module */}
           <div
-            className="rounded-xl overflow-hidden backdrop-blur-sm"
-            style={{ background: "rgba(11,13,24,0.88)", border: "1px solid rgba(255,255,255,0.07)" }}
-          >
-            <p className="font-mono text-[6.5px] tracking-[.2em] uppercase text-text-mute2/60 px-2.5 pt-2 pb-1">
-              Threat Domains
-            </p>
-            <div className="flex flex-col gap-0.5 px-1.5 pb-1.5">
-              {DOMAINS.map((d) => {
-                const active = domainId === d.id;
-                const col    = DOMAIN_COLORS[d.label] ?? "#c9a84c";
-                return (
-                  <Link
-                    key={d.id}
-                    href={buildUrl(searchParams, { domain: active ? null : d.id })}
-                    replace
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setDomainId(active ? null : d.id);
-                    }}
-                    aria-pressed={active}
-                    className={`flex items-center gap-1.5 px-2 py-1 min-h-[44px] rounded-lg text-left
-                                transition-all duration-150 font-mono text-[8px]
-                                ${active ? "border" : "text-text-mute2 hover:text-text-base hover:bg-white/[0.04] border border-transparent"}`}
-                    style={active ? { color: col, background: `${col}18`, borderColor: `${col}40` } : {}}
-                  >
-                    <span
-                      className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                      style={{ background: active ? col : "rgba(150,165,180,0.3)", boxShadow: active ? `0 0 6px ${col}` : "none" }}
-                    />
-                    <span className="text-[10px] leading-none">{d.icon}</span>
-                    <span className="truncate max-w-[90px]">{d.label}</span>
-                    <span className="ml-auto font-bold tabular-nums" style={{ color: active ? col : undefined }}>{d.score}</span>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-
-          <nav
-            aria-label="Scenario navigation"
-            className="rounded-xl overflow-hidden backdrop-blur-sm"
-            style={{ background: "rgba(11,13,24,0.88)", border: "1px solid rgba(255,255,255,0.07)" }}
-          >
-            <p className="font-mono text-[6.5px] tracking-[.2em] uppercase text-text-mute2/60 px-2.5 pt-2 pb-1">
-              {t("nav_scenarios")}
-            </p>
-            <div className="flex flex-col gap-0.5 px-1.5 pb-1.5">
-              {SCENARIO_IMPACTS.map((s) => {
-                const active = scenarioId === s.id;
-                return (
-                  <Link
-                    key={s.id}
-                    href={buildUrl(searchParams, { scenario: active ? null : s.id })}
-                    replace
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setScenarioId(active ? null : s.id);
-                    }}
-                    aria-pressed={active}
-                    aria-label={`${active ? "Deactivate" : "Activate"} scenario: ${s.title}`}
-                    className={`flex items-center gap-1.5 px-2 py-1 min-h-[44px] rounded-lg text-left
-                                transition-all duration-150 font-mono text-[8px]
-                                ${active
-                                  ? "bg-red-protocol/20 text-red-bright border border-red-protocol/40"
-                                  : "text-text-mute2 hover:text-text-base hover:bg-white/[0.04] border border-transparent"
-                                }`}
-                  >
-                    <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${active ? "bg-red-bright animate-pulse" : "bg-text-mute2/30"}`} />
-                    {s.title}
-                  </Link>
-                );
-              })}
-            </div>
-          </nav>
-
-          <Link
-            href={buildUrl(searchParams, { psych: psychologyMode ? null : "1" })}
-            replace
-            onClick={(e) => {
-              e.stopPropagation();
-              setPsychologyMode(!psychologyMode);
+            style={{
+              background: "rgba(6,7,14,0.42)",
+              border: "1px solid rgba(255,255,255,0.05)",
+              borderRadius: 4,
+              backdropFilter: "blur(4px)",
+              minWidth: "164px",
             }}
-            aria-pressed={psychologyMode}
-            aria-label={`${psychologyMode ? "Disable" : "Enable"} psychology mode`}
-            className={`flex items-center gap-2 px-2.5 py-1.5 min-h-[44px] rounded-xl backdrop-blur-sm
-                        border font-mono text-[8px] transition-all duration-150
-                        ${psychologyMode
-                          ? "border-purple-500/50 text-purple-300"
-                          : "border-border-protocol text-text-mute2 hover:border-purple-500/30 hover:text-text-base"
-                        }`}
-            style={{ background: psychologyMode ? "rgba(138,43,226,0.15)" : "rgba(11,13,24,0.88)" }}
           >
-            <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${psychologyMode ? "bg-purple-400 animate-pulse" : "bg-text-mute2/30"}`} />
-            🧠 {t("nav_psychology")}
-          </Link>
-
-          <Link
-            href={buildUrl(searchParams, { signals: showSignals ? null : "1" })}
-            replace
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowSignals(!showSignals);
-            }}
-            aria-pressed={showSignals}
-            aria-label={`${showSignals ? "Hide" : "Show"} signal pins`}
-            className={`flex items-center gap-2 px-2.5 py-1.5 min-h-[44px] rounded-xl backdrop-blur-sm
-                        border font-mono text-[8px] transition-all duration-150
-                        ${showSignals
-                          ? "border-red-protocol/50 text-red-bright"
-                          : "border-border-protocol text-text-mute2 hover:border-red-protocol/30 hover:text-text-base"
-                        }`}
-            style={{ background: showSignals ? "rgba(232,64,64,0.12)" : "rgba(11,13,24,0.88)" }}
-          >
-            <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${showSignals ? "bg-red-bright animate-pulse" : "bg-text-mute2/30"}`} />
-            📡 {t("nav_signals")}
-          </Link>
-
-          {/* ── New layer group ─────────────────────────────────────────── */}
-          <div
-            className="rounded-xl overflow-hidden backdrop-blur-sm"
-            style={{ background: "rgba(11,13,24,0.88)", border: "1px solid rgba(255,255,255,0.07)" }}
-          >
-            <p className="font-mono text-[6.5px] tracking-[.2em] uppercase text-text-mute2/60 px-2.5 pt-2 pb-1">
-              Live Layers
-            </p>
-            <div className="flex flex-col gap-0.5 px-1.5 pb-1.5">
-
-              {/* Commodity Prices */}
-              <button
-                onClick={(e) => { e.stopPropagation(); setShowCommodities(v => !v); }}
-                aria-pressed={showCommodities}
-                className={`flex items-center gap-1.5 px-2 py-1 min-h-[44px] rounded-lg text-left
-                            transition-all duration-150 font-mono text-[8px]
-                            ${showCommodities
-                              ? "border border-emerald-500/40 text-emerald-400"
-                              : "text-text-mute2 hover:text-text-base hover:bg-white/[0.04] border border-transparent"
-                            }`}
-                style={showCommodities ? { background: "rgba(16,185,129,0.10)" } : {}}
-              >
-                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${showCommodities ? "bg-emerald-400 animate-pulse" : "bg-text-mute2/30"}`} />
-                📊 Prices
-              </button>
-
-              {/* World Instability */}
-              <button
-                onClick={(e) => { e.stopPropagation(); setShowInstability(v => !v); }}
-                aria-pressed={showInstability}
-                className={`flex items-center gap-1.5 px-2 py-1 min-h-[44px] rounded-lg text-left
-                            transition-all duration-150 font-mono text-[8px]
-                            ${showInstability
-                              ? "border border-amber-500/40 text-amber-protocol"
-                              : "text-text-mute2 hover:text-text-base hover:bg-white/[0.04] border border-transparent"
-                            }`}
-                style={showInstability ? { background: "rgba(240,165,0,0.10)" } : {}}
-              >
-                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${showInstability ? "bg-amber-protocol animate-pulse" : "bg-text-mute2/30"}`} />
-                🌡 Instability
-              </button>
-
-              {/* World News */}
-              <button
-                onClick={(e) => { e.stopPropagation(); setShowNewsFeed(v => !v); }}
-                aria-pressed={showNewsFeed}
-                className={`flex items-center gap-1.5 px-2 py-1 min-h-[44px] rounded-lg text-left
-                            transition-all duration-150 font-mono text-[8px]
-                            ${showNewsFeed
-                              ? "border border-sky-500/40 text-sky-300"
-                              : "text-text-mute2 hover:text-text-base hover:bg-white/[0.04] border border-transparent"
-                            }`}
-                style={showNewsFeed ? { background: "rgba(56,189,248,0.10)" } : {}}
-              >
-                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${showNewsFeed ? "bg-sky-300 animate-pulse" : "bg-text-mute2/30"}`} />
-                📰 News
-              </button>
-
+            {/* ── Threat Domains ───────────────────────────────────── */}
+            <div className="pt-2.5 pb-1">
+              <div className="flex items-center gap-1.5 px-2.5 mb-1">
+                <div className="w-[2px] h-2.5 rounded-full bg-red-protocol/60 flex-shrink-0" />
+                <p className="font-mono text-[6.5px] tracking-[.2em] uppercase text-text-mute2/50">Threat Domains</p>
+              </div>
+              <div className="flex flex-col">
+                {DOMAINS.map((d) => {
+                  const active = domainId === d.id;
+                  const col    = DOMAIN_COLORS[d.label] ?? "#c9a84c";
+                  return (
+                    <Link
+                      key={d.id}
+                      href={buildUrl(searchParams, { domain: active ? null : d.id })}
+                      replace
+                      onClick={(e) => { e.stopPropagation(); setDomainId(active ? null : d.id); }}
+                      aria-pressed={active}
+                      className={`flex items-center gap-1.5 pl-3 pr-2.5 py-1 min-h-[44px] text-left
+                                  transition-all duration-150 font-mono text-[8px] border-l-2
+                                  ${active ? "" : "text-text-mute2 hover:text-text-base"}`}
+                      style={active ? { color: col, borderLeftColor: col } : { borderLeftColor: "transparent" }}
+                    >
+                      <span
+                        className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                        style={{ background: active ? col : "rgba(150,165,180,0.25)", boxShadow: active ? `0 0 5px ${col}` : "none" }}
+                      />
+                      <span className="text-[10px] leading-none">{d.icon}</span>
+                      <span className="truncate max-w-[80px]">{d.label}</span>
+                      <span className="ml-auto font-bold tabular-nums text-[7.5px]" style={{ color: active ? col : "rgba(150,165,180,0.35)" }}>{d.score}</span>
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
-          </div>
 
-          {/* Language picker */}
-          <div
-            className="rounded-xl overflow-hidden backdrop-blur-sm"
-            style={{ background: "rgba(11,13,24,0.88)", border: "1px solid rgba(255,255,255,0.07)" }}
-          >
-            <p className="font-mono text-[6.5px] tracking-[.2em] uppercase text-text-mute2/60 px-2.5 pt-2 pb-1">
-              {t("language_label")}
-            </p>
-            <div className="grid grid-cols-3 gap-0.5 px-1.5 pb-1.5">
-              {locales.map((loc) => {
-                const active = loc === locale;
-                return (
-                  <button
-                    key={loc}
-                    onClick={(e) => { e.stopPropagation(); setLocale(loc); }}
-                    className={`flex items-center justify-center p-1.5 min-h-[44px] min-w-[44px] rounded font-mono text-[7.5px] transition-all
-                                ${active ? "border border-gold-protocol/55 bg-gold-glow text-gold-bright" : "text-text-mute2 hover:bg-white/[0.04] border border-transparent"}`}
-                  >
-                    <span className="text-[11px] leading-none">{meta[loc].flag}</span>
-                  </button>
-                );
-              })}
+            {/* Divider */}
+            <div style={{ height: 1, background: "rgba(255,255,255,0.04)" }} />
+
+            {/* ── Scenarios ────────────────────────────────────────── */}
+            <nav aria-label="Scenario navigation" className="pt-2 pb-1">
+              <div className="flex items-center gap-1.5 px-2.5 mb-1">
+                <div className="w-[2px] h-2.5 rounded-full bg-red-protocol/60 flex-shrink-0" />
+                <p className="font-mono text-[6.5px] tracking-[.2em] uppercase text-text-mute2/50">{t("nav_scenarios")}</p>
+              </div>
+              <div className="flex flex-col">
+                {SCENARIO_IMPACTS.map((s) => {
+                  const active = scenarioId === s.id;
+                  return (
+                    <Link
+                      key={s.id}
+                      href={buildUrl(searchParams, { scenario: active ? null : s.id })}
+                      replace
+                      onClick={(e) => { e.stopPropagation(); setScenarioId(active ? null : s.id); }}
+                      aria-pressed={active}
+                      aria-label={`${active ? "Deactivate" : "Activate"} scenario: ${s.title}`}
+                      className={`flex items-center gap-1.5 pl-3 pr-2.5 py-1 min-h-[44px] text-left
+                                  transition-all duration-150 font-mono text-[8px] border-l-2
+                                  ${active ? "text-red-bright" : "text-text-mute2 hover:text-text-base"}`}
+                      style={{ borderLeftColor: active ? "#e84040" : "transparent" }}
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${active ? "bg-red-bright animate-pulse" : "bg-text-mute2/25"}`} />
+                      {s.title}
+                    </Link>
+                  );
+                })}
+              </div>
+            </nav>
+
+            {/* Divider */}
+            <div style={{ height: 1, background: "rgba(255,255,255,0.04)" }} />
+
+            {/* ── Psychology + Signals ─────────────────────────────── */}
+            <div className="flex flex-col py-1">
+              <Link
+                href={buildUrl(searchParams, { psych: psychologyMode ? null : "1" })}
+                replace
+                onClick={(e) => { e.stopPropagation(); setPsychologyMode(!psychologyMode); }}
+                aria-pressed={psychologyMode}
+                aria-label={`${psychologyMode ? "Disable" : "Enable"} psychology mode`}
+                className={`flex items-center gap-2 pl-3 pr-2.5 py-1.5 min-h-[44px]
+                            font-mono text-[8px] transition-all duration-150 border-l-2
+                            ${psychologyMode ? "text-purple-300" : "text-text-mute2 hover:text-text-base"}`}
+                style={{ borderLeftColor: psychologyMode ? "#a855f7" : "transparent" }}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${psychologyMode ? "bg-purple-400 animate-pulse" : "bg-text-mute2/25"}`} />
+                🧠 {t("nav_psychology")}
+              </Link>
+              <Link
+                href={buildUrl(searchParams, { signals: showSignals ? null : "1" })}
+                replace
+                onClick={(e) => { e.stopPropagation(); setShowSignals(!showSignals); }}
+                aria-pressed={showSignals}
+                aria-label={`${showSignals ? "Hide" : "Show"} signal pins`}
+                className={`flex items-center gap-2 pl-3 pr-2.5 py-1.5 min-h-[44px]
+                            font-mono text-[8px] transition-all duration-150 border-l-2
+                            ${showSignals ? "text-red-bright" : "text-text-mute2 hover:text-text-base"}`}
+                style={{ borderLeftColor: showSignals ? "#e84040" : "transparent" }}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${showSignals ? "bg-red-bright animate-pulse" : "bg-text-mute2/25"}`} />
+                📡 {t("nav_signals")}
+              </Link>
+            </div>
+
+            {/* Divider */}
+            <div style={{ height: 1, background: "rgba(255,255,255,0.04)" }} />
+
+            {/* ── Live Layers ──────────────────────────────────────── */}
+            <div className="pt-2 pb-1">
+              <div className="flex items-center gap-1.5 px-2.5 mb-1">
+                <div className="w-[2px] h-2.5 rounded-full bg-text-mute2/30 flex-shrink-0" />
+                <p className="font-mono text-[6.5px] tracking-[.2em] uppercase text-text-mute2/50">Live Layers</p>
+              </div>
+              <div className="flex flex-col">
+                <button
+                  onClick={(e) => { e.stopPropagation(); setShowCommodities(v => !v); }}
+                  aria-pressed={showCommodities}
+                  className={`flex items-center gap-1.5 pl-3 pr-2.5 py-1 min-h-[44px] text-left
+                              transition-all duration-150 font-mono text-[8px] border-l-2
+                              ${showCommodities ? "text-emerald-400" : "text-text-mute2 hover:text-text-base"}`}
+                  style={{ borderLeftColor: showCommodities ? "#34d399" : "transparent" }}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${showCommodities ? "bg-emerald-400 animate-pulse" : "bg-text-mute2/25"}`} />
+                  📊 Prices
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setShowInstability(v => !v); }}
+                  aria-pressed={showInstability}
+                  className={`flex items-center gap-1.5 pl-3 pr-2.5 py-1 min-h-[44px] text-left
+                              transition-all duration-150 font-mono text-[8px] border-l-2
+                              ${showInstability ? "text-amber-protocol" : "text-text-mute2 hover:text-text-base"}`}
+                  style={{ borderLeftColor: showInstability ? "#f0a500" : "transparent" }}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${showInstability ? "bg-amber-protocol animate-pulse" : "bg-text-mute2/25"}`} />
+                  🌡 Instability
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setShowNewsFeed(v => !v); }}
+                  aria-pressed={showNewsFeed}
+                  className={`flex items-center gap-1.5 pl-3 pr-2.5 py-1 min-h-[44px] text-left
+                              transition-all duration-150 font-mono text-[8px] border-l-2
+                              ${showNewsFeed ? "text-sky-300" : "text-text-mute2 hover:text-text-base"}`}
+                  style={{ borderLeftColor: showNewsFeed ? "#7dd3fc" : "transparent" }}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${showNewsFeed ? "bg-sky-300 animate-pulse" : "bg-text-mute2/25"}`} />
+                  📰 News
+                </button>
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div style={{ height: 1, background: "rgba(255,255,255,0.04)" }} />
+
+            {/* ── Language ─────────────────────────────────────────── */}
+            <div className="pt-2 pb-2.5">
+              <div className="flex items-center gap-1.5 px-2.5 mb-1">
+                <div className="w-[2px] h-2.5 rounded-full bg-text-mute2/30 flex-shrink-0" />
+                <p className="font-mono text-[6.5px] tracking-[.2em] uppercase text-text-mute2/50">{t("language_label")}</p>
+              </div>
+              <div className="grid grid-cols-3 gap-0.5 px-2">
+                {locales.map((loc) => {
+                  const active = loc === locale;
+                  return (
+                    <button
+                      key={loc}
+                      onClick={(e) => { e.stopPropagation(); setLocale(loc); }}
+                      className={`flex items-center justify-center py-1 min-h-[44px] min-w-[44px] rounded-sm font-mono text-[7.5px] transition-all border
+                                  ${active
+                                    ? "border-gold-protocol/50 text-gold-bright"
+                                    : "text-text-mute2 hover:text-text-base border-transparent hover:border-white/[0.06]"}`}
+                    >
+                      <span className="text-[11px] leading-none">{meta[loc].flag}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
@@ -935,16 +917,10 @@ function TimelineScrubber({
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
     >
-      {/* Container card */}
+      {/* Track wrapper — ghost/transparent Palantir style */}
       <div
-        className="rounded-2xl px-2 py-2"
-        style={{
-          background: "rgba(6,7,14,0.88)",
-          border: "1px solid rgba(255,255,255,0.07)",
-          boxShadow: "0 4px 24px rgba(0,0,0,0.6)",
-          backdropFilter: "blur(12px)",
-          cursor: isDragging.current ? "grabbing" : "grab",
-        }}
+        className="px-2 py-1"
+        style={{ cursor: isDragging.current ? "grabbing" : "grab" }}
       >
         {/* Phase label + year */}
         <div className="flex items-center justify-center gap-2 mb-2 pointer-events-none">
@@ -953,11 +929,11 @@ function TimelineScrubber({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="font-mono text-[8px] tracking-[.22em] uppercase font-bold"
-            style={{ color: phase.hex }}
+            style={{ color: phase.hex, textShadow: "0 1px 4px rgba(0,0,0,0.9)" }}
           >
             {phase.label}
           </motion.span>
-          <span className="font-mono text-[7px] text-text-mute2/60">{phase.yearRange}</span>
+          <span className="font-mono text-[7px] text-text-mute2/70" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.9)" }}>{phase.yearRange}</span>
         </div>
 
         {/* Track */}
@@ -968,7 +944,7 @@ function TimelineScrubber({
             style={{
               left: SCRUB_PAD, right: SCRUB_PAD,
               height: 1,
-              background: "rgba(255,255,255,0.10)",
+              background: "rgba(255,255,255,0.22)",
               transform: "translateY(-50%)",
             }}
           />
@@ -1069,31 +1045,29 @@ function PanelTrigger({
   label: string; openColor: "red" | "gold" | "cyan"; side: "left" | "right";
 }) {
   const { t } = useTranslation();
-  const colorMap = {
-    red:  { active: "bg-red-protocol/18 border-red-protocol/55 text-red-bright",
-            idle:   "bg-void-1/78 border-border-protocol text-text-mute2 hover:border-red-protocol/30 hover:text-text-base" },
-    gold: { active: "bg-gold-glow border-gold-protocol/55 text-gold-bright",
-            idle:   "bg-void-1/78 border-border-protocol text-text-mute2 hover:border-gold-protocol/30 hover:text-text-base" },
-    cyan: { active: "bg-cyan-DEFAULT/12 border-cyan-border text-cyan-DEFAULT",
-            idle:   "bg-void-1/78 border-border-protocol text-text-mute2 hover:border-cyan-border/40 hover:text-text-base" },
-  };
-  const cls     = colorMap[openColor];
-  const rounded = side === "left" ? "rounded-r-xl border-r border-y" : "rounded-l-xl border-l border-y";
-  const arrow   = side === "left" ? (open ? "◄" : "►") : (open ? "►" : "◄");
+  const accentHex = openColor === "gold" ? "#c9a84c" : openColor === "cyan" ? "#00d4ff" : "#e84040";
+  const rounded   = side === "left" ? "rounded-r border-r border-y" : "rounded-l border-l border-y";
+  const arrow     = side === "left" ? (open ? "◄" : "►") : (open ? "►" : "◄");
 
   return (
     <button
       onClick={onClick}
       aria-expanded={open}
       aria-label={open ? t("nav_close") : label}
-      className={`py-3 sm:py-5 px-2.5 min-h-[44px] min-w-[44px] ${rounded} flex flex-col items-center gap-1.5
-                  transition-all duration-200 backdrop-blur-sm
-                  ${open ? cls.active : cls.idle}`}
+      className={`py-3 sm:py-5 px-2 min-h-[44px] min-w-[44px] ${rounded} flex flex-col items-center gap-1.5
+                  transition-all duration-200
+                  ${open ? "text-text-base" : "text-text-mute2 hover:text-text-base"}`}
+      style={{
+        background: open ? `${accentHex}0f` : "rgba(6,7,14,0.40)",
+        borderColor: open ? `${accentHex}40` : "rgba(255,255,255,0.06)",
+        backdropFilter: "blur(4px)",
+      }}
     >
-      <span className="font-mono text-[7.5px] [writing-mode:vertical-rl] rotate-180 tracking-[.18em] uppercase leading-none">
+      <span className="font-mono text-[7.5px] [writing-mode:vertical-rl] rotate-180 tracking-[.18em] uppercase leading-none"
+            style={{ color: open ? accentHex : undefined }}>
         {open ? t("nav_close") : label}
       </span>
-      <span className="text-[9px]">{arrow}</span>
+      <span className="text-[9px]" style={{ color: open ? accentHex : undefined }}>{arrow}</span>
     </button>
   );
 }
