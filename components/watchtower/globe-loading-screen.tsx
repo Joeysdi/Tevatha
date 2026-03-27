@@ -165,17 +165,18 @@ export function GlobeLoadingScreen({ isReady = false }: { isReady?: boolean }) {
 
       {/* ── Scan line ───────────────────────────────────────────────────────── */}
       <div
-        className="absolute inset-x-0 h-[2px] pointer-events-none z-10"
+        className="absolute inset-x-0 top-0 h-[2px] pointer-events-none z-10"
         style={{
           background: "linear-gradient(90deg,transparent,rgba(232,64,64,0.15),transparent)",
           animation: "scanDown 3.5s linear infinite",
+          willChange: "transform",
         }}
       />
 
       <style>{`
         @keyframes scanDown {
-          0%   { top: 0%; }
-          100% { top: 100%; }
+          0%   { transform: translateY(0); }
+          100% { transform: translateY(100vh); }
         }
         @keyframes slideRight {
           0%   { transform: translateX(-100%); }
@@ -249,27 +250,13 @@ export function GlobeLoadingScreen({ isReady = false }: { isReady?: boolean }) {
                   <stop offset="0%"   stopColor="rgba(232,64,64,0.30)" stopOpacity="1" />
                   <stop offset="100%" stopColor="rgba(232,64,64,0)"    stopOpacity="0" />
                 </radialGradient>
-                <filter id="arc-glow" x="-50%" y="-50%" width="200%" height="200%">
-                  <feGaussianBlur stdDeviation="2.5" result="blur" />
-                  <feMerge>
-                    <feMergeNode in="blur" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
-                <filter id="hand-glow" x="-200%" y="-50%" width="500%" height="200%">
-                  <feGaussianBlur stdDeviation="1.5" result="blur" />
-                  <feMerge>
-                    <feMergeNode in="blur" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
               </defs>
 
               {/* Globe wireframe latitude rings — behind the clock face */}
               <motion.g
                 animate={{ rotate: 360 }}
                 transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
-                style={{ originX: "50px", originY: "50px" }}
+                style={{ originX: "50px", originY: "50px", willChange: "transform" }}
               >
                 {LATITUDE_RINGS.map((ring, i) => (
                   <ellipse
@@ -309,13 +296,21 @@ export function GlobeLoadingScreen({ isReady = false }: { isReady?: boolean }) {
                 transition={{ duration: 0.38, ease: [0.25, 0.46, 0.45, 0.94] }}
               />
 
-              {/* Danger arc stroke */}
+              {/* Danger arc stroke — wide soft duplicate first for "glow", then sharp on top */}
+              <motion.path
+                fill="none"
+                stroke="#e84040"
+                strokeWidth="7"
+                strokeLinecap="round"
+                strokeOpacity="0.18"
+                animate={{ d: clockArcPath(m.secs) }}
+                transition={{ duration: 0.38, ease: [0.25, 0.46, 0.45, 0.94] }}
+              />
               <motion.path
                 fill="none"
                 stroke="#e84040"
                 strokeWidth="3.5"
                 strokeLinecap="round"
-                filter="url(#arc-glow)"
                 animate={{ d: clockArcPath(m.secs) }}
                 transition={{ duration: 0.38, ease: [0.25, 0.46, 0.45, 0.94] }}
               />
@@ -339,8 +334,7 @@ export function GlobeLoadingScreen({ isReady = false }: { isReady?: boolean }) {
                 <motion.g
                   animate={{ rotate: handDeg }}
                   transition={{ duration: 0.42, ease: [0.25, 0.46, 0.45, 0.94] }}
-                  filter="url(#hand-glow)"
-                  style={{ originX: "0px", originY: "0px" }}
+                  style={{ originX: "0px", originY: "0px", willChange: "transform" }}
                 >
                   <line x1="0" y1="3" x2="0" y2="-34" stroke="#f0c842" strokeWidth="2.5" strokeLinecap="round" />
                   <line x1="0" y1="3" x2="0" y2="-34" stroke="rgba(240,200,66,0.3)" strokeWidth="5" strokeLinecap="round" />
