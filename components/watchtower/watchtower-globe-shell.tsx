@@ -8,7 +8,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "@/lib/i18n/use-translation";
 import { WorldRiskGlobe }         from "./world-risk-globe";
 import { GlobeInfoCards }         from "./globe-info-cards";
-import { LiveClock }              from "./live-clock";
 
 import { DOMAINS, TIMELINE_EVENTS, GATES } from "@/lib/watchtower/data";
 import { SCENARIO_IMPACTS }       from "@/lib/watchtower/scenario-impacts";
@@ -559,11 +558,6 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
           onCloseCommodity={() => setSelectedCommodityId(null)}
           onCloseNews={() => setSelectedNewsId(null)}
         />
-
-        {/* ── UTC clock — desktop only ─────────────────────────────────────── */}
-        <div className="hidden sm:block" onClick={(e) => e.stopPropagation()}>
-          <LiveClock />
-        </div>
 
 
         {/* ── Era detail card — floats above scrubber when not at P4 ─────────── */}
