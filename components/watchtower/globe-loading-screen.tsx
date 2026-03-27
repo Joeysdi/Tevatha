@@ -270,33 +270,33 @@ export function GlobeLoadingScreen({ isReady = false }: { isReady?: boolean }) {
               <circle cx="50" cy="50" r="44" fill="url(#face-bg)" />
 
               {/* Midnight glow (intensifies at 2026) */}
-              <motion.circle
+              <circle
                 cx="50" cy="50" r="44"
                 fill="url(#midnight-glow)"
-                animate={{ opacity: isFinal ? 1 : 0.3 + (stepIdx / MILESTONES.length) * 0.7 }}
-                transition={{ duration: 0.5 }}
+                style={{
+                  opacity: isFinal ? 1 : 0.3 + (stepIdx / MILESTONES.length) * 0.7,
+                  transition: "opacity 0.5s ease",
+                }}
               />
 
               {/* Outer ring */}
               <circle cx="50" cy="50" r="44" fill="none" stroke="rgba(232,64,64,0.22)" strokeWidth="1" />
 
               {/* Danger arc stroke — wide soft duplicate first for "glow", then sharp on top */}
-              <motion.path
+              <path
                 fill="none"
                 stroke="#e84040"
                 strokeWidth="7"
                 strokeLinecap="round"
                 strokeOpacity="0.18"
-                animate={{ d: clockArcPath(m.secs) }}
-                transition={{ duration: 0.38, ease: [0.25, 0.46, 0.45, 0.94] }}
+                d={clockArcPath(m.secs)}
               />
-              <motion.path
+              <path
                 fill="none"
                 stroke="#e84040"
                 strokeWidth="3.5"
                 strokeLinecap="round"
-                animate={{ d: clockArcPath(m.secs) }}
-                transition={{ duration: 0.38, ease: [0.25, 0.46, 0.45, 0.94] }}
+                d={clockArcPath(m.secs)}
               />
 
               {/* Tick marks */}
