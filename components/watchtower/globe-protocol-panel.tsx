@@ -1,6 +1,7 @@
 // components/watchtower/globe-protocol-panel.tsx
 "use client";
 
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -9,11 +10,64 @@ interface Props {
   onClose: () => void;
 }
 
+const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 export function GlobeProtocolPanel({ open, onClose }: Props) {
+  const dialogRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const el = dialogRef.current;
+    if (!el) return;
+
+    // Save currently focused element so we can restore it on close
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+
+    // Auto-focus first focusable element inside the dialog
+    const focusable = () =>
+      Array.from(el.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
+    focusable()[0]?.focus();
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        onClose();
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const nodes = focusable();
+      if (!nodes.length) return;
+      const first = nodes[0];
+      const last  = nodes[nodes.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      previouslyFocused?.focus();
+    };
+  }, [open, onClose]);
+
   return (
     <AnimatePresence>
       {open && (
         <motion.aside
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Protocol · Continuity Vault"
           key="protocol-panel"
           initial={{ y: "100%" }}
           animate={{ y: 0 }}
@@ -36,10 +90,15 @@ export function GlobeProtocolPanel({ open, onClose }: Props) {
                 Protocol · Continuity Vault
               </p>
             </div>
-            <button onClick={onClose}
+            <button
+              onClick={onClose}
+              aria-label="Close Protocol panel"
               className="w-7 h-7 rounded-lg border border-border-protocol text-text-mute2
                          hover:text-text-base hover:border-cyan-border transition-colors
-                         font-mono text-[11px] flex items-center justify-center">✕</button>
+                         font-mono text-[11px] flex items-center justify-center"
+            >
+              ✕
+            </button>
           </div>
 
           <div className="px-5 py-4 grid grid-cols-3 gap-4">
