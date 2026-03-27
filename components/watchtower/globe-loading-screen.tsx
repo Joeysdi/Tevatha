@@ -4,22 +4,13 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-// ── Historical Doomsday Clock milestones ──────────────────────────────────────
-const MILESTONES = [
-  { year: 1947, secs: 420,  label: "7 MIN",   event: "Cold War begins. First Soviet test coming." },
-  { year: 1953, secs: 120,  label: "2 MIN",   event: "US & USSR test H-bombs. Closest in 38 years." },
-  { year: 1960, secs: 420,  label: "7 MIN",   event: "Partial Nuclear Test Ban Treaty signed." },
-  { year: 1991, secs: 1020, label: "17 MIN",  event: "Cold War ends. Strategic arms reduction. Safest ever." },
-  { year: 2002, secs: 420,  label: "7 MIN",   event: "Post-9/11. US withdraws from ABM Treaty." },
-  { year: 2015, secs: 180,  label: "3 MIN",   event: "Climate added as threat. No disarmament progress." },
-  { year: 2017, secs: 150,  label: "2:30",    event: "North Korea ICBM tests. Breakdown of global norms." },
-  { year: 2020, secs: 100,  label: "100 SEC", event: "COVID. Climate. Nuclear. First sub-2-minute reading." },
-  { year: 2023, secs: 90,   label: "90 SEC",  event: "Russia invades Ukraine. Nuclear threats resume." },
-  { year: 2026, secs: 85,   label: "85 SEC",  event: "New START expired. No active nuclear treaty. AI arms race." },
-] as const;
-
-// Cumulative timings (ms) for each milestone step to fire
-const STEP_MS = [0, 260, 510, 750, 980, 1210, 1430, 1640, 1890, 2280] as const;
+// ── Final doomsday clock state — always shown immediately ─────────────────────
+const FINAL = {
+  year:  2026,
+  secs:  85,
+  label: "85 SEC",
+  event: "New START expired. No active nuclear treaty. AI arms race begins.",
+} as const;
 
 // ── Module init list ──────────────────────────────────────────────────────────
 const MODULES = [
@@ -31,8 +22,8 @@ const MODULES = [
   { label: "Collapse index calibration",  type: "wait" },
 ] as const;
 
-// Module stagger timings — start at 800 ms, 350 ms apart
-const MODULE_TIMINGS = [800, 1150, 1500, 1850, 2200, 2550] as const;
+// Module stagger — fast enough to be visible even on cached loads
+const MODULE_TIMINGS = [150, 350, 550, 750, 950, 1150] as const;
 
 const LOADING_MESSAGES = [
   "INITIALIZING WATCHTOWER",
@@ -53,17 +44,7 @@ function clockArcPath(secs: number, r = 40): string {
   return `M 50 ${50 - r} A ${r} ${r} 0 ${large} 0 ${ex.toFixed(3)} ${ey.toFixed(3)}`;
 }
 
-
-function formatTime(secs: number): string {
-  if (secs >= 60) {
-    const m = Math.floor(secs / 60);
-    const s = secs % 60;
-    return s > 0 ? `${m}:${String(s).padStart(2, "0")}` : `${m} MIN`;
-  }
-  return `${secs} SEC`;
-}
-
-// ── Tick mark positions ───────────────────────────────────────────────────────
+// Tick mark positions
 const TICKS = Array.from({ length: 12 }, (_, i) => {
   const deg = i * 30;
   const rad = (deg - 90) * (Math.PI / 180);
@@ -79,7 +60,7 @@ const TICKS = Array.from({ length: 12 }, (_, i) => {
   };
 });
 
-// Globe wireframe latitude rings — simulate Earth behind the clock
+// Globe wireframe latitude rings
 const LATITUDE_RINGS = [
   { rx: 38, ry: 7  },
   { rx: 32, ry: 13 },
@@ -88,23 +69,18 @@ const LATITUDE_RINGS = [
   { rx: 2,  ry: 20 },
 ];
 
+// Pre-computed arc path for 85 SEC (never changes)
+const ARC_PATH = clockArcPath(FINAL.secs);
+// Hand angle for 85 SEC — just 8.5° counterclockwise from 12
+const HAND_DEG = -(FINAL.secs / 3600) * 360;
+
 // ── Component ─────────────────────────────────────────────────────────────────
 export function GlobeLoadingScreen({ isReady = false }: { isReady?: boolean }) {
-  const [stepIdx,        setStepIdx]        = useState(0);
   const [moduleVisible,  setModuleVisible]  = useState<boolean[]>(Array(6).fill(false));
   const [moduleComplete, setModuleComplete] = useState<boolean[]>(Array(6).fill(false));
   const [msgIdx,         setMsgIdx]         = useState(0);
 
-  // Advance through milestones
-  useEffect(() => {
-    const timers: ReturnType<typeof setTimeout>[] = [];
-    for (let i = 1; i < MILESTONES.length; i++) {
-      timers.push(setTimeout(() => setStepIdx(i), STEP_MS[i]));
-    }
-    return () => timers.forEach(clearTimeout);
-  }, []);
-
-  // Module stagger reveal — begin at 800 ms
+  // Module stagger reveal
   useEffect(() => {
     const timers: ReturnType<typeof setTimeout>[] = [];
     MODULE_TIMINGS.forEach((ms, i) => {
@@ -127,20 +103,35 @@ export function GlobeLoadingScreen({ isReady = false }: { isReady?: boolean }) {
     return () => clearInterval(iv);
   }, []);
 
-  // When globe is ready, transition [..] → [OK]
+  // When globe is ready, mark all modules complete
   useEffect(() => {
     if (!isReady) return;
     setModuleComplete(Array(6).fill(true));
   }, [isReady]);
 
-  const m       = MILESTONES[stepIdx];
-  const handDeg = -(m.secs / 3600) * 360;
-  const isFinal = stepIdx === MILESTONES.length - 1;
-
   const visibleCount = moduleVisible.filter(Boolean).length;
 
   return (
     <div className="w-full h-full bg-void-0 flex flex-col overflow-hidden relative select-none">
+
+      {/* ── CSS keyframes ────────────────────────────────────────────────────── */}
+      <style>{`
+        @keyframes scanDown {
+          0%   { transform: translateY(0); }
+          100% { transform: translateY(100vh); }
+        }
+        @keyframes ringRotate {
+          to { transform: rotate(360deg); }
+        }
+        @keyframes glowPulse {
+          0%, 100% { opacity: 0.7; }
+          50%       { opacity: 1;   }
+        }
+        @keyframes arcPulse {
+          0%, 100% { opacity: 1;    }
+          50%       { opacity: 0.55; }
+        }
+      `}</style>
 
       {/* ── Background grid ─────────────────────────────────────────────────── */}
       <div
@@ -162,20 +153,6 @@ export function GlobeLoadingScreen({ isReady = false }: { isReady?: boolean }) {
           willChange: "transform",
         }}
       />
-
-      <style>{`
-        @keyframes scanDown {
-          0%   { transform: translateY(0); }
-          100% { transform: translateY(100vh); }
-        }
-        @keyframes slideRight {
-          0%   { transform: translateX(-100%); }
-          100% { transform: translateX(400%); }
-        }
-        @keyframes ringRotate {
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
 
       {/* ── Top bar ─────────────────────────────────────────────────────────── */}
       <div className="flex-shrink-0 flex items-center justify-between px-6 py-3.5 border-b border-border-protocol/40 relative z-10">
@@ -211,18 +188,19 @@ export function GlobeLoadingScreen({ isReady = false }: { isReady?: boolean }) {
 
           {/* Eyebrow */}
           <p className="font-mono text-[8px] tracking-[.28em] uppercase text-red-bright/60">
-            ◈ Doomsday Clock · Historical Record ◈
+            ◈ Doomsday Clock · 2026 ◈
           </p>
 
           {/* SVG Clock */}
           <div className="relative flex-shrink-0 flex items-center justify-center">
-            {/* Red radial ambient glow — behind everything */}
+            {/* Pulsing ambient glow */}
             <div
               className="absolute pointer-events-none"
               style={{
                 width: "400px",
                 height: "400px",
-                background: "radial-gradient(circle, rgba(232,64,64,0.12) 0%, transparent 70%)",
+                background: "radial-gradient(circle, rgba(232,64,64,0.14) 0%, transparent 70%)",
+                animation: "glowPulse 2.8s ease-in-out infinite",
                 zIndex: 0,
               }}
             />
@@ -232,7 +210,7 @@ export function GlobeLoadingScreen({ isReady = false }: { isReady?: boolean }) {
               width="280"
               height="280"
               style={{ overflow: "visible", position: "relative", zIndex: 1 }}
-              aria-label="Doomsday Clock"
+              aria-label="Doomsday Clock — 85 seconds to midnight"
             >
               <defs>
                 <radialGradient id="face-bg" cx="50%" cy="50%" r="50%">
@@ -245,7 +223,7 @@ export function GlobeLoadingScreen({ isReady = false }: { isReady?: boolean }) {
                 </radialGradient>
               </defs>
 
-              {/* Globe wireframe latitude rings — pure CSS animation, compositor-thread only */}
+              {/* Globe wireframe latitude rings — CSS animation, compositor only */}
               <g style={{
                 transformOrigin: "50px 50px",
                 animation: "ringRotate 40s linear infinite",
@@ -254,10 +232,8 @@ export function GlobeLoadingScreen({ isReady = false }: { isReady?: boolean }) {
                 {LATITUDE_RINGS.map((ring, i) => (
                   <ellipse
                     key={i}
-                    cx="50"
-                    cy="50"
-                    rx={ring.rx}
-                    ry={ring.ry}
+                    cx="50" cy="50"
+                    rx={ring.rx} ry={ring.ry}
                     fill="none"
                     stroke="#e84040"
                     strokeWidth="0.5"
@@ -269,34 +245,33 @@ export function GlobeLoadingScreen({ isReady = false }: { isReady?: boolean }) {
               {/* Clock face */}
               <circle cx="50" cy="50" r="44" fill="url(#face-bg)" />
 
-              {/* Midnight glow (intensifies at 2026) */}
+              {/* Midnight glow — pulsing */}
               <circle
                 cx="50" cy="50" r="44"
                 fill="url(#midnight-glow)"
-                style={{
-                  opacity: isFinal ? 1 : 0.3 + (stepIdx / MILESTONES.length) * 0.7,
-                  transition: "opacity 0.5s ease",
-                }}
+                style={{ animation: "glowPulse 2.8s ease-in-out infinite" }}
               />
 
               {/* Outer ring */}
               <circle cx="50" cy="50" r="44" fill="none" stroke="rgba(232,64,64,0.22)" strokeWidth="1" />
 
-              {/* Danger arc stroke — wide soft duplicate first for "glow", then sharp on top */}
+              {/* Danger arc — glow layer + sharp layer, both pulsing */}
               <path
                 fill="none"
                 stroke="#e84040"
                 strokeWidth="7"
                 strokeLinecap="round"
                 strokeOpacity="0.18"
-                d={clockArcPath(m.secs)}
+                d={ARC_PATH}
+                style={{ animation: "arcPulse 2.8s ease-in-out infinite" }}
               />
               <path
                 fill="none"
                 stroke="#e84040"
                 strokeWidth="3.5"
                 strokeLinecap="round"
-                d={clockArcPath(m.secs)}
+                d={ARC_PATH}
+                style={{ animation: "arcPulse 2.8s ease-in-out infinite" }}
               />
 
               {/* Tick marks */}
@@ -313,16 +288,18 @@ export function GlobeLoadingScreen({ isReady = false }: { isReady?: boolean }) {
               {/* 12 o'clock marker */}
               <circle cx="50" cy="9.5" r="1.8" fill="#e84040" opacity="0.9" />
 
-              {/* Clock hand — rotates around center */}
+              {/* Clock hand — static at 85 SEC position, hand glows */}
               <g transform="translate(50 50)">
-                <motion.g
-                  animate={{ rotate: handDeg }}
-                  transition={{ duration: 0.42, ease: [0.25, 0.46, 0.45, 0.94] }}
-                  style={{ originX: "0px", originY: "0px", willChange: "transform" }}
-                >
-                  <line x1="0" y1="3" x2="0" y2="-34" stroke="#f0c842" strokeWidth="2.5" strokeLinecap="round" />
-                  <line x1="0" y1="3" x2="0" y2="-34" stroke="rgba(240,200,66,0.3)" strokeWidth="5" strokeLinecap="round" />
-                </motion.g>
+                <g style={{
+                  transform: `rotate(${HAND_DEG}deg)`,
+                  transformOrigin: "0px 0px",
+                }}>
+                  <line x1="0" y1="3" x2="0" y2="-34"
+                    stroke="rgba(240,200,66,0.3)" strokeWidth="5" strokeLinecap="round" />
+                  <line x1="0" y1="3" x2="0" y2="-34"
+                    stroke="#f0c842" strokeWidth="2.5" strokeLinecap="round"
+                    style={{ animation: "arcPulse 2.8s ease-in-out infinite" }} />
+                </g>
               </g>
 
               {/* Center pin */}
@@ -331,58 +308,30 @@ export function GlobeLoadingScreen({ isReady = false }: { isReady?: boolean }) {
             </svg>
           </div>
 
-          {/* Year + Time readout */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={stepIdx}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.18 }}
-              className="flex flex-col items-center gap-1 text-center"
+          {/* Readout — static, no state machine */}
+          <div className="flex flex-col items-center gap-1 text-center">
+            <p className="font-mono text-[9px] tracking-[.26em] uppercase text-text-mute2/50">
+              {FINAL.year}
+            </p>
+            <p
+              className="font-mono font-bold tabular-nums leading-none"
+              style={{
+                fontSize: "clamp(28px, 7vw, 40px)",
+                color: "#e84040",
+                textShadow: "0 0 32px rgba(232,64,64,0.7)",
+                animation: "arcPulse 2.8s ease-in-out infinite",
+              }}
             >
-              <p className="font-mono text-[9px] tracking-[.26em] uppercase text-text-mute2/50">
-                {m.year}
-              </p>
-              <p
-                className="font-mono font-bold tabular-nums leading-none"
-                style={{
-                  fontSize: "clamp(28px, 7vw, 40px)",
-                  color: isFinal ? "#e84040" : "#e05050",
-                  textShadow: isFinal
-                    ? "0 0 32px rgba(232,64,64,0.7)"
-                    : "0 0 16px rgba(232,64,64,0.35)",
-                }}
-              >
-                {formatTime(m.secs)}
-              </p>
-              <p className="font-mono text-[9px] tracking-[.2em] uppercase text-red-bright/70">
-                TO MIDNIGHT
-              </p>
-              <p className="font-mono text-[8.5px] text-text-mute2/55 max-w-[200px] leading-relaxed mt-1">
-                {m.event}
-              </p>
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Milestone progress dots */}
-          <div className="flex items-center gap-1.5">
-            {MILESTONES.map((_, i) => (
-              <div
-                key={i}
-                className="rounded-full transition-all duration-300"
-                style={{
-                  width:      i === stepIdx ? 14 : 5,
-                  height:     5,
-                  background: i < stepIdx
-                    ? "rgba(232,64,64,0.55)"
-                    : i === stepIdx
-                    ? "rgba(232,64,64,0.9)"
-                    : "rgba(255,255,255,0.1)",
-                }}
-              />
-            ))}
+              {FINAL.label}
+            </p>
+            <p className="font-mono text-[9px] tracking-[.2em] uppercase text-red-bright/70">
+              TO MIDNIGHT
+            </p>
+            <p className="font-mono text-[8.5px] text-text-mute2/55 max-w-[200px] leading-relaxed mt-1">
+              {FINAL.event}
+            </p>
           </div>
+
         </div>
 
         {/* ── Right: Module init list ──────────────────────────────────────── */}
@@ -425,7 +374,7 @@ export function GlobeLoadingScreen({ isReady = false }: { isReady?: boolean }) {
             </AnimatePresence>
           </div>
 
-          {/* Segmented progress bar — 6 segments, 2 px gaps */}
+          {/* Segmented progress bar */}
           <div className="mt-4 flex items-center gap-0.5" style={{ width: "240px" }}>
             {Array.from({ length: 6 }, (_, i) => (
               <div
