@@ -10,9 +10,38 @@ export const metadata: Metadata = {
   },
 };
 
+const protocolSchema = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Tevatha Protocol — Continuity Vault",
+  "applicationCategory": "SecurityApplication",
+  "operatingSystem": "Web",
+  "url": "https://tevatha.com/ledger",
+  "description": "AES-256-GCM encrypted offline continuity ledger. Stores critical survival data — crypto custody, emergency contacts, access protocols, financial architecture — that survives infrastructure collapse. PIN-gated, zero connectivity required.",
+  "featureList": [
+    "AES-256-GCM client-side encryption",
+    "Offline-first IndexedDB storage",
+    "PIN-gated vault access",
+    "Zero connectivity required",
+    "Encrypted categories: crypto custody, access protocol, financial architecture, emergency contacts",
+    "Blueprint location data with GPS coordinates and access routes",
+    "Supabase sync when online",
+    "Envoy referral network",
+  ],
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "publisher": {
+    "@type": "Organization",
+    "@id": "https://tevatha.com/#organization",
+  },
+};
+
 export default function ProtocolLayout({ children }: { children: ReactNode }) {
   return (
     <div className="bg-void-3 min-h-screen flex flex-col">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(protocolSchema) }}
+      />
       <header className="bg-void-1 border-b border-border-bright/60 relative px-4 sm:px-6 py-3 sm:py-3.5
                          flex items-center justify-between">
         {/* CYAN top accent line */}

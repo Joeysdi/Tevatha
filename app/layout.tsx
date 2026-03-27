@@ -66,6 +66,32 @@ export default function RootLayout({
           <LanguageProvider>
             {children}
           </LanguageProvider>
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@graph": [
+                  {
+                    "@type": "Organization",
+                    "@id": "https://tevatha.com/#organization",
+                    "name": "Tevatha",
+                    "url": "https://tevatha.com",
+                    "description": "Tevatha is a three-pillar resilience operating system: Watchtower threat intelligence, Provisioner supply chain, and Protocol offline continuity.",
+                    "sameAs": ["https://twitter.com/tevatha"],
+                  },
+                  {
+                    "@type": "WebSite",
+                    "@id": "https://tevatha.com/#website",
+                    "name": "Tevatha",
+                    "url": "https://tevatha.com",
+                    "description": "Tevatha — Prepare. Operate. Endure. Three-pillar resilience OS: threat intelligence, supply chain, and offline continuity.",
+                    "publisher": { "@id": "https://tevatha.com/#organization" },
+                  },
+                ],
+              }),
+            }}
+          />
         </body>
       </html>
     </ClerkProvider>
