@@ -154,31 +154,6 @@ export function GlobeLoadingScreen({ isReady = false }: { isReady?: boolean }) {
         }}
       />
 
-      {/* ── Top bar ─────────────────────────────────────────────────────────── */}
-      <div className="flex-shrink-0 flex items-center justify-between px-6 py-3.5 border-b border-border-protocol/40 relative z-10">
-        <div className="flex items-center gap-3">
-          <span className="w-2 h-2 rounded-full bg-red-bright animate-pulse flex-shrink-0" />
-          <p
-            className="font-bold text-[14px] tracking-[.3em]"
-            style={{
-              fontFamily: "var(--font-cinzel)",
-              background: "linear-gradient(90deg, #c9a84c, #e84040)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-          >
-            TEVATHA
-          </p>
-          <span className="w-px h-4 bg-border-protocol opacity-60" />
-          <p className="font-mono text-[8.5px] text-text-mute2/60 tracking-[.22em] uppercase">
-            Global Threat Matrix
-          </p>
-        </div>
-        <p className="font-mono text-[7.5px] text-text-mute2/30 tracking-[.14em]">
-          MATRIX v2.6 · INITIALIZING
-        </p>
-      </div>
 
       {/* ── Main body ───────────────────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col lg:flex-row items-stretch gap-0 overflow-hidden relative z-10 min-h-0">
