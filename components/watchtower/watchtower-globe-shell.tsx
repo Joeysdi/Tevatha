@@ -19,6 +19,7 @@ import { SCENARIO_IMPACTS }       from "@/lib/watchtower/scenario-impacts";
 // ─────────────────────────────────────────────────────────────────────────────
 
 const PHASE_LABELS: Record<string, string> = {
+  P0: "Origins  pre-1945",
   P1: "Stability  1945–71",
   P2: "Expansion  1971–08",
   P3: "Stress  2008–20",
@@ -30,6 +31,12 @@ const PHASE_LABELS: Record<string, string> = {
 };
 
 const SCRUB_PHASES = [
+  {
+    id: "P0", hex: "#92400e", label: "ORIGINS", yearRange: "pre-1945",
+    desc: "Industrial capital, financial panics, and imperial systems built the broken baseline the post-1945 order was designed to replace. The Long Depression proved global capital markets amplify shocks across borders — a lesson ignored for 135 years.",
+    gateIds: [] as string[],
+    yearStart: 1800, yearEnd: 1945,
+  },
   {
     id: "P1", hex: "#38bdf8", label: "STABILITY", yearRange: "1945–71",
     desc: "Bretton Woods-backed stability. USD becomes global reserve. Cold War nuclear standoff begins.",

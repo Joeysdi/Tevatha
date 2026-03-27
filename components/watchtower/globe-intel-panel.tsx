@@ -66,6 +66,7 @@ const PILLAR_COLORS: Record<string, { text: string; border: string }> = {
 };
 
 const PHASES = [
+  { id: "P0", yearStart: 1800, yearEnd: 1945, hex: "#92400e", label: "ORIGINS"   },
   { id: "P1", yearStart: 1945, yearEnd: 1971, hex: "#38bdf8", label: "STABILITY" },
   { id: "P2", yearStart: 1971, yearEnd: 2008, hex: "#818cf8", label: "EXPANSION" },
   { id: "P3", yearStart: 2008, yearEnd: 2020, hex: "#fbbf24", label: "STRESS"    },
