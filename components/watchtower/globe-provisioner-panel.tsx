@@ -71,7 +71,7 @@ export function GlobeProvisionerPanel({ open, onClose, activeTab, onTabChange }:
           <div className="flex items-center justify-between px-4 py-3 border-b border-border-protocol flex-shrink-0">
             <button
               onClick={onClose}
-              className="w-7 h-7 rounded-lg border border-border-protocol text-text-mute2
+              className="min-w-[44px] min-h-[44px] rounded-lg border border-border-protocol text-text-mute2
                          hover:text-text-base hover:border-border-bright/40 transition-colors
                          font-mono text-[11px] flex items-center justify-center"
             >✕</button>
@@ -87,7 +87,8 @@ export function GlobeProvisionerPanel({ open, onClose, activeTab, onTabChange }:
                 key={tab.id}
                 href={tab.href}
                 onClick={(e) => { e.preventDefault(); onTabChange(tab.id); }}
-                className={`flex-1 py-2.5 font-mono text-[9.5px] font-bold tracking-[.07em]
+                className={`flex-1 py-2.5 min-h-[44px] flex items-center justify-center
+                            font-mono text-[9.5px] font-bold tracking-[.07em]
                             transition-colors duration-150
                             ${activeTab === tab.id
                               ? "text-gold-bright border-b-2 border-gold-protocol bg-gold-glow"
@@ -118,7 +119,7 @@ export function GlobeProvisionerPanel({ open, onClose, activeTab, onTabChange }:
                         <button
                           key={cat}
                           onClick={() => setActiveCat(cat)}
-                          className={`px-2.5 py-1 rounded-full border font-mono text-[8px] transition-all
+                          className={`px-2.5 py-1 min-h-[44px] rounded-full border font-mono text-[8px] transition-all
                                       ${activeCat === cat
                                         ? "bg-gold-glow border-gold-protocol text-gold-bright"
                                         : "border-border-protocol text-text-mute2 hover:border-gold-protocol/30"
@@ -185,7 +186,7 @@ export function GlobeProvisionerPanel({ open, onClose, activeTab, onTabChange }:
                           <Link
                             href="/provisioner"
                             className="flex items-center justify-center gap-1.5 w-full
-                                       py-1.5 rounded-lg border border-gold-dim
+                                       py-1.5 min-h-[44px] rounded-lg border border-gold-dim
                                        bg-gold-glow text-gold-bright font-mono text-[9px] font-bold
                                        hover:border-gold-protocol/60 hover:-translate-y-px
                                        hover:shadow-[0_4px_16px_rgba(201,168,76,0.2)]

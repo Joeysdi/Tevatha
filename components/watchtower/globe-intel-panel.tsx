@@ -116,7 +116,7 @@ export function GlobeIntelPanel({ open, onClose, activeTab, onTabChange }: Props
             <button
               onClick={onClose}
               aria-label="Close intel panel"
-              className="w-7 h-7 rounded-lg border border-border-protocol text-text-mute2
+              className="min-w-[44px] min-h-[44px] rounded-lg border border-border-protocol text-text-mute2
                          hover:text-text-base hover:border-border-bright/40
                          transition-colors font-mono text-[11px]
                          flex items-center justify-center"
@@ -135,7 +135,8 @@ export function GlobeIntelPanel({ open, onClose, activeTab, onTabChange }: Props
                 key={tab.id}
                 href={tab.href}
                 onClick={(e) => { e.preventDefault(); onTabChange(tab.id); }}
-                className={`flex-shrink-0 px-3 py-2.5 font-mono text-[8.5px] font-bold
+                className={`flex-shrink-0 px-3 py-2.5 min-h-[44px] inline-flex items-center
+                            font-mono text-[8.5px] font-bold
                             tracking-[.05em] transition-colors duration-150 whitespace-nowrap
                             ${activeTab === tab.id
                               ? "text-red-bright border-b-2 border-red-protocol bg-red-protocol/6"
@@ -346,7 +347,7 @@ function GearTab() {
           <button
             key={g.cat}
             onClick={() => setActiveCat(g.cat)}
-            className={`px-2.5 py-0.5 rounded-full border font-mono text-[7.5px]
+            className={`px-2.5 py-0.5 min-h-[44px] rounded-full border font-mono text-[7.5px]
                         transition-all duration-150
                         ${activeCat === g.cat
                           ? "bg-gold-glow border-gold-protocol text-gold-bright"
@@ -418,7 +419,8 @@ function PsychTab() {
           <button
             key={id}
             onClick={() => setSub(id)}
-            className={`flex-1 py-2.5 font-mono text-[8.5px] font-bold tracking-[.05em]
+            className={`flex-1 py-2.5 min-h-[44px] flex items-center justify-center
+                        font-mono text-[8.5px] font-bold tracking-[.05em]
                         transition-colors duration-150
                         ${sub === id
                           ? "text-gold-bright border-b-2 border-gold-protocol bg-gold-glow/40"

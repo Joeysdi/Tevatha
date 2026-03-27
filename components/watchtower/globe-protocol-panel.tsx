@@ -93,7 +93,7 @@ export function GlobeProtocolPanel({ open, onClose }: Props) {
             <button
               onClick={onClose}
               aria-label="Close Protocol panel"
-              className="w-7 h-7 rounded-lg border border-border-protocol text-text-mute2
+              className="min-w-[44px] min-h-[44px] rounded-lg border border-border-protocol text-text-mute2
                          hover:text-text-base hover:border-cyan-border transition-colors
                          font-mono text-[11px] flex items-center justify-center"
             >

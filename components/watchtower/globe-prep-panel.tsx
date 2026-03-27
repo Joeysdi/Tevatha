@@ -45,7 +45,7 @@ export function GlobePrepPanel({ open, onClose, activeTab, onTabChange }: Props)
                           border-b border-border-protocol flex-shrink-0">
             <button
               onClick={onClose}
-              className="w-7 h-7 rounded-lg border border-border-protocol text-text-mute2
+              className="min-w-[44px] min-h-[44px] rounded-lg border border-border-protocol text-text-mute2
                          hover:text-text-base hover:border-border-bright/40
                          transition-colors font-mono text-[11px]
                          flex items-center justify-center"
@@ -64,7 +64,8 @@ export function GlobePrepPanel({ open, onClose, activeTab, onTabChange }: Props)
                 key={tab.id}
                 href={tab.href}
                 onClick={(e) => { e.preventDefault(); onTabChange(tab.id); }}
-                className={`flex-1 py-2.5 font-mono text-[9.5px] font-bold tracking-[.07em]
+                className={`flex-1 py-2.5 min-h-[44px] flex items-center justify-center
+                            font-mono text-[9.5px] font-bold tracking-[.07em]
                             transition-colors duration-150
                             ${activeTab === tab.id
                               ? "text-gold-bright border-b-2 border-gold-protocol bg-gold-glow"

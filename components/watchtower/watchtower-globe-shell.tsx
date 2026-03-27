@@ -277,7 +277,7 @@ export function WatchtowerGlobeShell() {
                       setDomainId(active ? null : d.id);
                     }}
                     aria-pressed={active}
-                    className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-left
+                    className={`flex items-center gap-1.5 px-2 py-1 min-h-[44px] rounded-lg text-left
                                 transition-all duration-150 font-mono text-[8px]
                                 ${active ? "border" : "text-text-mute2 hover:text-text-base hover:bg-white/[0.04] border border-transparent"}`}
                     style={active ? { color: col, background: `${col}18`, borderColor: `${col}40` } : {}}
@@ -316,7 +316,7 @@ export function WatchtowerGlobeShell() {
                     }}
                     aria-pressed={active}
                     aria-label={`${active ? "Deactivate" : "Activate"} scenario: ${s.title}`}
-                    className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-left
+                    className={`flex items-center gap-1.5 px-2 py-1 min-h-[44px] rounded-lg text-left
                                 transition-all duration-150 font-mono text-[8px]
                                 ${active
                                   ? "bg-red-protocol/20 text-red-bright border border-red-protocol/40"
@@ -340,7 +340,7 @@ export function WatchtowerGlobeShell() {
             }}
             aria-pressed={psychologyMode}
             aria-label={`${psychologyMode ? "Disable" : "Enable"} psychology mode`}
-            className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl backdrop-blur-sm
+            className={`flex items-center gap-2 px-2.5 py-1.5 min-h-[44px] rounded-xl backdrop-blur-sm
                         border font-mono text-[8px] transition-all duration-150
                         ${psychologyMode
                           ? "border-purple-500/50 text-purple-300"
@@ -361,7 +361,7 @@ export function WatchtowerGlobeShell() {
             }}
             aria-pressed={showSignals}
             aria-label={`${showSignals ? "Hide" : "Show"} signal pins`}
-            className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl backdrop-blur-sm
+            className={`flex items-center gap-2 px-2.5 py-1.5 min-h-[44px] rounded-xl backdrop-blur-sm
                         border font-mono text-[8px] transition-all duration-150
                         ${showSignals
                           ? "border-red-protocol/50 text-red-bright"
@@ -387,7 +387,7 @@ export function WatchtowerGlobeShell() {
               <button
                 onClick={(e) => { e.stopPropagation(); setShowCommodities(v => !v); }}
                 aria-pressed={showCommodities}
-                className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-left
+                className={`flex items-center gap-1.5 px-2 py-1 min-h-[44px] rounded-lg text-left
                             transition-all duration-150 font-mono text-[8px]
                             ${showCommodities
                               ? "border border-emerald-500/40 text-emerald-400"
@@ -403,7 +403,7 @@ export function WatchtowerGlobeShell() {
               <button
                 onClick={(e) => { e.stopPropagation(); setShowInstability(v => !v); }}
                 aria-pressed={showInstability}
-                className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-left
+                className={`flex items-center gap-1.5 px-2 py-1 min-h-[44px] rounded-lg text-left
                             transition-all duration-150 font-mono text-[8px]
                             ${showInstability
                               ? "border border-amber-500/40 text-amber-protocol"
@@ -419,7 +419,7 @@ export function WatchtowerGlobeShell() {
               <button
                 onClick={(e) => { e.stopPropagation(); setShowNewsFeed(v => !v); }}
                 aria-pressed={showNewsFeed}
-                className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-left
+                className={`flex items-center gap-1.5 px-2 py-1 min-h-[44px] rounded-lg text-left
                             transition-all duration-150 font-mono text-[8px]
                             ${showNewsFeed
                               ? "border border-sky-500/40 text-sky-300"
@@ -449,7 +449,7 @@ export function WatchtowerGlobeShell() {
                   <button
                     key={loc}
                     onClick={(e) => { e.stopPropagation(); setLocale(loc); }}
-                    className={`flex items-center justify-center p-1.5 rounded font-mono text-[7.5px] transition-all
+                    className={`flex items-center justify-center p-1.5 min-h-[44px] min-w-[44px] rounded font-mono text-[7.5px] transition-all
                                 ${active ? "border border-gold-protocol/55 bg-gold-glow text-gold-bright" : "text-text-mute2 hover:bg-white/[0.04] border border-transparent"}`}
                   >
                     <span className="text-[11px] leading-none">{meta[loc].flag}</span>
@@ -535,7 +535,10 @@ export function WatchtowerGlobeShell() {
                     </div>
                     <button
                       onClick={() => { setEraPhase("P4"); setLivePhase("P4"); updateUrl({ era: null }); }}
-                      className="font-mono text-[9px] text-text-mute2 hover:text-text-base transition-colors flex-shrink-0"
+                      aria-label="Return to present"
+                      className="min-w-[44px] min-h-[44px] font-mono text-[9px] text-text-mute2
+                                 hover:text-text-base transition-colors flex-shrink-0
+                                 flex items-center justify-center"
                     >✕</button>
                   </div>
                   <div className="px-3.5 pb-3 space-y-2.5">
@@ -977,7 +980,7 @@ function PanelTrigger({
       onClick={onClick}
       aria-expanded={open}
       aria-label={open ? t("nav_close") : label}
-      className={`py-3 sm:py-5 px-2.5 min-h-[44px] ${rounded} flex flex-col items-center gap-1.5
+      className={`py-3 sm:py-5 px-2.5 min-h-[44px] min-w-[44px] ${rounded} flex flex-col items-center gap-1.5
                   transition-all duration-200 backdrop-blur-sm
                   ${open ? cls.active : cls.idle}`}
     >
