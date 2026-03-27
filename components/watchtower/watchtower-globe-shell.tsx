@@ -298,7 +298,10 @@ export function WatchtowerGlobeShell() {
         </div>
 
         {/* ── Provisioner (right) panel trigger ──────────────────────────── */}
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-0.5">
+        <div
+          className="absolute right-0 z-20 flex flex-col gap-0.5"
+          style={{ top: "50%", transform: `translateY(-50%) scale(${panelScale})`, transformOrigin: "right center" }}
+        >
           <PanelTrigger
             open={provisionerOpen}
             onClick={(e) => {
@@ -698,7 +701,8 @@ export function WatchtowerGlobeShell() {
 
         {/* ── Timeline scrubber — bottom-center of globe ───────────────────── */}
         <div
-          className="absolute bottom-3 left-1/2 -translate-x-1/2 z-25"
+          className="absolute bottom-3 z-25"
+          style={{ left: "50%", transform: `translateX(-50%) scale(${panelScale})`, transformOrigin: "bottom center" }}
           onClick={(e) => e.stopPropagation()}
         >
           <TimelineScrubber
