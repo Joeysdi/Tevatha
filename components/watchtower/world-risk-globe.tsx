@@ -1633,13 +1633,6 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
         </div>
       )}
 
-      {/* ── Bottom-right credits ──────────────────────────────────────────── */}
-      <div className="absolute bottom-[100px] right-4 z-20 pointer-events-none">
-        <p className="font-mono text-[7.5px] text-text-mute2/35 text-right leading-relaxed">
-          SIPRI · IAEA · ACLED · UN OCHA · CFR<br />
-          {t("intel_credits")}
-        </p>
-      </div>
 
       {/* ── Loading veil — unified loading experience, exits when globe ready ── */}
       <AnimatePresence>
