@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- Dark background -->
+  <rect width="32" height="32" rx="6" fill="#05080a"/>
+  <!-- Subtle clock ring -->
+  <circle cx="16" cy="16" r="11" stroke="#c9a84c" stroke-width="0.75" stroke-opacity="0.3"/>
+  <!-- Red danger arc: CCW ~45° from 12 o'clock -->
+  <path d="M 16 5 A 11 11 0 0 0 8.22 8.22" stroke="#e84040" stroke-width="2.2" stroke-linecap="round"/>
+  <!-- Wide glow duplicate for the arc -->
+  <path d="M 16 5 A 11 11 0 0 0 8.22 8.22" stroke="#e84040" stroke-width="4.5" stroke-linecap="round" stroke-opacity="0.18"/>
+  <!-- Clock hand pointing ~45° CCW from midnight -->
+  <line x1="16" y1="16" x2="10" y2="10" stroke="#c9a84c" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- 12 o'clock marker -->
+  <circle cx="16" cy="5" r="1.5" fill="#e84040"/>
+  <!-- Center pin -->
+  <circle cx="16" cy="16" r="1.5" fill="#c9a84c"/>
+</svg>
