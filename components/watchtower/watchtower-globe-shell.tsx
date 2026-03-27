@@ -316,7 +316,10 @@ export function WatchtowerGlobeShell() {
         )}
 
         {/* ── Globe mode controls — desktop only ───────────────────────────── */}
-        <div className="hidden sm:flex absolute left-4 z-20 flex-col gap-1.5" style={{ top: "48px" }}>
+        <div
+          className="hidden sm:flex absolute left-4 z-20 flex-col gap-1.5 overflow-y-auto [&::-webkit-scrollbar]:hidden"
+          style={{ top: "48px", maxHeight: "calc(100% - 64px)", scrollbarWidth: "none" }}
+        >
 
           {/* Threat domains */}
           <div
