@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 
 export const metadata: Metadata = {
   title: {
-    template: "%s · Watchtower",
+    template: "%s · Tevatha",
     default:  "Watchtower · Tevatha",
   },
   description: "Tevatha Watchtower — global threat intelligence, collapse scenario analysis, and decision gate monitoring.",
