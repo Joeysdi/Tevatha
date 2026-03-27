@@ -40,7 +40,7 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  experimental: { reactCompiler: false },
+  experimental: { reactCompiler: true },
 };
 
 const withSerwist = withSerwistInit({

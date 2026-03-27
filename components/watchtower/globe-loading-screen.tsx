@@ -53,16 +53,6 @@ function clockArcPath(secs: number, r = 40): string {
   return `M 50 ${50 - r} A ${r} ${r} 0 ${large} 0 ${ex.toFixed(3)} ${ey.toFixed(3)}`;
 }
 
-// Filled pie-slice arc for danger-zone visceral fill
-function clockArcFillPath(secs: number, r = 40): string {
-  const frac = Math.min(secs, 3540) / 3600;
-  if (frac <= 0.001) return `M 50 50 L 50 ${50 - r} A ${r} ${r} 0 0 0 50 ${50 - r + 0.01} Z`;
-  const angleRad = -frac * 2 * Math.PI;
-  const ex = 50 + r * Math.sin(angleRad);
-  const ey = 50 - r * Math.cos(angleRad);
-  const large = frac > 0.5 ? 1 : 0;
-  return `M 50 50 L 50 ${50 - r} A ${r} ${r} 0 ${large} 0 ${ex.toFixed(3)} ${ey.toFixed(3)} Z`;
-}
 
 function formatTime(secs: number): string {
   if (secs >= 60) {
@@ -182,6 +172,9 @@ export function GlobeLoadingScreen({ isReady = false }: { isReady?: boolean }) {
           0%   { transform: translateX(-100%); }
           100% { transform: translateX(400%); }
         }
+        @keyframes ringRotate {
+          to { transform: rotate(360deg); }
+        }
       `}</style>
 
       {/* ── Top bar ─────────────────────────────────────────────────────────── */}
@@ -252,12 +245,12 @@ export function GlobeLoadingScreen({ isReady = false }: { isReady?: boolean }) {
                 </radialGradient>
               </defs>
 
-              {/* Globe wireframe latitude rings — behind the clock face */}
-              <motion.g
-                animate={{ rotate: 360 }}
-                transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
-                style={{ originX: "50px", originY: "50px", willChange: "transform" }}
-              >
+              {/* Globe wireframe latitude rings — pure CSS animation, compositor-thread only */}
+              <g style={{
+                transformOrigin: "50px 50px",
+                animation: "ringRotate 40s linear infinite",
+                willChange: "transform",
+              }}>
                 {LATITUDE_RINGS.map((ring, i) => (
                   <ellipse
                     key={i}
@@ -271,7 +264,7 @@ export function GlobeLoadingScreen({ isReady = false }: { isReady?: boolean }) {
                     opacity="0.07"
                   />
                 ))}
-              </motion.g>
+              </g>
 
               {/* Clock face */}
               <circle cx="50" cy="50" r="44" fill="url(#face-bg)" />
@@ -286,15 +279,6 @@ export function GlobeLoadingScreen({ isReady = false }: { isReady?: boolean }) {
 
               {/* Outer ring */}
               <circle cx="50" cy="50" r="44" fill="none" stroke="rgba(232,64,64,0.22)" strokeWidth="1" />
-
-              {/* Danger arc fill — visceral 5 % opacity pie slice */}
-              <motion.path
-                fill="#e84040"
-                fillOpacity="0.05"
-                stroke="none"
-                animate={{ d: clockArcFillPath(m.secs) }}
-                transition={{ duration: 0.38, ease: [0.25, 0.46, 0.45, 0.94] }}
-              />
 
               {/* Danger arc stroke — wide soft duplicate first for "glow", then sharp on top */}
               <motion.path

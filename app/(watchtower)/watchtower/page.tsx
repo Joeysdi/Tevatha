@@ -1,7 +1,15 @@
 // app/(watchtower)/watchtower/page.tsx
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { WatchtowerGlobeShell } from "@/components/watchtower/watchtower-globe-shell";
+import dynamic from "next/dynamic";
+
+// Dynamic import splits the entire watchtower component tree (including ~180 KB of
+// geo-risk / scenario / gate data) into its own lazy chunk. Other routes never parse it.
+const WatchtowerGlobeShell = dynamic(() =>
+  import("@/components/watchtower/watchtower-globe-shell").then(
+    (m) => ({ default: m.WatchtowerGlobeShell }),
+  ),
+);
 
 export const metadata: Metadata = {
   title: "Watchtower",

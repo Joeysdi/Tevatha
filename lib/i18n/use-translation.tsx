@@ -6,6 +6,8 @@ import {
   useContext,
   useEffect,
   useState,
+  useMemo,
+  useCallback,
   type ReactNode,
 } from "react";
 import {
@@ -41,17 +43,23 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const setLocale = (l: Locale) => {
+  const setLocale = useCallback((l: Locale) => {
     setLocaleState(l);
     try { localStorage.setItem(STORAGE_KEY, l); } catch { /* ignore */ }
-  };
+  }, []);
 
   // Falls back to English if a key is somehow missing in a locale
-  const t = (key: TranslationKey): string =>
-    translations[locale]?.[key] ?? translations.en[key] ?? key;
+  const t = useCallback((key: TranslationKey): string =>
+    translations[locale]?.[key] ?? translations.en[key] ?? key,
+  [locale]);
+
+  const value = useMemo(
+    () => ({ locale, t, setLocale, locales: LOCALES, meta: LOCALE_META }),
+    [locale, t, setLocale],
+  );
 
   return (
-    <Ctx.Provider value={{ locale, t, setLocale, locales: LOCALES, meta: LOCALE_META }}>
+    <Ctx.Provider value={value}>
       {children}
     </Ctx.Provider>
   );
