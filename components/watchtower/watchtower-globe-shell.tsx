@@ -896,7 +896,7 @@ function TimelineScrubber({
   return (
     <div
       className="select-none touch-none"
-      style={{ width: "min(340px, calc(100vw - 96px))" }}
+      style={{ width: "calc(100vw - 220px)" }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
