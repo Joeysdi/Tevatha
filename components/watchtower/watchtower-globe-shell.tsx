@@ -231,6 +231,32 @@ export function WatchtowerGlobeShell() {
     return () => ro.disconnect();
   }, []);
 
+  // ── Zoom-neutral panel scale ──────────────────────────────────────────────
+  // Tracks browser zoom via devicePixelRatio changes and computes an inverse
+  // scale so the left-side control panel stays the same physical size on screen
+  // regardless of Ctrl+/Ctrl- zoom level.
+  const baseDPR = useRef<number>(1);
+  const [panelScale, setPanelScale] = useState(1);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    baseDPR.current = window.devicePixelRatio;
+
+    let unwatch: (() => void) | undefined;
+    const watch = () => {
+      const mq = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+      const handler = () => {
+        setPanelScale(baseDPR.current / window.devicePixelRatio);
+        unwatch?.();
+        unwatch = watch();
+      };
+      mq.addEventListener("change", handler);
+      return () => mq.removeEventListener("change", handler);
+    };
+    unwatch = watch();
+    return () => unwatch?.();
+  }, []);
+
   const isHistorical = eraPhase !== "P4";
 
   return (
@@ -318,7 +344,13 @@ export function WatchtowerGlobeShell() {
         {/* ── Globe mode controls — desktop only ───────────────────────────── */}
         <div
           className="hidden sm:flex absolute left-4 z-20 flex-col gap-1.5 overflow-y-auto [&::-webkit-scrollbar]:hidden"
-          style={{ top: "48px", maxHeight: "calc(100% - 64px)", scrollbarWidth: "none" }}
+          style={{
+            top: "48px",
+            maxHeight: `${Math.max(200, (containerH - 64) / panelScale)}px`,
+            scrollbarWidth: "none" as const,
+            transform: `scale(${panelScale})`,
+            transformOrigin: "top left",
+          }}
         >
 
           {/* Threat domains */}
