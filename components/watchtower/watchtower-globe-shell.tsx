@@ -8,7 +8,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "@/lib/i18n/use-translation";
 import { WorldRiskGlobe }         from "./world-risk-globe";
 import { GlobeProvisionerPanel }  from "./globe-provisioner-panel";
-import { GlobeProtocolPanel }     from "./globe-protocol-panel";
 import { GlobeInfoCards }         from "./globe-info-cards";
 import { LiveClock }              from "./live-clock";
 
@@ -194,8 +193,7 @@ export function WatchtowerGlobeShell() {
   // ── State (initialized from URL params) ────────────────────────────────────
   const [provisionerOpen, setProvisionerOpen] = useState(() => searchParams.get("panel") === "shop");
   const [provisionerTab,  setProvisionerTab]  = useState<ProvisionerTab>("products");
-  const [protocolOpen,    setProtocolOpen]    = useState(false);
-  const [eraPhase,          setEraPhase]          = useState(() => searchParams.get("era") ?? "P4");
+const [eraPhase,          setEraPhase]          = useState(() => searchParams.get("era") ?? "P4");
   const [livePhase,         setLivePhase]         = useState(() => searchParams.get("era") ?? "P4");
   const [scrubVelocity,     setScrubVelocity]     = useState(0);
 
@@ -282,20 +280,6 @@ export function WatchtowerGlobeShell() {
           onCommodityPinClick={setSelectedCommodityId}
           onNewsFeedPinClick={setSelectedNewsId}
         />
-
-        {/* ── Protocol (left) panel trigger ───────────────────────────────── */}
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-0.5">
-          <PanelTrigger
-            open={protocolOpen}
-            onClick={(e) => {
-              e.stopPropagation();
-              setProtocolOpen((v) => !v);
-            }}
-            label="⬡ Protocol"
-            openColor="cyan"
-            side="left"
-          />
-        </div>
 
         {/* ── Provisioner (right) panel trigger ──────────────────────────── */}
         <div
@@ -572,7 +556,6 @@ export function WatchtowerGlobeShell() {
         </div>
 
         {/* ── Side panels ──────────────────────────────────────────────────── */}
-        <GlobeProtocolPanel   open={protocolOpen}    onClose={() => setProtocolOpen(false)} />
         <GlobeProvisionerPanel open={provisionerOpen} onClose={() => setProvisionerOpen(false)} activeTab={provisionerTab} onTabChange={setProvisionerTab} />
 
         {/* ── Era detail card — floats above scrubber when not at P4 ─────────── */}
