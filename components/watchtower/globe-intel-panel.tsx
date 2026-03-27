@@ -66,16 +66,24 @@ const PILLAR_COLORS: Record<string, { text: string; border: string }> = {
 };
 
 const PHASES = [
-  { id: "P0", yearStart: 1800, yearEnd: 1945, hex: "#92400e", label: "ORIGINS"   },
-  { id: "P1", yearStart: 1945, yearEnd: 1971, hex: "#38bdf8", label: "STABILITY" },
-  { id: "P2", yearStart: 1971, yearEnd: 2008, hex: "#818cf8", label: "EXPANSION" },
-  { id: "P3", yearStart: 2008, yearEnd: 2020, hex: "#fbbf24", label: "STRESS"    },
-  { id: "P4", yearStart: 2020, yearEnd: 2027, hex: "#e84040", label: "NOW"       },
-  { id: "P5", yearStart: 2027, yearEnd: 2032, hex: "#ff0055", label: "CASCADE"   },
-  { id: "P6", yearStart: 2032, yearEnd: 2038, hex: "#64748b", label: "RESOLVE"   },
-  { id: "P7", yearStart: 2038, yearEnd: 2059, hex: "#7c3aed", label: "EMERGENCE" },
-  { id: "P8", yearStart: 2059, yearEnd: 2079, hex: "#374151", label: "DIVERGENCE" },
-  { id: "P9", yearStart: 2079, yearEnd: 2100, hex: "#111827", label: "TERMINUS"  },
+  { id: "PA", yearStart: 1800, yearEnd: 1870, hex: "#78350f", label: "INDUSTRIAL"    },
+  { id: "PB", yearStart: 1870, yearEnd: 1914, hex: "#92400e", label: "IMPERIAL"      },
+  { id: "PC", yearStart: 1914, yearEnd: 1919, hex: "#7f1d1d", label: "WW1"           },
+  { id: "PD", yearStart: 1919, yearEnd: 1929, hex: "#52525b", label: "INTERWAR"      },
+  { id: "PE", yearStart: 1929, yearEnd: 1939, hex: "#b45309", label: "DEPRESSION"    },
+  { id: "PF", yearStart: 1939, yearEnd: 1945, hex: "#991b1b", label: "WW2"           },
+  { id: "P1", yearStart: 1945, yearEnd: 1971, hex: "#38bdf8", label: "COLD WAR"      },
+  { id: "PG", yearStart: 1971, yearEnd: 1991, hex: "#818cf8", label: "DÉTENTE"       },
+  { id: "P2", yearStart: 1991, yearEnd: 2008, hex: "#6366f1", label: "UNIPOLAR"      },
+  { id: "P3", yearStart: 2008, yearEnd: 2020, hex: "#fbbf24", label: "STRESS"        },
+  { id: "P4", yearStart: 2020, yearEnd: 2027, hex: "#e84040", label: "NOW"           },
+  { id: "P5", yearStart: 2027, yearEnd: 2032, hex: "#ff0055", label: "CASCADE"       },
+  { id: "P6", yearStart: 2032, yearEnd: 2038, hex: "#64748b", label: "RECKONING"     },
+  { id: "P7", yearStart: 2038, yearEnd: 2045, hex: "#7c3aed", label: "AI THRESHOLD"  },
+  { id: "PH", yearStart: 2045, yearEnd: 2059, hex: "#8b5cf6", label: "POST-LABOR"    },
+  { id: "P8", yearStart: 2059, yearEnd: 2079, hex: "#374151", label: "DIVERGENCE"    },
+  { id: "PI", yearStart: 2079, yearEnd: 2090, hex: "#1e293b", label: "LONGEVITY"     },
+  { id: "P9", yearStart: 2090, yearEnd: 2100, hex: "#111827", label: "TERMINUS"      },
 ];
 
 const NOW_YEAR = 2026;

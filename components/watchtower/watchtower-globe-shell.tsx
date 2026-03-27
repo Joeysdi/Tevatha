@@ -19,39 +19,83 @@ import { SCENARIO_IMPACTS }       from "@/lib/watchtower/scenario-impacts";
 // ─────────────────────────────────────────────────────────────────────────────
 
 const PHASE_LABELS: Record<string, string> = {
-  P0: "Origins  pre-1945",
-  P1: "Stability  1945–71",
-  P2: "Expansion  1971–08",
+  PA: "Industrial  1800–70",
+  PB: "Imperial  1870–1914",
+  PC: "World War I  1914–19",
+  PD: "Interwar  1919–29",
+  PE: "Depression  1929–39",
+  PF: "World War II  1939–45",
+  P1: "Cold War  1945–71",
+  PG: "Détente  1971–91",
+  P2: "Unipolar  1991–08",
   P3: "Stress  2008–20",
   P5: "Cascade  2027–32",
-  P6: "Resolve  2032–38",
-  P7: "Emergence  2038–59",
+  P6: "Reckoning  2032–38",
+  P7: "AI Threshold  2038–45",
+  PH: "Post-Labor  2045–59",
   P8: "Divergence  2059–79",
-  P9: "Terminus  2079–2100",
+  PI: "Longevity  2079–90",
+  P9: "Terminus  2090–2100",
 };
 
 const SCRUB_PHASES = [
   {
-    id: "P0", hex: "#92400e", label: "ORIGINS", yearRange: "pre-1945",
-    desc: "Industrial capital, financial panics, and imperial systems built the broken baseline the post-1945 order was designed to replace. The Long Depression proved global capital markets amplify shocks across borders — a lesson ignored for 135 years.",
+    id: "PA", hex: "#78350f", label: "INDUSTRIAL", yearRange: "1800–70",
+    desc: "Steam power reshapes production, labour, and capital. Urbanisation creates mass poverty alongside new wealth. The first globalised trade networks emerge — and with them, the first synchronised financial panics. Ireland starves while Britain industrialises.",
     gateIds: [] as string[],
-    yearStart: 1800, yearEnd: 1945,
+    yearStart: 1800, yearEnd: 1870,
   },
   {
-    id: "P1", hex: "#38bdf8", label: "STABILITY", yearRange: "1945–71",
-    desc: "Bretton Woods-backed stability. USD becomes global reserve. Cold War nuclear standoff begins.",
+    id: "PB", hex: "#92400e", label: "IMPERIAL", yearRange: "1870–1914",
+    desc: "European powers partition the world. Leopold II's Congo kills 10M. The Long Depression of 1873 proves interconnected capital markets amplify shocks globally — a lesson ignored for 135 years. Arms races and colonial competition build a pressure system with no release valve.",
+    gateIds: [] as string[],
+    yearStart: 1870, yearEnd: 1914,
+  },
+  {
+    id: "PC", hex: "#7f1d1d", label: "WW1", yearRange: "1914–19",
+    desc: "Industrial-scale killing redefines warfare. 20 million dead. Four empires collapse in four years. Chemical weapons, mass mobilisation, and trench warfare set the template for 20th-century state violence. The war to end all wars creates every condition for the next one.",
+    gateIds: [] as string[],
+    yearStart: 1914, yearEnd: 1919,
+  },
+  {
+    id: "PD", hex: "#52525b", label: "INTERWAR", yearRange: "1919–29",
+    desc: "Versailles imposes impossible reparations on a broken Germany. Weimar hyperinflation reaches 4.2 trillion marks per dollar. The Roaring Twenties mask a debt-fuelled fragility. Every condition for the Depression and fascism is assembled in this decade.",
+    gateIds: [] as string[],
+    yearStart: 1919, yearEnd: 1929,
+  },
+  {
+    id: "PE", hex: "#b45309", label: "DEPRESSION", yearRange: "1929–39",
+    desc: "Black Tuesday wipes 89% off the Dow. 9,000 US banks fail. Global trade collapses 66%. Unemployment hits 25% in the US, 30% in Germany. Economic desperation fills the vacuum with fascism. The playbook for every debt-deflation spiral and authoritarian resurgence since.",
+    gateIds: [] as string[],
+    yearStart: 1929, yearEnd: 1939,
+  },
+  {
+    id: "PF", hex: "#991b1b", label: "WW2", yearRange: "1939–45",
+    desc: "70–85 million dead. The Holocaust: 6 million Jews systematically murdered. Two atomic bombs end the Pacific war and launch the nuclear age. Bretton Woods creates the dollar-dominated post-war order. The world Tevatha monitors is a direct consequence of this era.",
+    gateIds: [] as string[],
+    yearStart: 1939, yearEnd: 1945,
+  },
+  {
+    id: "P1", hex: "#38bdf8", label: "COLD WAR", yearRange: "1945–71",
+    desc: "Bretton Woods-backed stability. USD becomes global reserve currency. Cold War nuclear standoff begins. Korean War, Cuban Missile Crisis — the system survives by the narrowest margins. MAD doctrine holds.",
     gateIds: [] as string[],
     yearStart: 1945, yearEnd: 1971,
   },
   {
-    id: "P2", hex: "#818cf8", label: "EXPANSION", yearRange: "1971–08",
-    desc: "Fiat era begins. Nixon Shock ends gold standard. Unlimited deficit spending enabled. Debt compounds.",
+    id: "PG", hex: "#818cf8", label: "DÉTENTE", yearRange: "1971–91",
+    desc: "Nixon Shock ends the gold standard. Unlimited deficit financing begins. Oil shocks reshape geopolitics. Iranian Revolution, Soviet Afghanistan. The Cold War de-escalates — then the USSR dissolves in 18 months. The unipolar moment is born.",
     gateIds: [] as string[],
-    yearStart: 1971, yearEnd: 2008,
+    yearStart: 1971, yearEnd: 1991,
+  },
+  {
+    id: "P2", hex: "#6366f1", label: "UNIPOLAR", yearRange: "1991–08",
+    desc: "US declares end of history. NATO expands east. Dot-com bubble. 9/11 triggers permanent surveillance state and $2T+ wars on false premises. US credibility as rules enforcer permanently degraded. Seeds of multipolar fracture planted here.",
+    gateIds: [] as string[],
+    yearStart: 1991, yearEnd: 2008,
   },
   {
     id: "P3", hex: "#fbbf24", label: "STRESS", yearRange: "2008–20",
-    desc: "GFC triggers unlimited QE. Fed balance sheet $900B → $9T. Systemic risk deferred, not resolved.",
+    desc: "GFC triggers unlimited QE. Fed balance sheet $900B → $9T. Systemic risk deferred, not resolved. Arab Spring, Crimea, ISIS, Brexit, Trump — institutional erosion accelerates across every domain simultaneously.",
     gateIds: [] as string[],
     yearStart: 2008, yearEnd: 2020,
   },
@@ -63,21 +107,27 @@ const SCRUB_PHASES = [
   },
   {
     id: "P5", hex: "#ff0055", label: "CASCADE", yearRange: "2027–32",
-    desc: "China nuclear parity. Taiwan crisis window peaks. US debt $40T+. CBDC rollout. Three-way MAD calculus.",
+    desc: "China nuclear parity. Taiwan crisis window peaks. US debt $40T+. CBDC rollout. Three-way MAD calculus begins.",
     gateIds: ["G1","G2","G3","G4","G5","G6","G7","G8"],
     yearStart: 2027, yearEnd: 2032,
   },
   {
-    id: "P6", hex: "#64748b", label: "RESOLVE", yearRange: "2032–38",
-    desc: "Post-USD multipolar order. Climate cascade locks in. AI autonomous weapons. New equilibrium or collapse.",
+    id: "P6", hex: "#64748b", label: "RECKONING", yearRange: "2032–38",
+    desc: "Post-USD multipolar order emerges. Climate cascade locks in. AI autonomous weapons deployed. Either a new equilibrium forms — or the dominoes continue falling.",
     gateIds: ["G1","G2","G3","G4","G5","G6","G7","G8"],
     yearStart: 2032, yearEnd: 2038,
   },
   {
-    id: "P7", hex: "#7c3aed", label: "EMERGENCE", yearRange: "2038–59",
-    desc: "AGI threshold crossed. Post-labor economy restructures. Off-world colonies attempt. Engineered biology democratized. Nation-state model gives way to new power structures.",
+    id: "P7", hex: "#7c3aed", label: "AI THRESHOLD", yearRange: "2038–45",
+    desc: "AGI threshold crossed. AI systems exceed human capability across all domains. Post-labor economic restructuring begins. Nation-state model begins giving way to new power structures that have no historical precedent.",
     gateIds: [] as string[],
-    yearStart: 2038, yearEnd: 2059,
+    yearStart: 2038, yearEnd: 2045,
+  },
+  {
+    id: "PH", hex: "#8b5cf6", label: "POST-LABOR", yearRange: "2045–59",
+    desc: "Universal automation displaces most human work. Off-world colonies attempted. Engineered biology democratized. Political systems designed for scarcity begin failing under post-scarcity conditions.",
+    gateIds: [] as string[],
+    yearStart: 2045, yearEnd: 2059,
   },
   {
     id: "P8", hex: "#374151", label: "DIVERGENCE", yearRange: "2059–79",
@@ -86,10 +136,16 @@ const SCRUB_PHASES = [
     yearStart: 2059, yearEnd: 2079,
   },
   {
-    id: "P9", hex: "#111827", label: "TERMINUS", yearRange: "2079–2100",
-    desc: "Final verdict on the human civilizational arc. Neural interface merger normalized. Climate outcome determined. Whether this resolves as survival, transcendence, or extinction becomes clear.",
+    id: "PI", hex: "#1e293b", label: "LONGEVITY", yearRange: "2079–90",
+    desc: "Life extension technology scales beyond elites. The first generation of near-indefinite lifespans emerges. Political systems built on generational turnover begin structurally failing. Death as a social moderator ends.",
     gateIds: [] as string[],
-    yearStart: 2079, yearEnd: 2100,
+    yearStart: 2079, yearEnd: 2090,
+  },
+  {
+    id: "P9", hex: "#111827", label: "TERMINUS", yearRange: "2090–2100",
+    desc: "Final verdict on the human civilizational arc. Climate outcome determined. Neural interface merger normalized. Whether this resolves as survival, transcendence, or extinction becomes clear in this decade.",
+    gateIds: [] as string[],
+    yearStart: 2090, yearEnd: 2100,
   },
 ] as const;
 
@@ -932,8 +988,9 @@ function TimelineScrubber({
                   style={{
                     fontSize: "6.5px",
                     letterSpacing: ".1em",
-                    color: isActive ? `${p.hex}cc` : `${p.hex}44`,
-                    fontWeight: isActive ? "700" : "400",
+                    color: `${p.hex}cc`,
+                    fontWeight: "700",
+                    opacity: isActive ? 1 : 0,
                   }}
                 >
                   {p.label === "NOW" ? "NOW" : p.yearRange.split("–")[0]}
