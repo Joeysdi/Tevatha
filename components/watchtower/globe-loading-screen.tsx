@@ -18,21 +18,50 @@ const MILESTONES = [
   { year: 2026, secs: 85,   label: "85 SEC",  event: "New START expired. No active nuclear treaty. AI arms race." },
 ] as const;
 
-// Cumulative timings (ms) for each step to fire
+// Cumulative timings (ms) for each milestone step to fire
 const STEP_MS = [0, 260, 510, 750, 980, 1210, 1430, 1640, 1890, 2280] as const;
+
+// ── Module init list ──────────────────────────────────────────────────────────
+const MODULES = [
+  { label: "Nuclear threat vectors",      type: "ok"   },
+  { label: "Geopolitical signal feeds",   type: "ok"   },
+  { label: "Decision gate matrix",        type: "ok"   },
+  { label: "Globe renderer",              type: "wait" },
+  { label: "Scenario probability engine", type: "wait" },
+  { label: "Collapse index calibration",  type: "wait" },
+] as const;
+
+// Module stagger timings — start at 800 ms, 350 ms apart
+const MODULE_TIMINGS = [800, 1150, 1500, 1850, 2200, 2550] as const;
+
+const LOADING_MESSAGES = [
+  "INITIALIZING WATCHTOWER",
+  "RENDERING GLOBE",
+  "CALIBRATING THREAT MATRIX",
+];
 
 // ── SVG helpers ───────────────────────────────────────────────────────────────
 
 // Arc from 12 o'clock, going counterclockwise to the hand position.
-// This represents the gap between the hand and midnight — the danger zone.
 function clockArcPath(secs: number, r = 40): string {
   const frac = Math.min(secs, 3540) / 3600;
   if (frac <= 0.001) return `M 50 ${50 - r} A ${r} ${r} 0 0 0 50 ${50 - r + 0.01}`;
-  const angleRad = -frac * 2 * Math.PI; // negative = counterclockwise
+  const angleRad = -frac * 2 * Math.PI;
   const ex = 50 + r * Math.sin(angleRad);
   const ey = 50 - r * Math.cos(angleRad);
   const large = frac > 0.5 ? 1 : 0;
   return `M 50 ${50 - r} A ${r} ${r} 0 ${large} 0 ${ex.toFixed(3)} ${ey.toFixed(3)}`;
+}
+
+// Filled pie-slice arc for danger-zone visceral fill
+function clockArcFillPath(secs: number, r = 40): string {
+  const frac = Math.min(secs, 3540) / 3600;
+  if (frac <= 0.001) return `M 50 50 L 50 ${50 - r} A ${r} ${r} 0 0 0 50 ${50 - r + 0.01} Z`;
+  const angleRad = -frac * 2 * Math.PI;
+  const ex = 50 + r * Math.sin(angleRad);
+  const ey = 50 - r * Math.cos(angleRad);
+  const large = frac > 0.5 ? 1 : 0;
+  return `M 50 50 L 50 ${50 - r} A ${r} ${r} 0 ${large} 0 ${ex.toFixed(3)} ${ey.toFixed(3)} Z`;
 }
 
 function formatTime(secs: number): string {
@@ -60,11 +89,21 @@ const TICKS = Array.from({ length: 12 }, (_, i) => {
   };
 });
 
+// Globe wireframe latitude rings — simulate Earth behind the clock
+const LATITUDE_RINGS = [
+  { rx: 38, ry: 7  },
+  { rx: 32, ry: 13 },
+  { rx: 22, ry: 17 },
+  { rx: 11, ry: 19 },
+  { rx: 2,  ry: 20 },
+];
+
 // ── Component ─────────────────────────────────────────────────────────────────
-export function GlobeLoadingScreen() {
-  const [stepIdx,  setStepIdx]  = useState(0);
-  const [reveal,   setReveal]   = useState(false);
-  const [dots,     setDots]     = useState("");
+export function GlobeLoadingScreen({ isReady = false }: { isReady?: boolean }) {
+  const [stepIdx,        setStepIdx]        = useState(0);
+  const [moduleVisible,  setModuleVisible]  = useState<boolean[]>(Array(6).fill(false));
+  const [moduleComplete, setModuleComplete] = useState<boolean[]>(Array(6).fill(false));
+  const [msgIdx,         setMsgIdx]         = useState(0);
 
   // Advance through milestones
   useEffect(() => {
@@ -72,20 +111,43 @@ export function GlobeLoadingScreen() {
     for (let i = 1; i < MILESTONES.length; i++) {
       timers.push(setTimeout(() => setStepIdx(i), STEP_MS[i]));
     }
-    // Reveal info cards after clock animation completes
-    timers.push(setTimeout(() => setReveal(true), 2900));
     return () => timers.forEach(clearTimeout);
   }, []);
 
-  // Loading dots
+  // Module stagger reveal — begin at 800 ms
   useEffect(() => {
-    const iv = setInterval(() => setDots(d => d.length >= 3 ? "" : d + "."), 480);
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    MODULE_TIMINGS.forEach((ms, i) => {
+      timers.push(
+        setTimeout(() => {
+          setModuleVisible(prev => {
+            const next = [...prev];
+            next[i] = true;
+            return next;
+          });
+        }, ms)
+      );
+    });
+    return () => timers.forEach(clearTimeout);
+  }, []);
+
+  // Cycling loading message every 2.5 s
+  useEffect(() => {
+    const iv = setInterval(() => setMsgIdx(i => (i + 1) % LOADING_MESSAGES.length), 2500);
     return () => clearInterval(iv);
   }, []);
 
+  // When globe is ready, transition [..] → [OK]
+  useEffect(() => {
+    if (!isReady) return;
+    setModuleComplete(Array(6).fill(true));
+  }, [isReady]);
+
   const m       = MILESTONES[stepIdx];
-  const handDeg = -(m.secs / 3600) * 360; // negative = CCW from 12
+  const handDeg = -(m.secs / 3600) * 360;
   const isFinal = stepIdx === MILESTONES.length - 1;
+
+  const visibleCount = moduleVisible.filter(Boolean).length;
 
   return (
     <div className="w-full h-full bg-void-0 flex flex-col overflow-hidden relative select-none">
@@ -125,7 +187,18 @@ export function GlobeLoadingScreen() {
       <div className="flex-shrink-0 flex items-center justify-between px-6 py-3.5 border-b border-border-protocol/40 relative z-10">
         <div className="flex items-center gap-3">
           <span className="w-2 h-2 rounded-full bg-red-bright animate-pulse flex-shrink-0" />
-          <p className="font-syne font-bold text-[14px] text-text-base tracking-[.04em]">TEVATHA</p>
+          <p
+            className="font-bold text-[14px] tracking-[.3em]"
+            style={{
+              fontFamily: "var(--font-cinzel)",
+              background: "linear-gradient(90deg, #c9a84c, #e84040)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}
+          >
+            TEVATHA
+          </p>
           <span className="w-px h-4 bg-border-protocol opacity-60" />
           <p className="font-mono text-[8.5px] text-text-mute2/60 tracking-[.22em] uppercase">
             Global Threat Matrix
@@ -148,12 +221,23 @@ export function GlobeLoadingScreen() {
           </p>
 
           {/* SVG Clock */}
-          <div className="relative flex-shrink-0">
+          <div className="relative flex-shrink-0 flex items-center justify-center">
+            {/* Red radial ambient glow — behind everything */}
+            <div
+              className="absolute pointer-events-none"
+              style={{
+                width: "400px",
+                height: "400px",
+                background: "radial-gradient(circle, rgba(232,64,64,0.12) 0%, transparent 70%)",
+                zIndex: 0,
+              }}
+            />
+
             <svg
               viewBox="0 0 100 100"
-              width="200"
-              height="200"
-              style={{ overflow: "visible" }}
+              width="280"
+              height="280"
+              style={{ overflow: "visible", position: "relative", zIndex: 1 }}
               aria-label="Doomsday Clock"
             >
               <defs>
@@ -181,6 +265,27 @@ export function GlobeLoadingScreen() {
                 </filter>
               </defs>
 
+              {/* Globe wireframe latitude rings — behind the clock face */}
+              <motion.g
+                animate={{ rotate: 360 }}
+                transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
+                style={{ originX: "50px", originY: "50px" }}
+              >
+                {LATITUDE_RINGS.map((ring, i) => (
+                  <ellipse
+                    key={i}
+                    cx="50"
+                    cy="50"
+                    rx={ring.rx}
+                    ry={ring.ry}
+                    fill="none"
+                    stroke="#e84040"
+                    strokeWidth="0.5"
+                    opacity="0.07"
+                  />
+                ))}
+              </motion.g>
+
               {/* Clock face */}
               <circle cx="50" cy="50" r="44" fill="url(#face-bg)" />
 
@@ -195,7 +300,16 @@ export function GlobeLoadingScreen() {
               {/* Outer ring */}
               <circle cx="50" cy="50" r="44" fill="none" stroke="rgba(232,64,64,0.22)" strokeWidth="1" />
 
-              {/* Danger arc — CCW from 12 to hand */}
+              {/* Danger arc fill — visceral 5 % opacity pie slice */}
+              <motion.path
+                fill="#e84040"
+                fillOpacity="0.05"
+                stroke="none"
+                animate={{ d: clockArcFillPath(m.secs) }}
+                transition={{ duration: 0.38, ease: [0.25, 0.46, 0.45, 0.94] }}
+              />
+
+              {/* Danger arc stroke */}
               <motion.path
                 fill="none"
                 stroke="#e84040"
@@ -228,9 +342,7 @@ export function GlobeLoadingScreen() {
                   filter="url(#hand-glow)"
                   style={{ originX: "0px", originY: "0px" }}
                 >
-                  {/* Main hand */}
                   <line x1="0" y1="3" x2="0" y2="-34" stroke="#f0c842" strokeWidth="2.5" strokeLinecap="round" />
-                  {/* Hand glow duplicate */}
                   <line x1="0" y1="3" x2="0" y2="-34" stroke="rgba(240,200,66,0.3)" strokeWidth="5" strokeLinecap="round" />
                 </motion.g>
               </g>
@@ -295,98 +407,84 @@ export function GlobeLoadingScreen() {
           </div>
         </div>
 
-        {/* ── Right: Info column ──────────────────────────────────────────── */}
+        {/* ── Right: Module init list ──────────────────────────────────────── */}
         <div
-          className="flex flex-col gap-4 px-6 py-6 lg:w-[340px] flex-shrink-0 justify-center"
-          style={{
-            borderLeft: "1px solid rgba(232,64,64,0.08)",
-            opacity: reveal ? 1 : 0,
-            transition: "opacity 0.5s ease-out",
-          }}
+          className="flex flex-col gap-3 px-6 py-6 lg:w-[340px] flex-shrink-0 justify-center"
+          style={{ borderLeft: "1px solid rgba(232,64,64,0.08)" }}
         >
-          {/* Vision card */}
-          <div
-            className="rounded-xl border border-gold-protocol/22 bg-void-1/80 p-5 relative overflow-hidden"
-            style={{ boxShadow: "0 0 0 1px rgba(255,255,255,0.02) inset, 0 6px 24px rgba(0,0,0,0.45)" }}
-          >
-            <div
-              className="absolute top-0 left-0 right-0 h-px pointer-events-none"
-              style={{ background: "linear-gradient(90deg,#c9a84c,rgba(201,168,76,0.12),transparent)" }}
-            />
-            <p className="font-mono text-[7.5px] tracking-[.22em] uppercase text-gold-protocol/60 mb-2">
-              Mission Statement
-            </p>
-            <p className="font-syne font-extrabold text-[18px] leading-tight text-gold-bright mb-0.5">
-              General Contractor
-            </p>
-            <p className="font-syne font-extrabold text-[18px] leading-tight text-gold-protocol mb-3">
-              of Human Continuity
-            </p>
-            <div className="w-10 h-px bg-gold-protocol/40 mb-3" />
-            <p className="font-mono text-[9px] text-text-dim leading-relaxed">
-              We exist at the convergence of the most significant civilisation-level risks in recorded
-              history — nuclear escalation, infrastructure collapse, monetary failure, and pandemic.
-              Tevatha gives every person the intelligence, tools, and community to survive what comes
-              next — and rebuild what matters on the other side.
-            </p>
-            <div className="mt-4 flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-gold-protocol flex-shrink-0" />
-              <p className="font-mono text-[7.5px] tracking-[.1em] text-gold-protocol/60">
-                TEVATHA · ARK PROTOCOL ACTIVE
-              </p>
-            </div>
+          <p className="font-mono text-[7.5px] tracking-[.22em] uppercase text-text-mute2/40 mb-1">
+            MODULE INITIALISATION
+          </p>
+
+          <div className="flex flex-col gap-2.5">
+            <AnimatePresence>
+              {MODULES.map((mod, i) => {
+                if (!moduleVisible[i]) return null;
+                const isDone = mod.type === "ok" || moduleComplete[i];
+                return (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.22, ease: "easeOut" }}
+                    className="flex items-center gap-2 font-mono text-[10px] leading-none"
+                  >
+                    <span
+                      className={isDone ? "" : "animate-pulse"}
+                      style={{ color: isDone ? "#1ae8a0" : "#f0a500", flexShrink: 0 }}
+                    >
+                      {isDone ? "[OK]" : "[..]"}
+                    </span>
+                    <span
+                      className={isDone ? "" : "animate-pulse"}
+                      style={{ color: isDone ? "#1ae8a0" : "#f0a500" }}
+                    >
+                      {mod.label}
+                    </span>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
           </div>
 
-          {/* BAS explanation card */}
-          <div
-            className="rounded-xl border border-red-protocol/22 bg-void-1/80 p-5 relative overflow-hidden"
-            style={{ boxShadow: "0 0 0 1px rgba(255,255,255,0.02) inset, 0 6px 24px rgba(0,0,0,0.45)" }}
-          >
-            <div
-              className="absolute top-0 left-0 right-0 h-px pointer-events-none"
-              style={{ background: "linear-gradient(90deg,#e84040,rgba(232,64,64,0.12),transparent)" }}
-            />
-            <p className="font-mono text-[7.5px] tracking-[.22em] uppercase text-red-bright/60 mb-2">
-              Intel Basis · BAS
-            </p>
-            <p className="font-mono text-[9px] text-text-dim leading-relaxed mb-2">
-              The Doomsday Clock is maintained by the{" "}
-              <span className="text-text-base font-bold">Bulletin of Atomic Scientists</span> — founded
-              in 1945 by the Manhattan Project scientists who built the first atomic bomb. Haunted by
-              what they created, they built this clock as a warning to the world.
-            </p>
-            <p className="font-mono text-[9px] text-text-dim leading-relaxed">
-              The clock measures how close humanity is to self-caused global catastrophe.{" "}
-              <span className="text-red-bright font-bold">Midnight means extinction.</span> Every
-              movement is determined by experts across nuclear risk, climate, and disruptive technology.
-            </p>
-            <div
-              className="mt-4 flex items-center gap-2 pt-3 border-t"
-              style={{ borderColor: "rgba(232,64,64,0.12)" }}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-red-bright animate-pulse flex-shrink-0" />
-              <p className="font-mono text-[7.5px] tracking-[.1em] text-red-bright/80">
-                JAN 27 2026 · ALL-TIME CLOSEST IN 79-YEAR HISTORY
-              </p>
-            </div>
+          {/* Segmented progress bar — 6 segments, 2 px gaps */}
+          <div className="mt-4 flex items-center gap-0.5" style={{ width: "240px" }}>
+            {Array.from({ length: 6 }, (_, i) => (
+              <div
+                key={i}
+                className="flex-1 h-1 rounded-sm overflow-hidden"
+                style={{ background: "rgba(255,255,255,0.06)" }}
+              >
+                <motion.div
+                  className="h-full rounded-sm"
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: visibleCount > i ? 1 : 0 }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
+                  style={{
+                    transformOrigin: "left",
+                    background: i < 3 ? "#1ae8a0" : "#f0a500",
+                  }}
+                />
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* ── Loading bar ─────────────────────────────────────────────────────── */}
+      {/* ── Cycling loading message ──────────────────────────────────────────── */}
       <div className="flex-shrink-0 flex flex-col items-center gap-2 pb-5 pt-2 relative z-10">
-        <div className="w-56 h-px bg-border-protocol/40 relative overflow-hidden rounded-full">
-          <div
-            className="absolute inset-y-0 w-20 rounded-full"
-            style={{
-              background: "linear-gradient(90deg,transparent,rgba(232,64,64,0.7),transparent)",
-              animation: "slideRight 1.6s ease-in-out infinite",
-            }}
-          />
-        </div>
-        <p className="font-mono text-[7.5px] tracking-[.22em] uppercase text-text-mute2/30">
-          Loading Globe Data{dots}
-        </p>
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={msgIdx}
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.3 }}
+            className="font-mono text-[7.5px] tracking-[.22em] uppercase text-text-mute2/30"
+          >
+            {LOADING_MESSAGES[msgIdx]}
+          </motion.p>
+        </AnimatePresence>
       </div>
 
     </div>
