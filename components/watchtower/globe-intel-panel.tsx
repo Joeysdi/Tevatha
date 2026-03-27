@@ -178,7 +178,7 @@ function ScenariosTab() {
   const [openId, setOpenId] = useState<string | null>(null);
 
   return (
-    <div className="divide-y divide-border-protocol/60">
+    <nav aria-label="Scenario navigation" className="divide-y divide-border-protocol/60">
       {SCENARIOS.map((s) => {
         const isOpen = openId === s.id;
         const sevCol = s.sev === "EX" || s.sev === "CR" ? "#e84040"
@@ -285,7 +285,7 @@ function ScenariosTab() {
           </div>
         );
       })}
-    </div>
+    </nav>
   );
 }
 

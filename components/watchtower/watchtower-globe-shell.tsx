@@ -295,7 +295,8 @@ export function WatchtowerGlobeShell() {
             </div>
           </div>
 
-          <div
+          <nav
+            aria-label="Scenario navigation"
             className="rounded-xl overflow-hidden backdrop-blur-sm"
             style={{ background: "rgba(11,13,24,0.88)", border: "1px solid rgba(255,255,255,0.07)" }}
           >
@@ -329,7 +330,7 @@ export function WatchtowerGlobeShell() {
                 );
               })}
             </div>
-          </div>
+          </nav>
 
           <Link
             href={buildUrl(searchParams, { psych: psychologyMode ? null : "1" })}
@@ -646,23 +647,25 @@ export function WatchtowerGlobeShell() {
 
         <div className="w-px h-4 bg-border-protocol/60 flex-shrink-0" />
 
-        {SCENARIO_IMPACTS.map((s) => {
-          const active = scenarioId === s.id;
-          return (
-            <button key={s.id}
-              onClick={() => {
-                const next = active ? null : s.id;
-                setScenarioId(next);
-                updateUrl({ scenario: next });
-              }}
-              aria-pressed={active}
-              aria-label={`${active ? "Deactivate" : "Activate"} scenario ${s.id}`}
-              className={`flex-shrink-0 px-2.5 py-2.5 rounded-lg border font-mono text-[9px] transition-all min-h-[44px]
-                          ${active ? "bg-red-protocol/20 border-red-protocol/40 text-red-bright" : "bg-void-3 border-border-protocol text-text-mute2"}`}>
-              {s.id}
-            </button>
-          );
-        })}
+        <nav aria-label="Scenario navigation" className="flex items-center gap-1.5">
+          {SCENARIO_IMPACTS.map((s) => {
+            const active = scenarioId === s.id;
+            return (
+              <button key={s.id}
+                onClick={() => {
+                  const next = active ? null : s.id;
+                  setScenarioId(next);
+                  updateUrl({ scenario: next });
+                }}
+                aria-pressed={active}
+                aria-label={`${active ? "Deactivate" : "Activate"} scenario ${s.id}`}
+                className={`flex-shrink-0 px-2.5 py-2.5 rounded-lg border font-mono text-[9px] transition-all min-h-[44px]
+                            ${active ? "bg-red-protocol/20 border-red-protocol/40 text-red-bright" : "bg-void-3 border-border-protocol text-text-mute2"}`}>
+                {s.id}
+              </button>
+            );
+          })}
+        </nav>
 
         <div className="w-px h-4 bg-border-protocol/60 flex-shrink-0" />
 
