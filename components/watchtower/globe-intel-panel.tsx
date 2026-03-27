@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 import {
   SIGNALS, SCENARIOS, GEAR,
   PSYCH_PILLARS, PSYCH_THREATS, TIMELINE_EVENTS, GATES,
@@ -19,12 +20,12 @@ interface Props {
   onTabChange: (t: IntelTab) => void;
 }
 
-const TABS: { id: IntelTab; label: string }[] = [
-  { id: "scenarios", label: "⚠ Scenarios" },
-  { id: "signals",   label: "📡 Signals"  },
-  { id: "gear",      label: "⚙ Gear"     },
-  { id: "psych",     label: "🧠 Psych"   },
-  { id: "timeline",  label: "◔ Timeline"  },
+const TABS: { id: IntelTab; label: string; href: string }[] = [
+  { id: "scenarios", label: "⚠ Scenarios", href: "/watchtower/scenarios" },
+  { id: "signals",   label: "📡 Signals",  href: "/watchtower/signals"   },
+  { id: "gear",      label: "⚙ Gear",     href: "/watchtower/gear"      },
+  { id: "psych",     label: "🧠 Psych",   href: "/watchtower/psychology" },
+  { id: "timeline",  label: "◔ Timeline",  href: "/watchtower/timeline"  },
 ];
 
 // ── Shared constants ──────────────────────────────────────────────────────────
@@ -130,9 +131,10 @@ export function GlobeIntelPanel({ open, onClose, activeTab, onTabChange }: Props
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}
           >
             {TABS.map((tab) => (
-              <button
+              <Link
                 key={tab.id}
-                onClick={() => onTabChange(tab.id)}
+                href={tab.href}
+                onClick={(e) => { e.preventDefault(); onTabChange(tab.id); }}
                 className={`flex-shrink-0 px-3 py-2.5 font-mono text-[8.5px] font-bold
                             tracking-[.05em] transition-colors duration-150 whitespace-nowrap
                             ${activeTab === tab.id
@@ -141,7 +143,7 @@ export function GlobeIntelPanel({ open, onClose, activeTab, onTabChange }: Props
                             }`}
               >
                 {tab.label}
-              </button>
+              </Link>
             ))}
           </div>
 

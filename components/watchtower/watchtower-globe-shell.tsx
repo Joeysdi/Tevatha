@@ -3,6 +3,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "@/lib/i18n/use-translation";
 import { WorldRiskGlobe }         from "./world-risk-globe";
@@ -96,6 +97,19 @@ const DOMAIN_COLORS: Record<string, string> = {
   "Biological":        "#1ae8a0",
   "Climate":           "#38bdf8",
 };
+
+/** Build a ?-prefixed URL string by applying updates to existing search params. */
+function buildUrl(
+  current: ReturnType<typeof useSearchParams>,
+  updates: Record<string, string | null>,
+): string {
+  const p = new URLSearchParams(current.toString());
+  for (const [k, v] of Object.entries(updates)) {
+    if (v === null) p.delete(k); else p.set(k, v);
+  }
+  const qs = p.toString();
+  return qs ? `?${qs}` : "?";
+}
 
 export function WatchtowerGlobeShell() {
   const { t, locale, setLocale, locales, meta } = useTranslation();
@@ -238,13 +252,13 @@ export function WatchtowerGlobeShell() {
                 const active = domainId === d.id;
                 const col    = DOMAIN_COLORS[d.label] ?? "#c9a84c";
                 return (
-                  <button
+                  <Link
                     key={d.id}
+                    href={buildUrl(searchParams, { domain: active ? null : d.id })}
+                    replace
                     onClick={(e) => {
                       e.stopPropagation();
-                      const next = active ? null : d.id;
-                      setDomainId(next);
-                      updateUrl({ domain: next });
+                      setDomainId(active ? null : d.id);
                     }}
                     aria-pressed={active}
                     className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-left
@@ -259,7 +273,7 @@ export function WatchtowerGlobeShell() {
                     <span className="text-[10px] leading-none">{d.icon}</span>
                     <span className="truncate max-w-[90px]">{d.label}</span>
                     <span className="ml-auto font-bold tabular-nums" style={{ color: active ? col : undefined }}>{d.score}</span>
-                  </button>
+                  </Link>
                 );
               })}
             </div>
@@ -276,13 +290,13 @@ export function WatchtowerGlobeShell() {
               {SCENARIO_IMPACTS.map((s) => {
                 const active = scenarioId === s.id;
                 return (
-                  <button
+                  <Link
                     key={s.id}
+                    href={buildUrl(searchParams, { scenario: active ? null : s.id })}
+                    replace
                     onClick={(e) => {
                       e.stopPropagation();
-                      const next = active ? null : s.id;
-                      setScenarioId(next);
-                      updateUrl({ scenario: next });
+                      setScenarioId(active ? null : s.id);
                     }}
                     aria-pressed={active}
                     aria-label={`${active ? "Deactivate" : "Activate"} scenario: ${s.title}`}
@@ -295,18 +309,18 @@ export function WatchtowerGlobeShell() {
                   >
                     <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${active ? "bg-red-bright animate-pulse" : "bg-text-mute2/30"}`} />
                     {s.title}
-                  </button>
+                  </Link>
                 );
               })}
             </div>
           </div>
 
-          <button
+          <Link
+            href={buildUrl(searchParams, { psych: psychologyMode ? null : "1" })}
+            replace
             onClick={(e) => {
               e.stopPropagation();
-              const next = !psychologyMode;
-              setPsychologyMode(next);
-              updateUrl({ psych: next ? "1" : null });
+              setPsychologyMode(!psychologyMode);
             }}
             aria-pressed={psychologyMode}
             aria-label={`${psychologyMode ? "Disable" : "Enable"} psychology mode`}
@@ -320,14 +334,14 @@ export function WatchtowerGlobeShell() {
           >
             <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${psychologyMode ? "bg-purple-400 animate-pulse" : "bg-text-mute2/30"}`} />
             🧠 {t("nav_psychology")}
-          </button>
+          </Link>
 
-          <button
+          <Link
+            href={buildUrl(searchParams, { signals: showSignals ? null : "1" })}
+            replace
             onClick={(e) => {
               e.stopPropagation();
-              const next = !showSignals;
-              setShowSignals(next);
-              updateUrl({ signals: next ? "1" : null });
+              setShowSignals(!showSignals);
             }}
             aria-pressed={showSignals}
             aria-label={`${showSignals ? "Hide" : "Show"} signal pins`}
@@ -341,7 +355,7 @@ export function WatchtowerGlobeShell() {
           >
             <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${showSignals ? "bg-red-bright animate-pulse" : "bg-text-mute2/30"}`} />
             📡 {t("nav_signals")}
-          </button>
+          </Link>
 
           {/* ── New layer group ─────────────────────────────────────────── */}
           <div

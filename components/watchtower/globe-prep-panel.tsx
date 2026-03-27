@@ -2,6 +2,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 import { GEAR, PSYCH_PILLARS, PSYCH_THREATS } from "@/lib/watchtower/data";
 import { GearPanel }  from "./gear-panel";
 import { PsychPanel } from "./psych-panel";
@@ -15,9 +16,9 @@ interface Props {
   onTabChange: (t: PrepTab) => void;
 }
 
-const TABS: { id: PrepTab; label: string }[] = [
-  { id: "gear",       label: "⚙ Gear"      },
-  { id: "psychology", label: "🧠 Psychology" },
+const TABS: { id: PrepTab; label: string; href: string }[] = [
+  { id: "gear",       label: "⚙ Gear",       href: "/watchtower/gear"       },
+  { id: "psychology", label: "🧠 Psychology", href: "/watchtower/psychology" },
 ];
 
 export function GlobePrepPanel({ open, onClose, activeTab, onTabChange }: Props) {
@@ -58,19 +59,20 @@ export function GlobePrepPanel({ open, onClose, activeTab, onTabChange }: Props)
 
           {/* Tab strip */}
           <div className="flex border-b border-border-protocol flex-shrink-0">
-            {TABS.map((t) => (
-              <button
-                key={t.id}
-                onClick={() => onTabChange(t.id)}
+            {TABS.map((tab) => (
+              <Link
+                key={tab.id}
+                href={tab.href}
+                onClick={(e) => { e.preventDefault(); onTabChange(tab.id); }}
                 className={`flex-1 py-2.5 font-mono text-[9.5px] font-bold tracking-[.07em]
                             transition-colors duration-150
-                            ${activeTab === t.id
+                            ${activeTab === tab.id
                               ? "text-gold-bright border-b-2 border-gold-protocol bg-gold-glow"
                               : "text-text-mute2 hover:text-text-base border-b-2 border-transparent"
                             }`}
               >
-                {t.label}
-              </button>
+                {tab.label}
+              </Link>
             ))}
           </div>
 

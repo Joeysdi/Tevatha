@@ -15,9 +15,9 @@ interface Props {
   onTabChange: (t: ProvisionerTab) => void;
 }
 
-const TABS: { id: ProvisionerTab; label: string }[] = [
-  { id: "products", label: "🛒 Products" },
-  { id: "browse",   label: "◈ Browse"   },
+const TABS: { id: ProvisionerTab; label: string; href: string }[] = [
+  { id: "products", label: "🛒 Products", href: "/provisioner"       },
+  { id: "browse",   label: "◈ Browse",   href: "/provisioner#browse" },
 ];
 
 const SHOP_CATEGORIES = [
@@ -82,19 +82,20 @@ export function GlobeProvisionerPanel({ open, onClose, activeTab, onTabChange }:
 
           {/* Tab strip */}
           <div className="flex border-b border-border-protocol flex-shrink-0">
-            {TABS.map((t) => (
-              <button
-                key={t.id}
-                onClick={() => onTabChange(t.id)}
+            {TABS.map((tab) => (
+              <Link
+                key={tab.id}
+                href={tab.href}
+                onClick={(e) => { e.preventDefault(); onTabChange(tab.id); }}
                 className={`flex-1 py-2.5 font-mono text-[9.5px] font-bold tracking-[.07em]
                             transition-colors duration-150
-                            ${activeTab === t.id
+                            ${activeTab === tab.id
                               ? "text-gold-bright border-b-2 border-gold-protocol bg-gold-glow"
                               : "text-text-mute2 hover:text-text-base border-b-2 border-transparent"
                             }`}
               >
-                {t.label}
-              </button>
+                {tab.label}
+              </Link>
             ))}
           </div>
 
