@@ -7,11 +7,9 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "@/lib/i18n/use-translation";
 import { WorldRiskGlobe }         from "./world-risk-globe";
-import { GlobeProvisionerPanel }  from "./globe-provisioner-panel";
 import { GlobeInfoCards }         from "./globe-info-cards";
 import { LiveClock }              from "./live-clock";
 
-import type { ProvisionerTab }    from "./globe-provisioner-panel";
 import { DOMAINS, TIMELINE_EVENTS, GATES } from "@/lib/watchtower/data";
 import { SCENARIO_IMPACTS }       from "@/lib/watchtower/scenario-impacts";
 
@@ -191,8 +189,6 @@ export function WatchtowerGlobeShell() {
   }, [searchParams, router]);
 
   // ── State (initialized from URL params) ────────────────────────────────────
-  const [provisionerOpen, setProvisionerOpen] = useState(() => searchParams.get("panel") === "shop");
-  const [provisionerTab,  setProvisionerTab]  = useState<ProvisionerTab>("products");
 const [eraPhase,          setEraPhase]          = useState(() => searchParams.get("era") ?? "P4");
   const [livePhase,         setLivePhase]         = useState(() => searchParams.get("era") ?? "P4");
   const [scrubVelocity,     setScrubVelocity]     = useState(0);
@@ -281,23 +277,37 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
           onNewsFeedPinClick={setSelectedNewsId}
         />
 
-        {/* ── Provisioner (right) panel trigger ──────────────────────────── */}
+        {/* ── Provisioner (right) — navigate to shop page ─────────────── */}
         <div
           className="absolute right-0 z-20 flex flex-col gap-0.5"
           style={{ top: "50%", transform: `translateY(-50%) scale(${panelScale})`, transformOrigin: "right center" }}
+          onClick={(e) => e.stopPropagation()}
         >
-          <PanelTrigger
-            open={provisionerOpen}
-            onClick={(e) => {
-              e.stopPropagation();
-              const next = !provisionerOpen;
-              setProvisionerOpen(next);
-              updateUrl({ panel: next ? "shop" : null });
+          <Link
+            href="/provisioner"
+            className="py-3 sm:py-5 px-2 min-h-[44px] min-w-[44px] rounded-l border-l border-y
+                       flex flex-col items-center gap-1.5 transition-all duration-200
+                       text-text-mute2 hover:text-text-base"
+            style={{
+              background: "rgba(6,7,14,0.40)",
+              borderColor: "rgba(255,255,255,0.06)",
+              backdropFilter: "blur(4px)",
             }}
-            label={t("nav_shop")}
-            openColor="gold"
-            side="right"
-          />
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLElement).style.background = "#c9a84c0f";
+              (e.currentTarget as HTMLElement).style.borderColor = "#c9a84c40";
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLElement).style.background = "rgba(6,7,14,0.40)";
+              (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.06)";
+            }}
+            aria-label={t("nav_shop")}
+          >
+            <span className="font-mono text-[7.5px] [writing-mode:vertical-rl] rotate-180 tracking-[.18em] uppercase leading-none">
+              {t("nav_shop")}
+            </span>
+            <span className="text-[9px]">◄</span>
+          </Link>
         </div>
 
         {/* ── Historical era badge ─────────────────────────────────────────── */}
@@ -543,7 +553,7 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
           onCloseSignal={() => setSelectedSignalIdx(null)}
           onClosePsych={() => setSelectedPsychZone(null)}
           onCloseGate={() => setSelectedGateId(null)}
-          onOpenShop={() => { setProvisionerOpen(true); updateUrl({ panel: "shop" }); }}
+          onOpenShop={() => router.push("/provisioner")}
           selectedCommodityId={selectedCommodityId}
           selectedNewsId={selectedNewsId}
           onCloseCommodity={() => setSelectedCommodityId(null)}
@@ -555,8 +565,6 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
           <LiveClock />
         </div>
 
-        {/* ── Side panels ──────────────────────────────────────────────────── */}
-        <GlobeProvisionerPanel open={provisionerOpen} onClose={() => setProvisionerOpen(false)} activeTab={provisionerTab} onTabChange={setProvisionerTab} />
 
         {/* ── Era detail card — floats above scrubber when not at P4 ─────────── */}
         <AnimatePresence>
