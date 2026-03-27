@@ -34,7 +34,7 @@ export default function WatchtowerLayout({ children }: { children: ReactNode }) 
       </header>
 
       {/* ── PAGE CONTENT ─────────────────────────────────────────────── */}
-      <main className="flex-1 overflow-hidden relative">
+      <main id="main-content" className="flex-1 overflow-hidden relative">
         {children}
       </main>
     </div>

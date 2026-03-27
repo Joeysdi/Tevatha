@@ -63,6 +63,16 @@ export default function RootLayout({
         `}
       >
         <body className="bg-void-0 text-text-base font-sans antialiased overscroll-none">
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:fixed focus:z-[9999] focus:top-4 focus:left-4
+                       focus:px-4 focus:py-2 focus:rounded-lg focus:font-mono focus:text-[11px]
+                       focus:font-bold focus:tracking-[.08em]
+                       focus:bg-void-1 focus:border focus:border-gold-protocol
+                       focus:text-gold-bright focus:shadow-[0_4px_24px_rgba(0,0,0,0.7)]"
+          >
+            Skip to main content
+          </a>
           <LanguageProvider>
             {children}
           </LanguageProvider>

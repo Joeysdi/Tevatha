@@ -65,7 +65,7 @@ export default function ProtocolLayout({ children }: { children: ReactNode }) {
         <ProtocolNav />
       </header>
 
-      <main className="flex-1 px-0">{children}</main>
+      <main id="main-content" className="flex-1 px-0">{children}</main>
     </div>
   );
 }
