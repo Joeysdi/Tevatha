@@ -1,6 +1,7 @@
 // app/(watchtower)/watchtower/layout.tsx
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { LiveClock } from "@/components/watchtower/live-clock";
 
 export const metadata: Metadata = {
   title: {
@@ -40,9 +41,7 @@ export default function WatchtowerLayout({ children }: { children: ReactNode }) 
             Global Threat Matrix
           </span>
         </div>
-        <span className="font-mono text-[7.5px] text-text-mute2/30 tracking-[.14em]">
-          MATRIX v2.6 · LIVE
-        </span>
+        <LiveClock inline />
       </header>
 
       {/* ── PAGE CONTENT ─────────────────────────────────────────────── */}

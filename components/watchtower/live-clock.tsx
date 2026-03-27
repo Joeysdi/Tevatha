@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 
-export function LiveClock() {
+export function LiveClock({ inline = false }: { inline?: boolean }) {
   const [utc, setUtc] = useState<string>("");
 
   useEffect(() => {
@@ -16,6 +16,15 @@ export function LiveClock() {
   }, []);
 
   if (!utc) return null; // Avoid hydration mismatch on first render
+
+  if (inline) {
+    return (
+      <div className="flex items-center gap-1.5">
+        <span className="font-mono text-[7.5px] tracking-[.14em] uppercase text-text-mute2/40">UTC</span>
+        <span className="font-mono text-[11px] tabular-nums text-text-mute2/70 tracking-[.08em]">{utc}</span>
+      </div>
+    );
+  }
 
   return (
     <div
