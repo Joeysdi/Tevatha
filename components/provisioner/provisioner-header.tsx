@@ -14,7 +14,7 @@ export function ProvisionerHeader() {
   return (
     <>
       <header
-        className="backdrop-blur-sm bg-void-1/95 border-b border-border-protocol/40 relative z-20 px-4 sm:px-6 py-3 sm:py-3.5 flex items-center justify-between"
+        className="backdrop-blur-sm bg-void-1/95 border-b border-border-protocol/40 relative z-20 px-4 sm:px-6 py-3 sm:py-3.5"
         style={{ boxShadow: "0 0 24px rgba(201,168,76,0.06)" }}
       >
         {/* Gold top accent line */}
@@ -23,87 +23,89 @@ export function ProvisionerHeader() {
           style={{ background: "linear-gradient(90deg,#f0c842,#c9a84c,transparent)" }}
         />
 
-        {/* Left: brand + pillar label */}
-        <div className="flex items-center gap-2.5">
-          <span className="w-2 h-2 rounded-full bg-gold-protocol animate-pulse" />
-          <span
-            className="font-cinzel font-bold text-[15px] tracking-[.2em]"
-            style={{
-              background: "linear-gradient(90deg,#f0c842,#c9a84c)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-          >
-            TEVATHA
-          </span>
-          <span className="w-px h-4 bg-border-bright opacity-40" />
-          <span className="font-mono text-[10px] text-text-mute2 tracking-[.18em]">
-            PROVISIONER
-          </span>
-        </div>
+        <div className="max-w-[1400px] mx-auto w-full flex items-center justify-between">
+          {/* Left: brand + pillar label */}
+          <div className="flex items-center gap-2.5">
+            <span className="w-2 h-2 rounded-full bg-gold-protocol animate-pulse" />
+            <span
+              className="font-cinzel font-bold text-[15px] tracking-[.2em]"
+              style={{
+                background: "linear-gradient(90deg,#f0c842,#c9a84c)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}
+            >
+              TEVATHA
+            </span>
+            <span className="w-px h-4 bg-border-bright opacity-40" />
+            <span className="font-mono text-[10px] text-text-mute2 tracking-[.18em]">
+              PROVISIONER
+            </span>
+          </div>
 
-        {/* Right: cart + auth + back link */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* Cart button */}
-          <button
-            onClick={() => setOpen(!open)}
-            className="relative flex items-center gap-1.5 font-mono text-[11px]
-                       text-text-mute2 hover:text-gold-bright border border-border-protocol
-                       rounded-lg px-2.5 sm:px-3 py-1.5 hover:border-gold-protocol/40
-                       transition-all duration-200"
-            aria-label="Open cart"
-          >
-            <span>🛒</span>
-            <span className="hidden sm:inline">Cart</span>
-            {itemCount > 0 && (
-              <span
-                className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px]
-                           bg-gold-protocol text-void-0 font-mono font-bold
-                           text-[9px] rounded-full flex items-center justify-center
-                           px-1 tabular-nums"
-              >
-                {itemCount > 99 ? "99+" : itemCount}
-              </span>
-            )}
-          </button>
-
-          {/* Auth */}
-          {isLoaded && (
-            isSignedIn ? (
-              <UserButton
-                appearance={{
-                  elements: {
-                    avatarBox: "w-7 h-7",
-                    userButtonPopoverCard: "bg-void-1 border border-border-protocol",
-                    userButtonPopoverActionButton: "text-text-base hover:bg-void-2 font-mono text-[11px]",
-                    userButtonPopoverActionButtonText: "font-mono text-[11px]",
-                    userButtonPopoverFooter: "hidden",
-                  },
-                }}
-              />
-            ) : (
-              <SignInButton mode="redirect" forceRedirectUrl="/provisioner">
-                <button
-                  className="font-mono text-[11px] text-text-mute2 hover:text-gold-bright
-                             border border-border-protocol rounded-lg px-2.5 sm:px-3 py-1.5
-                             hover:border-gold-protocol/40 transition-all duration-200"
+          {/* Right: cart + auth + back link */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Cart button */}
+            <button
+              onClick={() => setOpen(!open)}
+              className="relative flex items-center gap-1.5 font-mono text-[11px]
+                         text-text-mute2 hover:text-gold-bright border border-border-protocol
+                         rounded-lg px-2.5 sm:px-3 py-1.5 min-h-[40px] hover:border-gold-protocol/40
+                         transition-all duration-200"
+              aria-label="Open cart"
+            >
+              <span>🛒</span>
+              <span className="hidden sm:inline">Cart</span>
+              {itemCount > 0 && (
+                <span
+                  className="absolute -top-1.5 -right-1.5 min-w-[20px] h-[20px]
+                             bg-gold-protocol text-void-0 font-mono font-bold
+                             text-[9px] rounded-full flex items-center justify-center
+                             px-1 tabular-nums"
                 >
-                  Sign In
-                </button>
-              </SignInButton>
-            )
-          )}
+                  {itemCount > 99 ? "99+" : itemCount}
+                </span>
+              )}
+            </button>
 
-          {/* Back link */}
-          <Link
-            href="/watchtower"
-            className="hidden sm:inline font-mono text-[11px] text-text-mute2 hover:text-gold-bright
-                       border border-border-protocol rounded-lg px-3 py-1.5
-                       hover:border-gold-protocol/40 transition-all duration-200"
-          >
-            ← Watchtower
-          </Link>
+            {/* Auth */}
+            {isLoaded && (
+              isSignedIn ? (
+                <UserButton
+                  appearance={{
+                    elements: {
+                      avatarBox: "w-7 h-7",
+                      userButtonPopoverCard: "bg-void-1 border border-border-protocol",
+                      userButtonPopoverActionButton: "text-text-base hover:bg-void-2 font-mono text-[11px]",
+                      userButtonPopoverActionButtonText: "font-mono text-[11px]",
+                      userButtonPopoverFooter: "hidden",
+                    },
+                  }}
+                />
+              ) : (
+                <SignInButton mode="redirect" forceRedirectUrl="/provisioner">
+                  <button
+                    className="font-mono text-[11px] text-text-mute2 hover:text-gold-bright
+                               border border-border-protocol rounded-lg px-2.5 sm:px-3 py-1.5
+                               min-h-[40px] hover:border-gold-protocol/40 transition-all duration-200"
+                  >
+                    Sign In
+                  </button>
+                </SignInButton>
+              )
+            )}
+
+            {/* Back link */}
+            <Link
+              href="/watchtower"
+              className="hidden sm:inline font-mono text-[11px] text-text-mute2 hover:text-gold-bright
+                         border border-border-protocol rounded-lg px-3 py-1.5 min-h-[40px]
+                         hover:border-gold-protocol/40 transition-all duration-200 flex items-center"
+            >
+              ← Watchtower
+            </Link>
+          </div>
         </div>
       </header>
 

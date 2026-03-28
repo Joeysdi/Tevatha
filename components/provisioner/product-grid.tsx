@@ -3,7 +3,7 @@
 
 import { useState, useMemo } from "react";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { StaggerParent, StaggerChild, FadeIn } from "@/components/ui/motion";
 import { GradeBadge }  from "./grade-badge";
 import { useCart }     from "@/lib/cart/store";
@@ -54,7 +54,11 @@ const PRODUCT_IMAGES: Record<string, string> = {
   "rea-panama-boquete":         "/products/rea-panama-boquete.jpg",
 };
 
-type FilterTab = "all" | ProductCategory | "critical";
+type Tier = "T0" | "T1" | "T2" | "T3";
+type SortBy = "grade" | "price-asc" | "price-desc" | "tier";
+
+const GRADE_ORDER: Record<GradeLevel, number> = { A: 0, B: 1, C: 2, D: 3, F: 4 };
+const TIER_ORDER: Record<Tier, number> = { T3: 0, T2: 1, T1: 2, T0: 3 };
 
 function SafetyBar({ label, value }: { label: string; value: number }) {
   const color = value >= 80 ? "#1ae8a0" : value >= 60 ? "#c9a84c" : "#e84040";
@@ -84,12 +88,154 @@ const GRADE_BAR: Record<GradeLevel, string> = {
   F: "rgba(255,255,255,0.07)",
 };
 
-const TIER_COLORS = {
+const TIER_COLORS: Record<Tier, string> = {
   T0: "text-text-mute2",
   T1: "text-green-bright",
   T2: "text-blue-DEFAULT",
   T3: "text-purple-DEFAULT",
-} as const;
+};
+
+const CATEGORY_LABELS: Record<ProductCategory | "all", string> = {
+  all:            "All Items",
+  communications: "Communications",
+  medical:        "Medical",
+  energy:         "Energy",
+  mobility:       "Mobility",
+  water:          "Water",
+  security:       "Security",
+  shelter:        "Shelter",
+  real_estate:    "Real Estate",
+};
+
+interface FilterState {
+  activeCategory: ProductCategory | "all";
+  activeGrades: GradeLevel[];
+  activeTiers: Tier[];
+  criticalOnly: boolean;
+  sortBy: SortBy;
+}
+
+interface FilterControlsProps extends FilterState {
+  availableCategories: ProductCategory[];
+  categoryCounts: Record<string, number>;
+  onCategoryChange: (c: ProductCategory | "all") => void;
+  onGradeToggle: (g: GradeLevel) => void;
+  onTierToggle: (t: Tier) => void;
+  onCriticalToggle: () => void;
+  onClear: () => void;
+  hasActiveFilters: boolean;
+}
+
+function FilterControls({
+  activeCategory, activeGrades, activeTiers, criticalOnly,
+  availableCategories, categoryCounts,
+  onCategoryChange, onGradeToggle, onTierToggle, onCriticalToggle,
+  onClear, hasActiveFilters,
+}: FilterControlsProps) {
+  return (
+    <div className="space-y-5">
+      {hasActiveFilters && (
+        <button
+          onClick={onClear}
+          className="font-mono text-[10px] text-gold-protocol hover:text-gold-bright transition-colors"
+        >
+          ✕ Clear filters
+        </button>
+      )}
+
+      {/* Department */}
+      <div>
+        <p className="font-mono text-[9px] text-text-mute2 tracking-[.12em] uppercase mb-1.5">
+          Department
+        </p>
+        <div className="space-y-0.5">
+          {(["all", ...availableCategories] as (ProductCategory | "all")[]).map((cat) => (
+            <button
+              key={cat}
+              onClick={() => onCategoryChange(cat)}
+              className={`w-full flex items-center justify-between px-2.5 rounded-lg
+                         text-left font-mono text-[11px] min-h-[36px] transition-colors
+                         border-l-2 ${
+                           activeCategory === cat
+                             ? "border-l-gold-protocol text-gold-bright bg-gold-glow"
+                             : "border-l-transparent text-text-mute2 hover:text-text-dim hover:bg-white/[0.03]"
+                         }`}
+            >
+              <span>{CATEGORY_LABELS[cat] ?? cat}</span>
+              <span className="font-mono text-[9px] text-text-mute2 tabular-nums">
+                {categoryCounts[cat] ?? 0}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Grade */}
+      <div>
+        <p className="font-mono text-[9px] text-text-mute2 tracking-[.12em] uppercase mb-1.5">
+          Grade
+        </p>
+        <div className="space-y-0.5">
+          {(["A", "B", "C", "D"] as GradeLevel[]).map((g) => (
+            <label
+              key={g}
+              className="flex items-center gap-2.5 px-2.5 min-h-[36px] cursor-pointer rounded-lg hover:bg-white/[0.03]"
+            >
+              <input
+                type="checkbox"
+                checked={activeGrades.includes(g)}
+                onChange={() => onGradeToggle(g)}
+                className="accent-[#c9a84c] w-3.5 h-3.5 cursor-pointer flex-shrink-0"
+              />
+              <span className="font-mono text-[11px] text-text-dim">Grade {g}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Tier */}
+      <div>
+        <p className="font-mono text-[9px] text-text-mute2 tracking-[.12em] uppercase mb-1.5">
+          Tier
+        </p>
+        <div className="flex gap-1.5">
+          {(["T1", "T2", "T3"] as Tier[]).map((t) => (
+            <button
+              key={t}
+              onClick={() => onTierToggle(t)}
+              className={`font-mono text-[10px] px-2.5 py-1.5 rounded-lg border transition-colors min-h-[36px]
+                         ${
+                           activeTiers.includes(t)
+                             ? "border-gold-protocol text-gold-bright bg-gold-glow"
+                             : "border-border-protocol text-text-mute2 hover:border-border-bright/40 hover:text-text-dim"
+                         }`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Critical Only */}
+      <div className="flex items-center justify-between px-2.5 min-h-[36px]">
+        <span className="font-mono text-[11px] text-text-dim">Critical only</span>
+        <button
+          onClick={onCriticalToggle}
+          className={`relative w-9 h-5 rounded-full transition-colors flex-shrink-0 ${
+            criticalOnly ? "bg-red-protocol" : "bg-void-2 border border-border-protocol"
+          }`}
+          aria-label="Toggle critical only"
+        >
+          <span
+            className={`absolute top-0.5 w-4 h-4 rounded-full transition-transform bg-white shadow-sm ${
+              criticalOnly ? "translate-x-4" : "translate-x-0.5"
+            }`}
+          />
+        </button>
+      </div>
+    </div>
+  );
+}
 
 interface ProductGridProps {
   products: Product[];
@@ -97,10 +243,77 @@ interface ProductGridProps {
 
 export function ProductGrid({ products }: ProductGridProps) {
   const { t } = useTranslation();
-  const [activeFilter, setActiveFilter] = useState<FilterTab>("all");
+
+  // ── Filter & sort state ──────────────────────────────────────────────────
+  const [activeCategory, setActiveCategory] = useState<ProductCategory | "all">("all");
+  const [activeGrades, setActiveGrades] = useState<GradeLevel[]>([]);
+  const [activeTiers, setActiveTiers] = useState<Tier[]>([]);
+  const [criticalOnly, setCriticalOnly] = useState(false);
+  const [sortBy, setSortBy] = useState<SortBy>("grade");
+
+  // ── UI state ─────────────────────────────────────────────────────────────
+  const [filterOpen, setFilterOpen] = useState(false);
   const [inquiryProduct, setInquiryProduct] = useState<Product | null>(null);
   const [form, setForm] = useState({ name: "", email: "", message: "" });
-  const [submitState, setSubmitState] = useState<"idle"|"loading"|"done"|"error">("idle");
+  const [submitState, setSubmitState] = useState<"idle" | "loading" | "done" | "error">("idle");
+
+  // ── Derived data ─────────────────────────────────────────────────────────
+  const availableCategories = useMemo<ProductCategory[]>(() => {
+    return Array.from(new Set(products.map((p) => p.category))).sort() as ProductCategory[];
+  }, [products]);
+
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: products.length };
+    for (const p of products) {
+      counts[p.category] = (counts[p.category] ?? 0) + 1;
+    }
+    return counts;
+  }, [products]);
+
+  const filtered = useMemo(() => {
+    let result = products;
+    if (activeCategory !== "all") result = result.filter((p) => p.category === activeCategory);
+    if (criticalOnly) result = result.filter((p) => p.criticalFlag);
+    if (activeGrades.length > 0) result = result.filter((p) => activeGrades.includes(p.grade));
+    if (activeTiers.length > 0) result = result.filter((p) => activeTiers.includes(p.tier as Tier));
+
+    const sorted = [...result];
+    switch (sortBy) {
+      case "grade":
+        sorted.sort((a, b) => GRADE_ORDER[a.grade] - GRADE_ORDER[b.grade]);
+        break;
+      case "price-asc":
+        sorted.sort((a, b) => a.priceUsd - b.priceUsd);
+        break;
+      case "price-desc":
+        sorted.sort((a, b) => b.priceUsd - a.priceUsd);
+        break;
+      case "tier":
+        sorted.sort((a, b) => TIER_ORDER[a.tier as Tier] - TIER_ORDER[b.tier as Tier]);
+        break;
+    }
+    return sorted;
+  }, [products, activeCategory, criticalOnly, activeGrades, activeTiers, sortBy]);
+
+  const hasActiveFilters =
+    activeCategory !== "all" ||
+    activeGrades.length > 0 ||
+    activeTiers.length > 0 ||
+    criticalOnly;
+
+  // ── Handlers ─────────────────────────────────────────────────────────────
+  const toggleGrade = (g: GradeLevel) =>
+    setActiveGrades((prev) => (prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g]));
+
+  const toggleTier = (t: Tier) =>
+    setActiveTiers((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]));
+
+  const clearFilters = () => {
+    setActiveCategory("all");
+    setActiveGrades([]);
+    setActiveTiers([]);
+    setCriticalOnly(false);
+  };
 
   const openInquiry = (p: Product) => {
     setInquiryProduct(p);
@@ -108,32 +321,11 @@ export function ProductGrid({ products }: ProductGridProps) {
     setSubmitState("idle");
   };
 
-  const FILTER_LABELS: Record<FilterTab, string> = {
-    all:            t("filter_all_items"),
-    critical:       t("filter_critical"),
-    communications: t("filter_comms"),
-    medical:        t("filter_medical"),
-    energy:         t("filter_energy"),
-    mobility:       t("filter_mobility"),
-    water:          t("filter_water"),
-    security:       t("filter_security"),
-    shelter:        t("filter_shelter"),
-    real_estate:    "Real Estate",
+  const closeModal = () => {
+    setInquiryProduct(null);
+    setForm({ name: "", email: "", message: "" });
+    setSubmitState("idle");
   };
-
-  // Derive available filter tabs from actual catalog
-  const availableFilters = useMemo<FilterTab[]>(() => {
-    const cats = new Set<FilterTab>(
-      products.map((p) => p.category as FilterTab)
-    );
-    return ["all", "critical", ...Array.from(cats).sort()] as FilterTab[];
-  }, [products]);
-
-  const filtered = useMemo(() => {
-    if (activeFilter === "all")      return products;
-    if (activeFilter === "critical") return products.filter((p) => p.criticalFlag);
-    return products.filter((p) => p.category === activeFilter);
-  }, [products, activeFilter]);
 
   const handleInquirySubmit = async () => {
     if (!inquiryProduct) return;
@@ -150,64 +342,159 @@ export function ProductGrid({ products }: ProductGridProps) {
     }
   };
 
-  const closeModal = () => {
-    setInquiryProduct(null);
-    setForm({ name: "", email: "", message: "" });
-    setSubmitState("idle");
+  const filterProps: FilterControlsProps = {
+    activeCategory, activeGrades, activeTiers, criticalOnly, sortBy,
+    availableCategories, categoryCounts,
+    onCategoryChange: setActiveCategory,
+    onGradeToggle: toggleGrade,
+    onTierToggle: toggleTier,
+    onCriticalToggle: () => setCriticalOnly((v) => !v),
+    onClear: clearFilters,
+    hasActiveFilters,
   };
 
   return (
     <>
-      {/* Filter strip */}
-      <div className="flex flex-wrap gap-1.5 p-1.5 bg-void-2 rounded-xl
-                      border border-border-protocol mb-7">
-        {availableFilters.map((f) => (
-          <button
-            key={f}
-            onClick={() => setActiveFilter(f)}
-            className={`
-              px-4 py-1.5 text-[11.5px] font-medium transition-all duration-150
-              focus-visible:outline-none whitespace-nowrap
-              ${activeFilter === f
-                ? "rounded-full bg-gold-glow border border-gold-protocol border-l-2 border-l-gold-protocol text-gold-bright"
-                : "rounded-full border-transparent text-text-mute2 hover:bg-white/[0.03]"
-              }
-            `}
-          >
-            {FILTER_LABELS[f] ?? f}
-            {f === "critical" && (
-              <span className="ml-1.5 w-1.5 h-1.5 rounded-full bg-red-bright
-                               inline-block animate-pulse" />
-            )}
-          </button>
-        ))}
-        <span className="ml-auto self-center pr-2 font-mono text-[9.5px]
-                          text-text-mute2 tracking-[.06em]">
-          {filtered.length} {t("shop_items")}
-        </span>
+      <div className="flex gap-6 items-start">
+        {/* ── Desktop sidebar ─────────────────────────────────────────── */}
+        <div className="hidden lg:block w-52 flex-shrink-0 sticky top-4
+                        bg-void-1 border border-border-protocol rounded-xl p-4">
+          <FilterControls {...filterProps} />
+        </div>
+
+        {/* ── Main content ────────────────────────────────────────────── */}
+        <div className="flex-1 min-w-0">
+          {/* Sort bar */}
+          <div className="flex items-center justify-between gap-3 mb-4">
+            <div className="flex items-center gap-3">
+              {/* Mobile filter toggle */}
+              <button
+                onClick={() => setFilterOpen(true)}
+                className="lg:hidden flex items-center gap-1.5 font-mono text-[11px]
+                           text-text-mute2 hover:text-text-base border border-border-protocol
+                           rounded-lg px-3 py-2 min-h-[40px] transition-colors"
+              >
+                <span>≡</span>
+                <span>Filters</span>
+                {hasActiveFilters && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-gold-protocol" />
+                )}
+              </button>
+
+              <span className="font-mono text-[11px] text-text-mute2">
+                {filtered.length} {t("shop_items")}
+              </span>
+            </div>
+
+            {/* Sort dropdown */}
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-[10px] text-text-mute2 hidden sm:inline">Sort:</span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as SortBy)}
+                className="font-mono text-[11px] text-text-dim bg-void-1 border border-border-protocol
+                           rounded-lg px-2.5 py-2 min-h-[40px] focus:outline-none
+                           focus:border-gold-protocol/60 transition-colors cursor-pointer"
+              >
+                <option value="grade">Grade</option>
+                <option value="price-asc">Price: Low–High</option>
+                <option value="price-desc">Price: High–Low</option>
+                <option value="tier">Tier</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Product grid */}
+          <StaggerParent className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
+            {filtered.map((p) => (
+              <StaggerChild key={p.id}>
+                <ProductCard product={p} onInquire={openInquiry} />
+              </StaggerChild>
+            ))}
+          </StaggerParent>
+
+          {filtered.length === 0 && (
+            <div className="text-center py-16">
+              <p className="font-mono text-[12px] text-text-mute2">No items match your filters.</p>
+              <button
+                onClick={clearFilters}
+                className="mt-3 font-mono text-[11px] text-gold-protocol hover:text-gold-bright transition-colors"
+              >
+                Clear filters
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Product grid */}
-      <StaggerParent className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {filtered.map((p) => (
-          <StaggerChild key={p.id}>
-            <ProductCard product={p} onInquire={openInquiry} />
-          </StaggerChild>
-        ))}
-      </StaggerParent>
+      {/* ── Mobile filter bottom sheet ───────────────────────────────────── */}
+      <AnimatePresence>
+        {filterOpen && (
+          <div className="fixed inset-0 z-50 lg:hidden flex items-end">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="absolute inset-0 bg-void-0/80 backdrop-blur-sm"
+              onClick={() => setFilterOpen(false)}
+            />
+            {/* Sheet */}
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 30, stiffness: 300 }}
+              className="relative w-full bg-void-1 border-t border-border-protocol
+                         rounded-t-2xl max-h-[85vh] overflow-y-auto"
+            >
+              {/* Drag handle */}
+              <div className="flex justify-center pt-3 pb-1">
+                <div className="w-10 h-1 rounded-full bg-border-protocol" />
+              </div>
 
-      {/* Inquiry modal */}
+              <div className="flex items-center justify-between px-5 py-3 border-b border-border-protocol/50">
+                <span className="font-syne font-bold text-[15px] text-text-base">Filters</span>
+                <button
+                  onClick={() => setFilterOpen(false)}
+                  className="text-text-mute2 hover:text-text-base transition-colors text-[18px] leading-none min-w-[40px] min-h-[40px] flex items-center justify-center"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="p-5">
+                <FilterControls {...filterProps} />
+              </div>
+
+              <div className="sticky bottom-0 p-4 border-t border-border-protocol bg-void-1">
+                <button
+                  onClick={() => setFilterOpen(false)}
+                  className="w-full font-mono font-bold text-[12px] tracking-[.06em]
+                             px-4 py-3 rounded-lg bg-gold-protocol text-void-0
+                             hover:bg-gold-bright transition-colors"
+                >
+                  Show {filtered.length} items
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Inquiry modal (bottom sheet on mobile, centered on desktop) ──── */}
       {inquiryProduct && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-void-0/80 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex sm:items-center items-end p-0 sm:p-4 bg-void-0/80 backdrop-blur-sm"
           onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
         >
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2 }}
-            className="relative w-full max-w-md bg-void-1 border border-border-protocol
-                       rounded-2xl overflow-hidden shadow-[0_24px_64px_rgba(0,0,0,0.6)]"
+            className="relative w-full sm:max-w-md bg-void-1 border border-border-protocol
+                       rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-[0_24px_64px_rgba(0,0,0,0.6)]"
           >
             {/* Top accent */}
             <div className="absolute top-0 left-0 right-0 h-px"
@@ -232,7 +519,8 @@ export function ProductGrid({ products }: ProductGridProps) {
                 </div>
                 <button
                   onClick={closeModal}
-                  className="text-text-mute2 hover:text-text-base transition-colors text-[18px] leading-none flex-shrink-0"
+                  className="text-text-mute2 hover:text-text-base transition-colors text-[18px]
+                             leading-none flex-shrink-0 min-w-[40px] min-h-[40px] flex items-center justify-center"
                 >
                   ✕
                 </button>
@@ -320,7 +608,7 @@ export function ProductGrid({ products }: ProductGridProps) {
                     onClick={handleInquirySubmit}
                     disabled={submitState === "loading" || !form.name || !form.email}
                     className="w-full font-mono font-bold text-[11px] tracking-[.06em]
-                               px-4 py-2.5 rounded-lg bg-gold-protocol text-void-0
+                               px-4 py-3 rounded-lg bg-gold-protocol text-void-0
                                hover:bg-gold-bright hover:-translate-y-0.5 transition-all duration-150
                                disabled:opacity-40 disabled:cursor-not-allowed disabled:translate-y-0"
                   >
@@ -375,7 +663,7 @@ function ProductCard({ product: p, onInquire }: { product: Product; onInquire: (
     <motion.article
       whileHover={{ y: -2 }}
       transition={{ duration: 0.15 }}
-      className={`relative bg-void-1 border rounded-xl overflow-hidden
+      className={`group relative bg-void-1 border rounded-xl overflow-hidden flex flex-col
                   hover:shadow-[0_8px_24px_rgba(201,168,76,0.3)]
                   transition-shadow duration-200 ${g.border}`}
     >
@@ -389,74 +677,60 @@ function ProductCard({ product: p, onInquire }: { product: Product; onInquire: (
         className="absolute top-0 left-0 bottom-0 w-[3px]"
         style={{ background: GRADE_BAR[p.grade] }}
       />
+
       {/* Product image */}
-      <div className={`relative h-44 border-b border-border-protocol overflow-hidden ${p.category === "real_estate" ? "bg-void-2" : "bg-white"}`}>
+      <div className={`relative h-36 border-b border-border-protocol overflow-hidden flex-shrink-0 ${
+        p.category === "real_estate" ? "bg-void-2" : "bg-white"
+      }`}>
         {imgSrc ? (
           <Image
             src={imgSrc}
             alt={p.name}
             fill
-            className={p.category === "real_estate" ? "object-cover" : "object-contain p-5"}
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className={p.category === "real_estate" ? "object-cover" : "object-contain p-4"}
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           />
         ) : (
           <div className="h-full flex flex-col items-center justify-center gap-2">
-            <span className="font-mono text-[28px] opacity-20">📦</span>
-            <span className="font-mono text-[9px] text-text-mute2/40 tracking-[.14em] uppercase">{p.brand}</span>
+            <span className="font-mono text-[24px] opacity-20">📦</span>
+            <span className="font-mono text-[8px] text-text-mute2/40 tracking-[.12em] uppercase">{p.brand}</span>
           </div>
         )}
       </div>
 
-      {/* Card header */}
-      <div className="p-5">
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-2 flex-wrap">
-              <GradeBadge grade={p.grade} composite={p.gradeComposite} size="sm" />
-              {p.criticalFlag && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5
-                                 rounded-full bg-red-dim text-red-bright
-                                 border border-red-protocol/28
-                                 font-mono text-[9px] font-semibold">
-                  <span className="w-1 h-1 rounded-full bg-red-bright animate-pulse" />
-                  CRITICAL
-                </span>
-              )}
-            </div>
-            <h3 className="font-syne font-bold text-[15px] text-text-base
-                            leading-snug">
-              {p.name}
-            </h3>
-            <p className="font-mono text-[9.5px] text-text-mute2 mt-1">
-              {p.brand} · {p.sku}
-            </p>
-          </div>
-
-          <div className="text-right flex-shrink-0">
-            <div className="font-mono text-[7px] text-text-mute2 tracking-[.14em] uppercase mb-0.5">USD</div>
-            <div className="font-mono font-bold text-[15px] tabular-nums leading-none text-gold-protocol">
-              <FadeIn>{p.priceDisplay ?? `$${(p.priceUsd / 100).toFixed(2)}`}</FadeIn>
-            </div>
-            {p.category !== "real_estate" && (
-              <div className="font-mono text-[9px] text-cyan-DEFAULT mt-0.5">
-                <FadeIn delay={0.05}>◎ {p.priceUsdc.toFixed(2)} USDC</FadeIn>
-              </div>
-            )}
-            {p.location && (
-              <div className="font-mono text-[8px] text-text-mute2 mt-0.5 max-w-[120px] text-right leading-tight">
-                {p.location}
-              </div>
-            )}
-          </div>
+      {/* Card body */}
+      <div className="p-3 flex flex-col flex-1">
+        {/* Badges row */}
+        <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
+          <GradeBadge grade={p.grade} composite={p.gradeComposite} size="sm" />
+          {p.criticalFlag && (
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5
+                             rounded-full bg-red-dim text-red-bright
+                             border border-red-protocol/28
+                             font-mono text-[10px] font-semibold">
+              <span className="w-1 h-1 rounded-full bg-red-bright animate-pulse" />
+              CRITICAL
+            </span>
+          )}
         </div>
 
-        <p className="text-[12.5px] text-text-dim leading-relaxed mb-3.5">
+        {/* Name + brand */}
+        <h3 className="font-syne font-bold text-[13px] text-text-base leading-snug mb-0.5">
+          {p.name}
+        </h3>
+        <p className="font-mono text-[9.5px] text-text-mute2 mb-2">
+          {p.brand} · {p.sku}
+        </p>
+
+        {/* Spec */}
+        <p className="text-[11.5px] text-text-dim leading-relaxed mb-2.5 line-clamp-2 flex-1">
           {p.spec}
         </p>
 
+        {/* Safety bars (real estate only) */}
         {p.safetyScore && (
-          <div className="space-y-1.5 mb-3.5 p-3 bg-void-2 rounded-lg border border-border-protocol/50">
-            <p className="font-mono text-[8.5px] text-text-mute2 tracking-[.1em] uppercase mb-2">Safety Index</p>
+          <div className="space-y-1.5 mb-2.5 p-2.5 bg-void-2 rounded-lg border border-border-protocol/50">
+            <p className="font-mono text-[8px] text-text-mute2 tracking-[.1em] uppercase mb-1.5">Safety Index</p>
             <SafetyBar label="Nuclear Dist" value={p.safetyScore.nuclearDistance} />
             <SafetyBar label="Disaster"     value={p.safetyScore.disasterRisk} />
             <SafetyBar label="Density"      value={p.safetyScore.populationDensity} />
@@ -464,57 +738,68 @@ function ProductCard({ product: p, onInquire }: { product: Product; onInquire: (
           </div>
         )}
 
-        <div className="flex items-center justify-between">
-          <span className={`font-mono text-[10px] font-bold
-                            ${TIER_COLORS[p.tier]}`}>
-            {p.tier} ITEM
-          </span>
-          <span className={`font-mono text-[10px] ${p.inStock ? "text-green-bright" : "text-red-bright"}`}>
-            {p.inStock ? `● ${t("shop_in_stock")}` : `○ ${t("shop_out_of_stock")}`}
-          </span>
+        {/* Price + tier + stock row */}
+        <div className="flex items-center justify-between gap-1 mb-2.5">
+          <div>
+            <div className="font-mono font-bold text-[14px] tabular-nums leading-none text-gold-protocol">
+              <FadeIn>{p.priceDisplay ?? `$${(p.priceUsd / 100).toFixed(2)}`}</FadeIn>
+            </div>
+            {p.category === "real_estate" && p.location && (
+              <div className="font-mono text-[8px] text-text-mute2 mt-0.5 leading-tight">
+                {p.location}
+              </div>
+            )}
+          </div>
+          <div className="text-right">
+            <span className={`font-mono text-[10px] font-bold ${TIER_COLORS[p.tier as Tier]}`}>
+              {p.tier}
+            </span>
+            <div className={`font-mono text-[9px] ${p.inStock ? "text-green-bright" : "text-red-bright"}`}>
+              {p.inStock ? "● In stock" : "○ Out"}
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* Build / listing note */}
-      <div className="px-5 py-2.5 bg-void-2/60 border-t border-border-protocol/50">
-        <p className="font-mono text-[9px] text-text-mute2 tracking-[.08em] uppercase mb-1">
-          {p.listingNote ?? "Build note"}
-        </p>
-        <p className="font-mono text-[10px] text-text-mute2 leading-relaxed">
-          ▸ {p.buildNote}
-        </p>
-      </div>
-
-      {/* Action button */}
-      <div className="p-5 border-t border-border-protocol">
-        {p.category === "real_estate" ? (
-          <button
-            onClick={() => onInquire(p)}
-            className="w-full font-mono font-bold text-[11px] tracking-[.06em]
-                       px-4 py-2.5 rounded-lg transition-all duration-150
-                       bg-gold-protocol text-void-0 hover:bg-gold-bright hover:-translate-y-0.5"
-          >
-            Inquire →
-          </button>
-        ) : (
-          <button
-            onClick={handleAddToCart}
-            disabled={!p.inStock}
-            className={`w-full font-mono font-bold text-[11px] tracking-[.06em]
-                       px-4 py-2.5 rounded-lg transition-all duration-150
-                       ${added
-                         ? "bg-green-bright/20 text-green-bright border border-green-bright/30"
-                         : "bg-gold-protocol text-void-0 hover:bg-gold-bright hover:-translate-y-0.5"
-                       }
-                       disabled:opacity-40 disabled:cursor-not-allowed`}
-          >
-            {added
-              ? `✓ ${t("shop_added_to_cart")}`
-              : p.inStock
-                ? `${t("shop_add_to_cart")} — $${(p.priceUsd / 100).toFixed(2)}`
-                : t("shop_out_of_stock")}
-          </button>
+        {/* Build note — desktop only */}
+        {p.buildNote && (
+          <div className="hidden lg:block mb-2.5 px-2 py-1.5 bg-void-2/60 border-t border-border-protocol/50 -mx-3 mt-auto">
+            <p className="font-mono text-[9.5px] text-text-mute2 leading-relaxed">
+              ▸ {p.buildNote}
+            </p>
+          </div>
         )}
+
+        {/* Action button */}
+        <div className={p.buildNote ? "" : "mt-auto"}>
+          {p.category === "real_estate" ? (
+            <button
+              onClick={() => onInquire(p)}
+              className="w-full font-mono font-bold text-[11px] tracking-[.06em]
+                         px-4 py-3 rounded-lg transition-all duration-150
+                         bg-gold-protocol text-void-0 hover:bg-gold-bright hover:-translate-y-0.5"
+            >
+              Inquire →
+            </button>
+          ) : (
+            <button
+              onClick={handleAddToCart}
+              disabled={!p.inStock}
+              className={`w-full font-mono font-bold text-[11px] tracking-[.06em]
+                         px-4 py-3 rounded-lg transition-all duration-150
+                         ${added
+                           ? "bg-green-bright/20 text-green-bright border border-green-bright/30"
+                           : "bg-gold-protocol text-void-0 hover:bg-gold-bright hover:-translate-y-0.5"
+                         }
+                         disabled:opacity-40 disabled:cursor-not-allowed`}
+            >
+              {added
+                ? `✓ ${t("shop_added_to_cart")}`
+                : p.inStock
+                  ? `${t("shop_add_to_cart")} — $${(p.priceUsd / 100).toFixed(2)}`
+                  : t("shop_out_of_stock")}
+            </button>
+          )}
+        </div>
       </div>
     </motion.article>
   );

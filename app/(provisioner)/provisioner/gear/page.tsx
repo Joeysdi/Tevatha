@@ -184,7 +184,7 @@ export default function GearPage() {
             <button
               key={d.id}
               onClick={() => setActiveDomain(d)}
-              className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl font-mono
+              className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 min-h-[40px] rounded-xl font-mono
                           text-[11px] font-bold border transition-all duration-150 whitespace-nowrap
                 ${activeDomain.id === d.id
                   ? "bg-void-1 border-[var(--dc)]"
@@ -350,8 +350,8 @@ export default function GearPage() {
                   <Link
                     href="/provisioner"
                     className="font-mono text-[9.5px] font-bold text-void-0 bg-gold-protocol
-                               px-3 py-1.5 rounded-lg hover:bg-gold-bright transition-colors
-                               whitespace-nowrap flex-shrink-0"
+                               px-3 py-3 rounded-lg hover:bg-gold-bright transition-colors
+                               whitespace-nowrap flex-shrink-0 min-h-[44px] flex items-center"
                   >
                     Inquire →
                   </Link>
@@ -367,8 +367,8 @@ export default function GearPage() {
                       setOpen(true);
                     }}
                     className="font-mono text-[9.5px] font-bold text-void-0 bg-gold-protocol
-                               px-3 py-1.5 rounded-lg hover:bg-gold-bright transition-colors
-                               whitespace-nowrap flex-shrink-0"
+                               px-3 py-3 rounded-lg hover:bg-gold-bright transition-colors
+                               whitespace-nowrap flex-shrink-0 min-h-[44px]"
                   >
                     Add to Cart
                   </button>
