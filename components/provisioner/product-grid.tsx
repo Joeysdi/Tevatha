@@ -178,7 +178,7 @@ function ProductCard({ product: p }: { product: Product }) {
         style={{ background: GRADE_BAR[p.grade] }}
       />
       {/* Product image */}
-      <div className="relative h-44 bg-[#f8f8f8] border-b border-border-protocol overflow-hidden">
+      <div className="relative h-44 bg-white border-b border-border-protocol overflow-hidden">
         {imgSrc ? (
           <Image
             src={imgSrc}
