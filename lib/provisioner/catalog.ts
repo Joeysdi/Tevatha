@@ -8,7 +8,15 @@ export type ProductCategory =
   | "mobility"
   | "water"
   | "security"
-  | "shelter";
+  | "shelter"
+  | "real_estate";
+
+export interface SafetyScore {
+  nuclearDistance:    number;  // 0–100: proximity away from likely strike zones
+  disasterRisk:       number;  // 0–100: inverse (100 = minimal natural disaster exposure)
+  populationDensity:  number;  // 0–100: inverse (100 = extremely low density / rural)
+  politicalStability: number;  // 0–100: GPI rank + freedom index composite
+}
 
 export interface Product {
   id:              string;
@@ -28,6 +36,10 @@ export interface Product {
   buildNote:       string;
   stripePriceId?:  string;           // Stripe Price ID (low-ticket)
   imageSlug:       string;
+  location?:       string;           // "New Zealand — South Island"
+  safetyScore?:    SafetyScore;      // present for real_estate category
+  listingNote?:    string;           // replaces buildNote label copy for real estate
+  priceDisplay?:   string;           // override price string e.g. "$350,000"
 }
 
 // ── Catalog ─────────────────────────────────────────────────────────────
@@ -327,6 +339,176 @@ export const CATALOG: Product[] = [
     buildNote:"Pack 2 per group. Reflective silver side doubles as signaling panel.",
     stripePriceId:"price_placeholder_SHE003",
     imageSlug:"titan-tarp",
+  },
+
+  // ── REAL ESTATE ──────────────────────────────────────────────────────
+  {
+    id:"rea-nz-south-island", sku:"REA-001",
+    name:"Canterbury Station Land — South Island",
+    brand:"Tevatha Real Estate", category:"real_estate", grade:"A", gradeComposite:96,
+    tier:"T2", priceUsd:35000000, priceUsdc:350000, highTicket:true, inStock:true,
+    criticalFlag:false,
+    location:"New Zealand — South Island (Canterbury)",
+    spec:"40+ acres. Artesian well on title. Off-grid solar + diesel backup installed. 90 min from Christchurch. No seismic fault proximity. Sheep-grazing income.",
+    buildNote:"NZ tops Global Peace Index. Remote Southern Alps buffer. NZ residency pathway via investment.",
+    listingNote:"Why this Ark node works",
+    priceDisplay:"$350,000",
+    safetyScore:{ nuclearDistance:99, disasterRisk:90, populationDensity:98, politicalStability:96 },
+    imageSlug:"rea-nz-south-island",
+  },
+  {
+    id:"rea-switzerland-graubunden", sku:"REA-002",
+    name:"Alpine Farmstead — Graubünden",
+    brand:"Tevatha Real Estate", category:"real_estate", grade:"A", gradeComposite:93,
+    tier:"T2", priceUsd:85000000, priceUsdc:850000, highTicket:true, inStock:true,
+    criticalFlag:false,
+    location:"Switzerland — Graubünden canton",
+    spec:"6-hectare alpine property. Spring-fed water rights. Bunker-grade cellar. 1,400m elevation. Grid + independent hydro micro-turbine. 45 min from Chur.",
+    buildNote:"Switzerland's civil defense infrastructure is the world's most mature. Mandatory shelter law. Highest political neutrality score globally.",
+    listingNote:"Why this Ark node works",
+    priceDisplay:"$850,000",
+    safetyScore:{ nuclearDistance:88, disasterRisk:92, populationDensity:94, politicalStability:99 },
+    imageSlug:"rea-switzerland-graubunden",
+  },
+  {
+    id:"rea-iceland-westfjords", sku:"REA-003",
+    name:"Geothermal Homestead — Westfjords",
+    brand:"Tevatha Real Estate", category:"real_estate", grade:"A", gradeComposite:94,
+    tier:"T2", priceUsd:28000000, priceUsdc:280000, highTicket:true, inStock:true,
+    criticalFlag:false,
+    location:"Iceland — Westfjords",
+    spec:"8-hectare coastal fjord property. Geothermal heating (no fuel cost). River access for water + micro-hydro. Arctic growing season (greenhouse viable). Ferry access only — natural isolation.",
+    buildNote:"Iceland has zero nuclear targets. Geothermal eliminates energy dependency entirely. Sub-340k population island. GPI #1 globally for 15 years.",
+    listingNote:"Why this Ark node works",
+    priceDisplay:"$280,000",
+    safetyScore:{ nuclearDistance:99, disasterRisk:86, populationDensity:99, politicalStability:98 },
+    imageSlug:"rea-iceland-westfjords",
+  },
+  {
+    id:"rea-uruguay-rivera", sku:"REA-004",
+    name:"Highland Estancia — Rivera",
+    brand:"Tevatha Real Estate", category:"real_estate", grade:"A", gradeComposite:92,
+    tier:"T2", priceUsd:18000000, priceUsdc:180000, highTicket:true, inStock:true,
+    criticalFlag:false,
+    location:"Uruguay — Rivera highlands",
+    spec:"120-hectare working cattle estancia. Artesian bore + dam. Off-grid solar array included. 2,200m from Brazilian border. Permaculture zones established.",
+    buildNote:"Uruguay ranked most stable democracy in South America. Low corruption, no military aggression history. Southern hemisphere — outside primary nuclear exchange zones.",
+    listingNote:"Why this Ark node works",
+    priceDisplay:"$180,000",
+    safetyScore:{ nuclearDistance:94, disasterRisk:91, populationDensity:96, politicalStability:88 },
+    imageSlug:"rea-uruguay-rivera",
+  },
+  {
+    id:"rea-portugal-alentejo", sku:"REA-005",
+    name:"Olive & Cork Farm — Alentejo",
+    brand:"Tevatha Real Estate", category:"real_estate", grade:"A", gradeComposite:91,
+    tier:"T2", priceUsd:22000000, priceUsdc:220000, highTicket:true, inStock:true,
+    criticalFlag:false,
+    location:"Portugal — Alentejo",
+    spec:"25-hectare mixed farm. 400-year cork oaks (harvest income). Bore well + river right. Stone farmhouse. 1.5hr from Lisbon airport. Solar ready.",
+    buildNote:"Portugal NATO member but non-nuclear, low threat profile. EU residency via NHR tax regime. Alentejo interior: minimal population, agricultural self-sufficiency.",
+    listingNote:"Why this Ark node works",
+    priceDisplay:"$220,000",
+    safetyScore:{ nuclearDistance:86, disasterRisk:88, populationDensity:93, politicalStability:90 },
+    imageSlug:"rea-portugal-alentejo",
+  },
+  {
+    id:"rea-finland-lapland", sku:"REA-006",
+    name:"Wilderness Lodge — Lapland Interior",
+    brand:"Tevatha Real Estate", category:"real_estate", grade:"A", gradeComposite:90,
+    tier:"T2", priceUsd:19000000, priceUsdc:190000, highTicket:true, inStock:true,
+    criticalFlag:false,
+    location:"Finland — Lapland interior",
+    spec:"12-hectare boreal forest property. Lake frontage with freshwater. Log construction. Wood-stove + solar hybrid. 60km from nearest town. Reindeer grazing rights.",
+    buildNote:"Finland scores top 5 GPI. Remote Lapland: ~2 people/km². NATO aligned but no strategic targets. Fresh water lake access year-round via ice drilling.",
+    listingNote:"Why this Ark node works",
+    priceDisplay:"$190,000",
+    safetyScore:{ nuclearDistance:82, disasterRisk:93, populationDensity:99, politicalStability:94 },
+    imageSlug:"rea-finland-lapland",
+  },
+  {
+    id:"rea-australia-tasmania", sku:"REA-007",
+    name:"Orchard Retreat — Tasmania",
+    brand:"Tevatha Real Estate", category:"real_estate", grade:"B", gradeComposite:86,
+    tier:"T2", priceUsd:29000000, priceUsdc:290000, highTicket:true, inStock:true,
+    criticalFlag:false,
+    location:"Australia — Tasmania",
+    spec:"18-hectare fruit orchard. Rainwater tanks (150,000L capacity). 3-bedroom stone homestead. Standalone solar/battery array. 40 min from Hobart. Island state — natural quarantine.",
+    buildNote:"Tasmania island geography provides natural separation from mainland disruption. Australia GPI top 10. Low seismic risk. Temperate climate with 1,200mm annual rainfall.",
+    listingNote:"Why this Ark node works",
+    priceDisplay:"$290,000",
+    safetyScore:{ nuclearDistance:91, disasterRisk:85, populationDensity:95, politicalStability:87 },
+    imageSlug:"rea-australia-tasmania",
+  },
+  {
+    id:"rea-canada-bc-interior", sku:"REA-008",
+    name:"Ranchland — British Columbia Interior",
+    brand:"Tevatha Real Estate", category:"real_estate", grade:"B", gradeComposite:88,
+    tier:"T2", priceUsd:32000000, priceUsdc:320000, highTicket:true, inStock:true,
+    criticalFlag:false,
+    location:"Canada — British Columbia interior",
+    spec:"80-hectare mixed ranch. Creek water rights. Detached workshop + solar array. Timber income. 2hr from Kamloops. No flood zone. Deer/elk hunting access.",
+    buildNote:"BC interior: vast wilderness buffer from population centers. Canada GPI top 10. Okanagan/Thompson region has minimal seismic risk and reliable snowmelt water.",
+    listingNote:"Why this Ark node works",
+    priceDisplay:"$320,000",
+    safetyScore:{ nuclearDistance:78, disasterRisk:86, populationDensity:97, politicalStability:92 },
+    imageSlug:"rea-canada-bc-interior",
+  },
+  {
+    id:"rea-norway-innlandet", sku:"REA-009",
+    name:"Mountain Farm — Innlandet",
+    brand:"Tevatha Real Estate", category:"real_estate", grade:"B", gradeComposite:87,
+    tier:"T2", priceUsd:28000000, priceUsdc:280000, highTicket:true, inStock:true,
+    criticalFlag:false,
+    location:"Norway — Innlandet",
+    spec:"30-hectare highland farm. Hydroelectric stream (2kW output). Timber barn + main house. Root cellar. 90 min from Oslo. Elk and trout on property.",
+    buildNote:"Norway GPI top 5. Innlandet county: sparse population, mountain terrain, micro-hydro eliminates grid dependency. Norwegian residency accessible via investment.",
+    listingNote:"Why this Ark node works",
+    priceDisplay:"$280,000",
+    safetyScore:{ nuclearDistance:80, disasterRisk:90, populationDensity:96, politicalStability:95 },
+    imageSlug:"rea-norway-innlandet",
+  },
+  {
+    id:"rea-costa-rica-guanacaste", sku:"REA-010",
+    name:"Highlands Finca — Guanacaste",
+    brand:"Tevatha Real Estate", category:"real_estate", grade:"B", gradeComposite:85,
+    tier:"T2", priceUsd:15000000, priceUsdc:150000, highTicket:true, inStock:true,
+    criticalFlag:false,
+    location:"Costa Rica — Guanacaste highlands",
+    spec:"12-hectare tropical finca. Spring water. 2BR casita + guest cabin. Solar panels installed. 500m+ elevation (malaria-free). 45 min from Liberia airport.",
+    buildNote:"Costa Rica has no standing army (since 1948). GPI top 40. Guanacaste highland: low seismic, abundant water, sub-tropical growing season year-round.",
+    listingNote:"Why this Ark node works",
+    priceDisplay:"$150,000",
+    safetyScore:{ nuclearDistance:95, disasterRisk:76, populationDensity:88, politicalStability:84 },
+    imageSlug:"rea-costa-rica-guanacaste",
+  },
+  {
+    id:"rea-chile-patagonia", sku:"REA-011",
+    name:"Estancia — Los Lagos Patagonia",
+    brand:"Tevatha Real Estate", category:"real_estate", grade:"B", gradeComposite:83,
+    tier:"T2", priceUsd:12000000, priceUsdc:120000, highTicket:true, inStock:true,
+    criticalFlag:false,
+    location:"Chile — Patagonia (Los Lagos)",
+    spec:"200-hectare Patagonian estancia. River frontage. Sheep/cattle operation running. Diesel generator + solar hybrid. Near-zero light pollution. 2hr from Puerto Montt.",
+    buildNote:"Chilean Patagonia: extreme remoteness, <1 person/km², no strategic value. Southern hemisphere outside primary exchange corridors. Glacier-fed river water.",
+    listingNote:"Why this Ark node works",
+    priceDisplay:"$120,000",
+    safetyScore:{ nuclearDistance:96, disasterRisk:72, populationDensity:99, politicalStability:78 },
+    imageSlug:"rea-chile-patagonia",
+  },
+  {
+    id:"rea-panama-boquete", sku:"REA-012",
+    name:"Coffee Farm — Chiriquí (Boquete)",
+    brand:"Tevatha Real Estate", category:"real_estate", grade:"B", gradeComposite:82,
+    tier:"T2", priceUsd:13000000, priceUsdc:130000, highTicket:true, inStock:true,
+    criticalFlag:false,
+    location:"Panama — Chiriquí highlands (Boquete)",
+    spec:"5-hectare highland coffee farm. Natural spring. 1,200m elevation (cool climate). 2BR farmhouse. Grid + backup solar. 30 min from David city. USD economy.",
+    buildNote:"Boquete: world-class expat infrastructure, USD-based economy (no currency risk), Friendly Nations Visa for residency. Highland elevation eliminates tropical disease risk.",
+    listingNote:"Why this Ark node works",
+    priceDisplay:"$130,000",
+    safetyScore:{ nuclearDistance:93, disasterRisk:74, populationDensity:85, politicalStability:80 },
+    imageSlug:"rea-panama-boquete",
   },
 ];
 

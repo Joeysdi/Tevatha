@@ -57,7 +57,7 @@ const THREAT_DOMAINS: ThreatDomainDef[] = [
     color:    "text-red-bright",
     borderHex:"#e84040",
     rationale:"EMP destroys unshielded electronics and collapses grid power instantly. Priority is off-grid energy independence, EMP-shielded communications, and satellite fallback when terrestrial networks fail.",
-    skus:     ["COM-001","COM-002","COM-005","ENE-001","ENE-002","ENE-003","SEC-003","COM-003","COM-004","MOB-003","SHE-001"],
+    skus:     ["COM-001","COM-002","COM-005","ENE-001","ENE-002","ENE-003","SEC-003","COM-003","COM-004","MOB-003","SHE-001","REA-001","REA-003","REA-006"],
   },
   {
     id:       "economic",
@@ -66,7 +66,7 @@ const THREAT_DOMAINS: ThreatDomainDef[] = [
     color:    "text-gold-bright",
     borderHex:"#c9a84c",
     rationale:"Supply chain collapse means no resupply — what you have pre-crisis is what you operate with. Priority: water independence, grid-free energy, and fuel reserves to maintain mobility when supply networks seize.",
-    skus:     ["ENE-001","ENE-002","ENE-003","WAT-001","WAT-002","MOB-001","MOB-002","COM-003","WAT-003","WAT-004","ENE-004","MOB-003","SHE-001","SHE-002"],
+    skus:     ["ENE-001","ENE-002","ENE-003","WAT-001","WAT-002","MOB-001","MOB-002","COM-003","WAT-003","WAT-004","ENE-004","MOB-003","SHE-001","SHE-002","REA-001","REA-004","REA-005","REA-010","REA-011"],
   },
   {
     id:       "civil",
@@ -75,7 +75,7 @@ const THREAT_DOMAINS: ThreatDomainDef[] = [
     color:    "text-amber-protocol",
     borderHex:"#f0a500",
     rationale:"Societal fracture events demand perimeter awareness, rapid evacuation capability, and off-grid communications independent of compromised infrastructure. Know before the crowd knows.",
-    skus:     ["COM-001","COM-002","COM-005","MOB-001","MOB-002","SEC-001","COM-003","COM-004","MOB-003","SEC-002","SHE-001"],
+    skus:     ["COM-001","COM-002","COM-005","MOB-001","MOB-002","SEC-001","COM-003","COM-004","MOB-003","SEC-002","SHE-001","REA-001","REA-002","REA-004","REA-007","REA-008"],
   },
   {
     id:       "cyber",
@@ -108,7 +108,7 @@ const THREAT_DOMAINS: ThreatDomainDef[] = [
 
 // ── Price formatters ──────────────────────────────────────────────────────────
 
-function fmtUsd(p: Product): string  { return `$${(p.priceUsd / 100).toFixed(2)}`; }
+function fmtUsd(p: Product): string  { return p.priceDisplay ?? `$${(p.priceUsd / 100).toFixed(2)}`; }
 function fmtUsdc(p: Product): string { return `${p.priceUsdc.toFixed(2)} USDC`; }
 
 // ── Page ─────────────────────────────────────────────────────────────────────
@@ -313,26 +313,42 @@ export default function GearPage() {
                   <span className="font-mono text-[15px] font-bold text-gold-bright">
                     {fmtUsd(p)}
                   </span>
-                  <span className="font-mono text-[9px] text-cyan-DEFAULT ml-2">
-                    ◎ {fmtUsdc(p)}
-                  </span>
+                  {p.category !== "real_estate" && (
+                    <span className="font-mono text-[9px] text-cyan-DEFAULT ml-2">
+                      ◎ {fmtUsdc(p)}
+                    </span>
+                  )}
+                  {p.location && (
+                    <p className="font-mono text-[8px] text-text-mute2 mt-0.5">{p.location}</p>
+                  )}
                 </div>
-                <button
-                  onClick={() => {
-                    addItem({
-                      id: p.id, sku: p.sku, name: p.name, brand: p.brand,
-                      priceUsd: p.priceUsd, priceUsdc: p.priceUsdc,
-                      highTicket: p.highTicket, imageSlug: p.imageSlug,
-                      stripePriceId: p.stripePriceId,
-                    });
-                    setOpen(true);
-                  }}
-                  className="font-mono text-[9.5px] font-bold text-void-0 bg-gold-protocol
-                             px-3 py-1.5 rounded-lg hover:bg-gold-bright transition-colors
-                             whitespace-nowrap flex-shrink-0"
-                >
-                  Add to Cart
-                </button>
+                {p.category === "real_estate" ? (
+                  <Link
+                    href="/provisioner"
+                    className="font-mono text-[9.5px] font-bold text-void-0 bg-gold-protocol
+                               px-3 py-1.5 rounded-lg hover:bg-gold-bright transition-colors
+                               whitespace-nowrap flex-shrink-0"
+                  >
+                    Inquire →
+                  </Link>
+                ) : (
+                  <button
+                    onClick={() => {
+                      addItem({
+                        id: p.id, sku: p.sku, name: p.name, brand: p.brand,
+                        priceUsd: p.priceUsd, priceUsdc: p.priceUsdc,
+                        highTicket: p.highTicket, imageSlug: p.imageSlug,
+                        stripePriceId: p.stripePriceId,
+                      });
+                      setOpen(true);
+                    }}
+                    className="font-mono text-[9.5px] font-bold text-void-0 bg-gold-protocol
+                               px-3 py-1.5 rounded-lg hover:bg-gold-bright transition-colors
+                               whitespace-nowrap flex-shrink-0"
+                  >
+                    Add to Cart
+                  </button>
+                )}
               </div>
               </div>{/* /p-4 content wrapper */}
             </div>

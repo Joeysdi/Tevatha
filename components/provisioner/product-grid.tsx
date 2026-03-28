@@ -32,6 +32,26 @@ const PRODUCT_IMAGES: Record<string, string> = {
 
 type FilterTab = "all" | ProductCategory | "critical";
 
+function SafetyBar({ label, value }: { label: string; value: number }) {
+  const color = value >= 80 ? "#1ae8a0" : value >= 60 ? "#c9a84c" : "#e84040";
+  return (
+    <div className="flex items-center gap-2">
+      <span className="font-mono text-[8px] text-text-mute2 tracking-[.08em] w-[72px] flex-shrink-0 uppercase">
+        {label}
+      </span>
+      <div className="flex-1 h-1.5 bg-void-2 rounded-full overflow-hidden">
+        <div
+          className="h-full rounded-full transition-all duration-300"
+          style={{ width: `${value}%`, background: color }}
+        />
+      </div>
+      <span className="font-mono text-[8px] tabular-nums w-6 text-right" style={{ color }}>
+        {value}
+      </span>
+    </div>
+  );
+}
+
 const GRADE_BAR: Record<GradeLevel, string> = {
   A: "#1ae8a0",
   B: "#c9a84c",
@@ -54,6 +74,15 @@ interface ProductGridProps {
 export function ProductGrid({ products }: ProductGridProps) {
   const { t } = useTranslation();
   const [activeFilter, setActiveFilter] = useState<FilterTab>("all");
+  const [inquiryProduct, setInquiryProduct] = useState<Product | null>(null);
+  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [submitState, setSubmitState] = useState<"idle"|"loading"|"done"|"error">("idle");
+
+  const openInquiry = (p: Product) => {
+    setInquiryProduct(p);
+    setForm({ name: "", email: "", message: `I'm interested in ${p.name} and would like more information.` });
+    setSubmitState("idle");
+  };
 
   const FILTER_LABELS: Record<FilterTab, string> = {
     all:            t("filter_all_items"),
@@ -65,6 +94,7 @@ export function ProductGrid({ products }: ProductGridProps) {
     water:          t("filter_water"),
     security:       t("filter_security"),
     shelter:        t("filter_shelter"),
+    real_estate:    "Real Estate",
   };
 
   // Derive available filter tabs from actual catalog
@@ -80,6 +110,27 @@ export function ProductGrid({ products }: ProductGridProps) {
     if (activeFilter === "critical") return products.filter((p) => p.criticalFlag);
     return products.filter((p) => p.category === activeFilter);
   }, [products, activeFilter]);
+
+  const handleInquirySubmit = async () => {
+    if (!inquiryProduct) return;
+    setSubmitState("loading");
+    try {
+      const res = await fetch("/api/provisioner/inquire", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productId: inquiryProduct.id, ...form }),
+      });
+      setSubmitState(res.ok ? "done" : "error");
+    } catch {
+      setSubmitState("error");
+    }
+  };
+
+  const closeModal = () => {
+    setInquiryProduct(null);
+    setForm({ name: "", email: "", message: "" });
+    setSubmitState("idle");
+  };
 
   return (
     <>
@@ -116,15 +167,152 @@ export function ProductGrid({ products }: ProductGridProps) {
       <StaggerParent className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {filtered.map((p) => (
           <StaggerChild key={p.id}>
-            <ProductCard product={p} />
+            <ProductCard product={p} onInquire={openInquiry} />
           </StaggerChild>
         ))}
       </StaggerParent>
+
+      {/* Inquiry modal */}
+      {inquiryProduct && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-void-0/80 backdrop-blur-sm"
+          onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
+            className="relative w-full max-w-md bg-void-1 border border-border-protocol
+                       rounded-2xl overflow-hidden shadow-[0_24px_64px_rgba(0,0,0,0.6)]"
+          >
+            {/* Top accent */}
+            <div className="absolute top-0 left-0 right-0 h-px"
+              style={{ background: "linear-gradient(90deg,transparent,rgba(201,168,76,0.6),transparent)" }} />
+
+            {/* Header */}
+            <div className="p-5 border-b border-border-protocol">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <GradeBadge grade={inquiryProduct.grade} composite={inquiryProduct.gradeComposite} size="sm" />
+                    <span className="font-mono text-[9px] text-text-mute2">
+                      {inquiryProduct.location}
+                    </span>
+                  </div>
+                  <h2 className="font-syne font-bold text-[16px] text-text-base leading-snug">
+                    {inquiryProduct.name}
+                  </h2>
+                  <p className="font-mono text-[11px] text-gold-protocol mt-0.5">
+                    {inquiryProduct.priceDisplay}
+                  </p>
+                </div>
+                <button
+                  onClick={closeModal}
+                  className="text-text-mute2 hover:text-text-base transition-colors text-[18px] leading-none flex-shrink-0"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            {/* Body */}
+            <div className="p-5 space-y-3.5">
+              {submitState === "done" ? (
+                <div className="text-center py-4">
+                  <div className="text-[28px] mb-3">✓</div>
+                  <p className="font-syne font-bold text-[15px] text-green-bright mb-1">Inquiry received.</p>
+                  <p className="font-mono text-[11px] text-text-dim">We&apos;ll connect you within 24h.</p>
+                  <button
+                    onClick={closeModal}
+                    className="mt-5 font-mono text-[11px] font-bold px-5 py-2 rounded-lg
+                               border border-border-protocol text-text-mute2 hover:text-text-base
+                               hover:border-border-bright transition-all"
+                  >
+                    Close
+                  </button>
+                </div>
+              ) : submitState === "error" ? (
+                <div className="text-center py-4">
+                  <p className="font-syne font-bold text-[15px] text-red-bright mb-1">Something went wrong.</p>
+                  <p className="font-mono text-[11px] text-text-dim">
+                    Email <span className="text-gold-protocol">provisioner@tevatha.com</span> directly.
+                  </p>
+                  <button
+                    onClick={() => setSubmitState("idle")}
+                    className="mt-5 font-mono text-[11px] font-bold px-5 py-2 rounded-lg
+                               border border-border-protocol text-text-mute2 hover:text-text-base
+                               transition-all"
+                  >
+                    Try again
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div>
+                    <label className="block font-mono text-[9.5px] text-text-mute2 tracking-[.1em] uppercase mb-1.5">
+                      Name
+                    </label>
+                    <input
+                      type="text"
+                      value={form.name}
+                      onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                      placeholder="Your name"
+                      className="w-full bg-void-2 border border-border-protocol rounded-lg
+                                 px-3 py-2.5 font-mono text-[12px] text-text-base
+                                 placeholder:text-text-mute2/50 focus:outline-none
+                                 focus:border-gold-protocol/60 transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-mono text-[9.5px] text-text-mute2 tracking-[.1em] uppercase mb-1.5">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      value={form.email}
+                      onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                      placeholder="you@example.com"
+                      className="w-full bg-void-2 border border-border-protocol rounded-lg
+                                 px-3 py-2.5 font-mono text-[12px] text-text-base
+                                 placeholder:text-text-mute2/50 focus:outline-none
+                                 focus:border-gold-protocol/60 transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-mono text-[9.5px] text-text-mute2 tracking-[.1em] uppercase mb-1.5">
+                      Message
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={form.message}
+                      onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
+                      className="w-full bg-void-2 border border-border-protocol rounded-lg
+                                 px-3 py-2.5 font-mono text-[12px] text-text-base resize-none
+                                 placeholder:text-text-mute2/50 focus:outline-none
+                                 focus:border-gold-protocol/60 transition-colors"
+                    />
+                  </div>
+                  <button
+                    onClick={handleInquirySubmit}
+                    disabled={submitState === "loading" || !form.name || !form.email}
+                    className="w-full font-mono font-bold text-[11px] tracking-[.06em]
+                               px-4 py-2.5 rounded-lg bg-gold-protocol text-void-0
+                               hover:bg-gold-bright hover:-translate-y-0.5 transition-all duration-150
+                               disabled:opacity-40 disabled:cursor-not-allowed disabled:translate-y-0"
+                  >
+                    {submitState === "loading" ? "Sending…" : "Submit Inquiry →"}
+                  </button>
+                </>
+              )}
+            </div>
+          </motion.div>
+        </div>
+      )}
     </>
   );
 }
 
-function ProductCard({ product: p }: { product: Product }) {
+function ProductCard({ product: p, onInquire }: { product: Product; onInquire: (p: Product) => void }) {
   const { t } = useTranslation();
   const { addItem, setOpen } = useCart();
   const [added, setAdded] = useState(false);
@@ -223,17 +411,34 @@ function ProductCard({ product: p }: { product: Product }) {
           <div className="text-right flex-shrink-0">
             <div className="font-mono text-[7px] text-text-mute2 tracking-[.14em] uppercase mb-0.5">USD</div>
             <div className="font-mono font-bold text-[15px] tabular-nums leading-none text-gold-protocol">
-              <FadeIn>${(p.priceUsd / 100).toFixed(2)}</FadeIn>
+              <FadeIn>{p.priceDisplay ?? `$${(p.priceUsd / 100).toFixed(2)}`}</FadeIn>
             </div>
-            <div className="font-mono text-[9px] text-cyan-DEFAULT mt-0.5">
-              <FadeIn delay={0.05}>◎ {p.priceUsdc.toFixed(2)} USDC</FadeIn>
-            </div>
+            {p.category !== "real_estate" && (
+              <div className="font-mono text-[9px] text-cyan-DEFAULT mt-0.5">
+                <FadeIn delay={0.05}>◎ {p.priceUsdc.toFixed(2)} USDC</FadeIn>
+              </div>
+            )}
+            {p.location && (
+              <div className="font-mono text-[8px] text-text-mute2 mt-0.5 max-w-[120px] text-right leading-tight">
+                {p.location}
+              </div>
+            )}
           </div>
         </div>
 
         <p className="text-[12.5px] text-text-dim leading-relaxed mb-3.5">
           {p.spec}
         </p>
+
+        {p.safetyScore && (
+          <div className="space-y-1.5 mb-3.5 p-3 bg-void-2 rounded-lg border border-border-protocol/50">
+            <p className="font-mono text-[8.5px] text-text-mute2 tracking-[.1em] uppercase mb-2">Safety Index</p>
+            <SafetyBar label="Nuclear Dist" value={p.safetyScore.nuclearDistance} />
+            <SafetyBar label="Disaster"     value={p.safetyScore.disasterRisk} />
+            <SafetyBar label="Density"      value={p.safetyScore.populationDensity} />
+            <SafetyBar label="Stability"    value={p.safetyScore.politicalStability} />
+          </div>
+        )}
 
         <div className="flex items-center justify-between">
           <span className={`font-mono text-[10px] font-bold
@@ -246,32 +451,46 @@ function ProductCard({ product: p }: { product: Product }) {
         </div>
       </div>
 
-      {/* Build note */}
+      {/* Build / listing note */}
       <div className="px-5 py-2.5 bg-void-2/60 border-t border-border-protocol/50">
+        <p className="font-mono text-[9px] text-text-mute2 tracking-[.08em] uppercase mb-1">
+          {p.listingNote ?? "Build note"}
+        </p>
         <p className="font-mono text-[10px] text-text-mute2 leading-relaxed">
           ▸ {p.buildNote}
         </p>
       </div>
 
-      {/* Add to cart */}
+      {/* Action button */}
       <div className="p-5 border-t border-border-protocol">
-        <button
-          onClick={handleAddToCart}
-          disabled={!p.inStock}
-          className={`w-full font-mono font-bold text-[11px] tracking-[.06em]
-                     px-4 py-2.5 rounded-lg transition-all duration-150
-                     ${added
-                       ? "bg-green-bright/20 text-green-bright border border-green-bright/30"
-                       : "bg-gold-protocol text-void-0 hover:bg-gold-bright hover:-translate-y-0.5"
-                     }
-                     disabled:opacity-40 disabled:cursor-not-allowed`}
-        >
-          {added
-            ? `✓ ${t("shop_added_to_cart")}`
-            : p.inStock
-              ? `${t("shop_add_to_cart")} — $${(p.priceUsd / 100).toFixed(2)}`
-              : t("shop_out_of_stock")}
-        </button>
+        {p.category === "real_estate" ? (
+          <button
+            onClick={() => onInquire(p)}
+            className="w-full font-mono font-bold text-[11px] tracking-[.06em]
+                       px-4 py-2.5 rounded-lg transition-all duration-150
+                       bg-gold-protocol text-void-0 hover:bg-gold-bright hover:-translate-y-0.5"
+          >
+            Inquire →
+          </button>
+        ) : (
+          <button
+            onClick={handleAddToCart}
+            disabled={!p.inStock}
+            className={`w-full font-mono font-bold text-[11px] tracking-[.06em]
+                       px-4 py-2.5 rounded-lg transition-all duration-150
+                       ${added
+                         ? "bg-green-bright/20 text-green-bright border border-green-bright/30"
+                         : "bg-gold-protocol text-void-0 hover:bg-gold-bright hover:-translate-y-0.5"
+                       }
+                       disabled:opacity-40 disabled:cursor-not-allowed`}
+          >
+            {added
+              ? `✓ ${t("shop_added_to_cart")}`
+              : p.inStock
+                ? `${t("shop_add_to_cart")} — $${(p.priceUsd / 100).toFixed(2)}`
+                : t("shop_out_of_stock")}
+          </button>
+        )}
       </div>
     </motion.article>
   );
