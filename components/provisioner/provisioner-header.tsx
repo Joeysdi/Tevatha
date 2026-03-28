@@ -13,7 +13,10 @@ export function ProvisionerHeader() {
 
   return (
     <>
-      <header className="bg-void-1 border-b border-border-bright/60 relative px-4 sm:px-6 py-3 sm:py-3.5 flex items-center justify-between">
+      <header
+        className="backdrop-blur-sm bg-void-1/95 border-b border-border-protocol/40 relative z-20 px-4 sm:px-6 py-3 sm:py-3.5 flex items-center justify-between"
+        style={{ boxShadow: "0 0 24px rgba(201,168,76,0.06)" }}
+      >
         {/* Gold top accent line */}
         <div
           className="absolute top-0 left-0 right-0 h-px"
@@ -22,8 +25,17 @@ export function ProvisionerHeader() {
 
         {/* Left: brand + pillar label */}
         <div className="flex items-center gap-2.5">
-          <span className="font-syne font-bold text-[17px] text-gold-protocol">
-            ⚙ TEVATHA
+          <span className="w-2 h-2 rounded-full bg-gold-protocol animate-pulse" />
+          <span
+            className="font-cinzel font-bold text-[15px] tracking-[.2em]"
+            style={{
+              background: "linear-gradient(90deg,#f0c842,#c9a84c)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}
+          >
+            TEVATHA
           </span>
           <span className="w-px h-4 bg-border-bright opacity-40" />
           <span className="font-mono text-[10px] text-text-mute2 tracking-[.18em]">

@@ -101,9 +101,12 @@ export function CartDrawer() {
             />
 
             {/* ── Header ──────────────────────────────────────────────────── */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-border-protocol flex-shrink-0">
+            <div
+              className="flex items-center justify-between px-5 py-4 border-b border-border-protocol flex-shrink-0"
+              style={{ boxShadow: "0 0 24px rgba(201,168,76,0.06)" }}
+            >
               <div>
-                <h2 className="font-syne font-bold text-[16px] text-text-base">
+                <h2 className="font-cinzel font-bold text-[16px] tracking-[.18em] text-text-base">
                   {headerLabel}
                 </h2>
                 <p className="font-mono text-[9px] text-text-mute2 tracking-[.14em] uppercase mt-0.5">
@@ -193,8 +196,8 @@ export function CartDrawer() {
                   {items.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-40 gap-3">
                       <span className="font-mono text-[28px] opacity-20">🛒</span>
-                      <p className="font-mono text-[10px] text-text-mute2 tracking-[.08em]">
-                        {t("cart_empty")}
+                      <p className="font-mono text-[9.5px] text-text-mute2 tracking-[.18em] uppercase">
+                        NO ITEMS PROVISIONED
                       </p>
                     </div>
                   ) : (
@@ -290,7 +293,7 @@ function CartItemRow({
 
   return (
     <div className="flex items-center gap-3 bg-void-2 border border-border-protocol
-                    rounded-lg px-3 py-2.5">
+                    border-l-[2px] border-l-gold-protocol/35 rounded-lg px-3 py-2.5">
       <div className="w-10 h-10 flex-shrink-0 relative bg-void-3 rounded-md overflow-hidden">
         {imgSrc ? (
           <Image src={imgSrc} alt={item.name} fill className="object-contain p-1" sizes="40px" />

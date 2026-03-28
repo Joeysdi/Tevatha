@@ -32,6 +32,14 @@ const PRODUCT_IMAGES: Record<string, string> = {
 
 type FilterTab = "all" | ProductCategory | "critical";
 
+const GRADE_BAR: Record<GradeLevel, string> = {
+  A: "#1ae8a0",
+  B: "#c9a84c",
+  C: "#f0a500",
+  D: "#e84040",
+  F: "rgba(255,255,255,0.07)",
+};
+
 const TIER_COLORS = {
   T0: "text-text-mute2",
   T1: "text-green-bright",
@@ -86,7 +94,7 @@ export function ProductGrid({ products }: ProductGridProps) {
               px-4 py-1.5 text-[11.5px] font-medium transition-all duration-150
               focus-visible:outline-none whitespace-nowrap
               ${activeFilter === f
-                ? "rounded-full bg-gold-glow border border-gold-protocol text-gold-bright"
+                ? "rounded-full bg-gold-glow border border-gold-protocol border-l-2 border-l-gold-protocol text-gold-bright"
                 : "rounded-full border-transparent text-text-mute2 hover:bg-white/[0.03]"
               }
             `}
@@ -155,10 +163,20 @@ function ProductCard({ product: p }: { product: Product }) {
     <motion.article
       whileHover={{ y: -2 }}
       transition={{ duration: 0.15 }}
-      className={`bg-void-1 border rounded-xl overflow-hidden
+      className={`relative bg-void-1 border rounded-xl overflow-hidden
                   hover:shadow-[0_8px_24px_rgba(201,168,76,0.3)]
                   transition-shadow duration-200 ${g.border}`}
     >
+      {/* Top accent line */}
+      <div
+        className="absolute top-0 left-0 right-0 h-px"
+        style={{ background: "linear-gradient(90deg,transparent,rgba(201,168,76,0.55),transparent)" }}
+      />
+      {/* Grade left-bar */}
+      <div
+        className="absolute top-0 left-0 bottom-0 w-[3px]"
+        style={{ background: GRADE_BAR[p.grade] }}
+      />
       {/* Product image */}
       <div className="relative h-44 bg-void-2 border-b border-border-protocol overflow-hidden">
         {imgSrc ? (
@@ -203,7 +221,8 @@ function ProductCard({ product: p }: { product: Product }) {
           </div>
 
           <div className="text-right flex-shrink-0">
-            <div className="font-syne font-bold text-[19px] leading-none text-gold-protocol">
+            <div className="font-mono text-[7px] text-text-mute2 tracking-[.14em] uppercase mb-0.5">USD</div>
+            <div className="font-mono font-bold text-[15px] tabular-nums leading-none text-gold-protocol">
               <FadeIn>${(p.priceUsd / 100).toFixed(2)}</FadeIn>
             </div>
             <div className="font-mono text-[9px] text-cyan-DEFAULT mt-0.5">
@@ -228,7 +247,7 @@ function ProductCard({ product: p }: { product: Product }) {
       </div>
 
       {/* Build note */}
-      <div className="px-5 py-2.5 bg-void-2 border-t border-border-protocol">
+      <div className="px-5 py-2.5 bg-void-2/60 border-t border-border-protocol/50">
         <p className="font-mono text-[10px] text-text-mute2 leading-relaxed">
           ▸ {p.buildNote}
         </p>

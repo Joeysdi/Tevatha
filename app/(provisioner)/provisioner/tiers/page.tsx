@@ -189,9 +189,12 @@ export default function TiersPage() {
 
       {/* Tier cards */}
       <section>
+        <div className="flex items-center gap-3 mb-1">
+          <span className="font-mono text-[9px] text-text-mute2 tracking-[.14em] uppercase">READINESS TIERS</span>
+          <div className="flex-1 h-px bg-border-protocol" />
+        </div>
         <div className="flex items-center gap-3 mb-4">
           <h2 className="font-syne font-bold text-[17px] text-text-base">{t("tiers_section_framework")}</h2>
-          <div className="flex-1 h-px bg-border-protocol" />
         </div>
 
         <StaggerParent className="grid gap-3 sm:grid-cols-2">
@@ -202,10 +205,11 @@ export default function TiersPage() {
                 className={`w-full text-left relative rounded-xl border p-5 overflow-hidden
                             transition-all duration-200 hover:-translate-y-0.5
                             ${activeTier === tier.id ? `${tier.bg} ${tier.border}` : "bg-void-1 border-border-protocol hover:border-border-bright/40"}`}
+                style={{ borderLeft: `3px solid ${tier.bar}` }}
               >
                 <div
                   className="absolute top-0 left-0 right-0 h-px"
-                  style={{ background: activeTier === tier.id ? `linear-gradient(90deg,${tier.bar},transparent)` : "transparent" }}
+                  style={{ background: `linear-gradient(90deg,transparent,${tier.bar}80,transparent)` }}
                 />
                 <div className="flex items-center justify-between mb-2">
                   <span className={`font-mono text-[10px] font-bold px-2 py-0.5 rounded
@@ -251,7 +255,8 @@ export default function TiersPage() {
                             href="/provisioner"
                             onClick={(e) => e.stopPropagation()}
                             className="inline-flex items-center gap-1.5 font-mono text-[10px]
-                                       text-text-mute2 hover:text-text-base transition-colors"
+                                       text-text-mute2 hover:text-text-base transition-colors
+                                       border-l-2 border-l-gold-protocol/50 pl-2"
                           >
                             <span className="text-gold-DEFAULT">→</span>
                             {s.label}

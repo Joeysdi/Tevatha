@@ -9,6 +9,15 @@ import { CATALOG } from "@/lib/provisioner/catalog";
 import { FadeUp, StaggerParent, StaggerChild } from "@/components/ui/motion";
 import { useCart } from "@/lib/cart/store";
 import type { Product } from "@/lib/provisioner/catalog";
+import type { GradeLevel } from "@/types/treasury";
+
+const GRADE_BAR: Record<GradeLevel, string> = {
+  A: "#1ae8a0",
+  B: "#c9a84c",
+  C: "#f0a500",
+  D: "#e84040",
+  F: "rgba(255,255,255,0.07)",
+};
 
 const PRODUCT_IMAGES: Record<string, string> = {
   "garmin-inreach-mini2": "/products/garmin-inreach-mini2.jpg",
@@ -141,6 +150,10 @@ export default function GearPage() {
       </FadeUp>
 
       {/* Domain tabs */}
+      <div className="flex items-center gap-3 mb-3">
+        <span className="font-mono text-[9px] text-text-mute2 tracking-[.14em] uppercase">THREAT DOMAIN</span>
+        <div className="flex-1 h-px bg-border-protocol" />
+      </div>
       <div className="overflow-x-auto scrollbar-none [-webkit-overflow-scrolling:touch]">
         <div className="flex gap-2 min-w-max pb-1">
           {THREAT_DOMAINS.map((d) => (
@@ -172,6 +185,7 @@ export default function GearPage() {
           style={{
             borderColor: `${activeDomain.borderHex}30`,
             background: `linear-gradient(135deg,${activeDomain.borderHex}0d,rgba(11,13,24,1))`,
+            boxShadow: "0 0 0 1px rgba(255,255,255,0.03) inset",
           }}
         >
           <div
@@ -217,10 +231,20 @@ export default function GearPage() {
         {domainProducts.map((p) => (
           <StaggerChild key={p.id}>
             <div
-              className="bg-void-1 border border-border-protocol rounded-xl overflow-hidden
+              className="relative bg-void-1 border border-border-protocol rounded-xl overflow-hidden
                          hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(201,168,76,0.15)]
                          transition-all duration-200 flex flex-col h-full"
             >
+              {/* Top accent line */}
+              <div
+                className="absolute top-0 left-0 right-0 h-px"
+                style={{ background: "linear-gradient(90deg,transparent,rgba(201,168,76,0.55),transparent)" }}
+              />
+              {/* Grade left-bar */}
+              <div
+                className="absolute top-0 left-0 bottom-0 w-[3px]"
+                style={{ background: GRADE_BAR[p.grade] }}
+              />
               {/* Product image */}
               {(() => {
                 const imgSrc = PRODUCT_IMAGES[p.imageSlug];

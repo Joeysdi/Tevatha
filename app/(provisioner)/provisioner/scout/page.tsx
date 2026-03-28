@@ -16,6 +16,7 @@ const ZONE_TIERS = [
     border: "border-green-bright/30",
     bg: "bg-green-dim",
     dot: "bg-green-bright",
+    bar: "#1ae8a0",
   },
   {
     rank: 2,
@@ -27,6 +28,7 @@ const ZONE_TIERS = [
     border: "border-gold-dim",
     bg: "bg-gold-glow",
     dot: "bg-gold-protocol",
+    bar: "#c9a84c",
   },
   {
     rank: 3,
@@ -38,6 +40,7 @@ const ZONE_TIERS = [
     border: "border-amber-DEFAULT/25",
     bg: "bg-amber-dim",
     dot: "bg-amber-protocol",
+    bar: "#f0a500",
   },
   {
     rank: 4,
@@ -49,6 +52,7 @@ const ZONE_TIERS = [
     border: "border-red-DEFAULT/25",
     bg: "bg-red-dim",
     dot: "bg-red-bright",
+    bar: "#e84040",
   },
 ];
 
@@ -105,7 +109,15 @@ export default function ScoutPage() {
         <StaggerParent className="grid gap-3 sm:grid-cols-2">
           {ZONE_TIERS.map((z) => (
             <StaggerChild key={z.rank}>
-              <div className={`relative rounded-xl border ${z.border} ${z.bg} p-5 overflow-hidden`}>
+              <div
+                className={`relative rounded-xl border ${z.border} ${z.bg} p-5 overflow-hidden`}
+                style={{ borderLeft: `3px solid ${z.bar}` }}
+              >
+                {/* Top accent line */}
+                <div
+                  className="absolute top-0 left-0 right-0 h-px"
+                  style={{ background: `linear-gradient(90deg,transparent,${z.bar}80,transparent)` }}
+                />
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div className="flex items-center gap-3">
                     <span className={`w-2 h-2 rounded-full flex-shrink-0 ${z.dot}`} />

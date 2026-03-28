@@ -76,9 +76,9 @@ export default function ShopPage() {
             <StaggerChild key={s.labelKey}>
               <div
                 className="text-center px-2 sm:px-3 py-2.5 bg-void-1 rounded-lg
-                           border border-border-protocol"
+                           border border-border-protocol border-l-2 border-l-gold-protocol"
               >
-                <div className="font-syne font-extrabold text-[20px] sm:text-[22px]
+                <div className="font-mono font-extrabold tabular-nums text-[20px] sm:text-[22px]
                                 text-gold-protocol leading-none">
                   <FadeIn delay={0.3}>{s.val}</FadeIn>
                 </div>
@@ -95,9 +95,12 @@ export default function ShopPage() {
       {/* ── 5-LAYER GRADING SYSTEM ─────────────────────────────────────── */}
       <section className="bg-void-1 border border-border-protocol
                            rounded-xl p-5 mb-6">
-        <h2 className="font-syne font-bold text-[17px] text-text-base mb-4">
-          {t("shop_section_grading")}
-        </h2>
+        <div className="flex items-center gap-3 mb-4">
+          <h2 className="font-syne font-bold text-[17px] text-text-base">
+            {t("shop_section_grading")}
+          </h2>
+          <div className="flex-1 h-px bg-border-protocol" />
+        </div>
 
         {/* Grading layers */}
         <StaggerParent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-5">
@@ -157,7 +160,8 @@ export default function ShopPage() {
       <StaggerParent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Stripe rail */}
         <StaggerChild>
-        <div className="rounded-xl bg-void-1 border border-gold-protocol/22 p-5">
+        <div className="rounded-xl bg-void-1 border border-gold-protocol/22 p-5"
+             style={{ boxShadow: "0 0 0 1px rgba(255,255,255,0.03) inset" }}>
           <div className="flex items-center gap-2 mb-3">
             <span className="font-mono text-[10px] text-gold-protocol
                              font-bold tracking-[.1em]">{t("shop_rail_card")}</span>
@@ -177,7 +181,8 @@ export default function ShopPage() {
 
         {/* Solana USDC rail */}
         <StaggerChild>
-        <div className="rounded-xl bg-void-1 border border-cyan-border p-5">
+        <div className="rounded-xl bg-void-1 border border-cyan-border p-5"
+             style={{ boxShadow: "0 0 0 1px rgba(255,255,255,0.03) inset" }}>
           <div className="flex items-center gap-2 mb-3">
             <span className="font-mono text-[10px] text-cyan-DEFAULT
                              font-bold tracking-[.1em]">{t("shop_rail_usdc")}</span>
