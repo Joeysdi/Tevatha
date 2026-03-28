@@ -57,7 +57,7 @@ const THREAT_DOMAINS: ThreatDomainDef[] = [
     color:    "text-red-bright",
     borderHex:"#e84040",
     rationale:"EMP destroys unshielded electronics and collapses grid power instantly. Priority is off-grid energy independence, EMP-shielded communications, and satellite fallback when terrestrial networks fail.",
-    skus:     ["COM-001","COM-002","COM-005","ENE-001","ENE-002","ENE-003","SEC-003"],
+    skus:     ["COM-001","COM-002","COM-005","ENE-001","ENE-002","ENE-003","SEC-003","COM-003","COM-004","MOB-003","SHE-001"],
   },
   {
     id:       "economic",
@@ -66,7 +66,7 @@ const THREAT_DOMAINS: ThreatDomainDef[] = [
     color:    "text-gold-bright",
     borderHex:"#c9a84c",
     rationale:"Supply chain collapse means no resupply — what you have pre-crisis is what you operate with. Priority: water independence, grid-free energy, and fuel reserves to maintain mobility when supply networks seize.",
-    skus:     ["ENE-001","ENE-002","ENE-003","WAT-001","WAT-002","MOB-001","MOB-002"],
+    skus:     ["ENE-001","ENE-002","ENE-003","WAT-001","WAT-002","MOB-001","MOB-002","COM-003","WAT-003","WAT-004","ENE-004","MOB-003","SHE-001","SHE-002"],
   },
   {
     id:       "civil",
@@ -75,7 +75,7 @@ const THREAT_DOMAINS: ThreatDomainDef[] = [
     color:    "text-amber-protocol",
     borderHex:"#f0a500",
     rationale:"Societal fracture events demand perimeter awareness, rapid evacuation capability, and off-grid communications independent of compromised infrastructure. Know before the crowd knows.",
-    skus:     ["COM-001","COM-002","COM-005","MOB-001","MOB-002","SEC-001"],
+    skus:     ["COM-001","COM-002","COM-005","MOB-001","MOB-002","SEC-001","COM-003","COM-004","MOB-003","SEC-002","SHE-001"],
   },
   {
     id:       "cyber",
@@ -84,7 +84,7 @@ const THREAT_DOMAINS: ThreatDomainDef[] = [
     color:    "text-cyan-DEFAULT",
     borderHex:"#00d4ff",
     rationale:"Coordinated cyberattacks target grid and communications infrastructure simultaneously. EMP-hardened communications, off-grid power, and Faraday-shielded devices preserve operational capability when digital infrastructure collapses.",
-    skus:     ["COM-001","COM-002","COM-005","ENE-001","ENE-002","SEC-003"],
+    skus:     ["COM-001","COM-002","COM-005","ENE-001","ENE-002","SEC-003","COM-003","ENE-004","MOB-003"],
   },
   {
     id:       "bio",
@@ -93,7 +93,7 @@ const THREAT_DOMAINS: ThreatDomainDef[] = [
     color:    "text-green-protocol",
     borderHex:"#1ae8a0",
     rationale:"Isolation and medical self-sufficiency are the Ark response to biological events. Medical supplies, independent water filtration, and satellite communications for monitoring without exposure to compromised networks.",
-    skus:     ["MED-001","MED-002","MED-003","WAT-001","WAT-002","COM-001"],
+    skus:     ["MED-001","MED-002","MED-003","WAT-001","WAT-002","COM-001","MED-004","MED-005","WAT-004","SHE-001"],
   },
   {
     id:       "climate",
@@ -102,7 +102,7 @@ const THREAT_DOMAINS: ThreatDomainDef[] = [
     color:    "text-blue-DEFAULT",
     borderHex:"#38bdf8",
     rationale:"Water access failure and supply chain disruption are the primary climate cascade vectors. Independent water filtration, renewable energy, and fuel reserves maintain operational capability through extended disruption windows.",
-    skus:     ["WAT-001","WAT-002","ENE-002","ENE-003","MOB-001"],
+    skus:     ["WAT-001","WAT-002","ENE-002","ENE-003","MOB-001","WAT-003","WAT-004","ENE-004","SHE-001","SHE-002","SHE-003"],
   },
 ];
 

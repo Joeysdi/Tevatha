@@ -175,6 +175,96 @@ export const CATALOG: Product[] = [
     imageSlug:"sawyer-squeeze",
   },
 
+  // ── COMMUNICATIONS (continued) ─────────────────────────────────────
+  {
+    id:"midland-er310", sku:"COM-003", name:"Midland ER310 Emergency Radio",
+    brand:"Midland", category:"communications", grade:"B", gradeComposite:85,
+    tier:"T1", priceUsd:7999, priceUsdc:79.99, highTicket:false, inStock:true,
+    criticalFlag:true,
+    spec:"AM/FM/NOAA weather. Hand crank + solar + USB-C. SOS flashlight. 2,000mAh pack.",
+    buildNote:"One per location. No subscription. Crank powers radio in full comms blackout.",
+    stripePriceId:"price_placeholder_COM003",
+    imageSlug:"midland-er310",
+  },
+  {
+    id:"motorola-t800-6pk", sku:"COM-004", name:"Motorola T800 FRS Radio ×6",
+    brand:"Motorola", category:"communications", grade:"B", gradeComposite:79,
+    tier:"T1", priceUsd:12999, priceUsdc:129.99, highTicket:false, inStock:true,
+    criticalFlag:false,
+    spec:"22 FRS channels. 35mi open-terrain range. NOAA weather alerts. Li-ion rechargeable.",
+    buildNote:"License-free FRS. Pre-program household node channels before crisis.",
+    stripePriceId:"price_placeholder_COM004",
+    imageSlug:"motorola-t800",
+  },
+
+  // ── MEDICAL (continued) ─────────────────────────────────────────────
+  {
+    id:"israeli-bandage-10pk", sku:"MED-004", name:"Israeli Emergency Bandage ×10",
+    brand:"PerSys Medical", category:"medical", grade:"A", gradeComposite:98,
+    tier:"T1", priceUsd:4499, priceUsdc:44.99, highTicket:false, inStock:true,
+    criticalFlag:true,
+    spec:"6-inch pressure bandage. One-handed application. Sterile. 5-year shelf life.",
+    buildNote:"2 per go-bag minimum. Standard TCCC dressing for penetrating wounds.",
+    stripePriceId:"price_placeholder_MED004",
+    imageSlug:"israeli-bandage",
+  },
+  {
+    id:"celox-granules-5pk", sku:"MED-005", name:"Celox Hemostatic Granules ×5",
+    brand:"Celox", category:"medical", grade:"A", gradeComposite:97,
+    tier:"T1", priceUsd:5999, priceUsdc:59.99, highTicket:false, inStock:true,
+    criticalFlag:true,
+    spec:"Chitosan granules. Clots in 30 seconds. Works without body heat. 3-year shelf.",
+    buildNote:"Complements QuikClot gauze. Use for wounds where packing is not feasible.",
+    stripePriceId:"price_placeholder_MED005",
+    imageSlug:"celox-granules",
+  },
+
+  // ── ENERGY (continued) ──────────────────────────────────────────────
+  {
+    id:"goal-zero-yeti-200x", sku:"ENE-004", name:"Goal Zero Yeti 200X",
+    brand:"Goal Zero", category:"energy", grade:"A", gradeComposite:91,
+    tier:"T1", priceUsd:29900, priceUsdc:299.00, highTicket:false, inStock:true,
+    criticalFlag:false,
+    spec:"187Wh LFP. 200W AC inverter. USB-A/C. Solar input. 2kg. 2hr wall charge.",
+    buildNote:"Go-bag power station for phones, radios, and CPAP. Pairs with Nomad 20 panel.",
+    stripePriceId:"price_placeholder_ENE004",
+    imageSlug:"goal-zero-yeti-200x",
+  },
+
+  // ── MOBILITY (continued) ────────────────────────────────────────────
+  {
+    id:"garmin-gpsmap-67", sku:"MOB-003", name:"Garmin GPSMAP 67 Handheld",
+    brand:"Garmin", category:"mobility", grade:"A", gradeComposite:95,
+    tier:"T1", priceUsd:39900, priceUsdc:399.00, highTicket:false, inStock:true,
+    criticalFlag:true,
+    spec:"Multi-GNSS. 16hr battery. Topographic maps preloaded. IPX7 waterproof. No cell.",
+    buildNote:"Primary nav when cell infrastructure is down. Pre-load offline topo maps.",
+    stripePriceId:"price_placeholder_MOB003",
+    imageSlug:"garmin-gpsmap-67",
+  },
+
+  // ── WATER (continued) ───────────────────────────────────────────────
+  {
+    id:"waterbob-2pk", sku:"WAT-003", name:"WaterBOB Emergency Bladder ×2",
+    brand:"WaterBOB", category:"water", grade:"B", gradeComposite:83,
+    tier:"T1", priceUsd:6999, priceUsdc:69.99, highTicket:false, inStock:true,
+    criticalFlag:true,
+    spec:"100-gal food-grade bladder fits standard bathtub. Fills in 20min. BPA-free.",
+    buildNote:"Fill at first sign of disruption. 100gal = 50-day supply per adult.",
+    stripePriceId:"price_placeholder_WAT003",
+    imageSlug:"waterbob",
+  },
+  {
+    id:"potable-aqua-6pk", sku:"WAT-004", name:"Potable Aqua Iodine Tabs ×6",
+    brand:"Potable Aqua", category:"water", grade:"C", gradeComposite:71,
+    tier:"T1", priceUsd:2999, priceUsdc:29.99, highTicket:false, inStock:true,
+    criticalFlag:false,
+    spec:"50 tabs/pack. Treats 25L per pack. Neutralizer included. 4-year shelf.",
+    buildNote:"Backup to primary filter. Effective vs bacteria and viruses. Not heavy metals.",
+    stripePriceId:"price_placeholder_WAT004",
+    imageSlug:"potable-aqua",
+  },
+
   // ── SECURITY ────────────────────────────────────────────────────────
   {
     id:"reolink-rlc810a-4pk", sku:"SEC-001", name:"Reolink RLC-810A ×4",
@@ -195,6 +285,48 @@ export const CATALOG: Product[] = [
     buildNote:"Grade C: effective for shielding only. Not a long-term storage solution.",
     stripePriceId:"price_1TE8RbAQV21Gk5RwcQUclk8w",
     imageSlug:"faraday-xl",
+  },
+  {
+    id:"surefire-g2x-3pk", sku:"SEC-002", name:"SureFire G2X Tactical LED ×3",
+    brand:"SureFire", category:"security", grade:"B", gradeComposite:88,
+    tier:"T1", priceUsd:15999, priceUsdc:159.99, highTicket:false, inStock:true,
+    criticalFlag:false,
+    spec:"800-lumen max. Dual output (15/800lm). Nitrolon body. CR123A lithium. IPX7.",
+    buildNote:"1 per household member. Stored with go-bag. Spare batteries in Faraday bag.",
+    stripePriceId:"price_placeholder_SEC002",
+    imageSlug:"surefire-g2x",
+  },
+
+  // ── SHELTER ─────────────────────────────────────────────────────────
+  {
+    id:"sol-bivvy-4pk", sku:"SHE-001", name:"SOL Emergency Bivvy ×4",
+    brand:"SOL", category:"shelter", grade:"A", gradeComposite:93,
+    tier:"T1", priceUsd:8499, priceUsdc:84.99, highTicket:false, inStock:true,
+    criticalFlag:true,
+    spec:"Reflective mylar bag. Retains 90% body heat. Waterproof. 3.8oz each. Reusable.",
+    buildNote:"1 per go-bag. Packs to fist-size. Viable below freezing without sleeping bag.",
+    stripePriceId:"price_placeholder_SHE001",
+    imageSlug:"sol-bivvy",
+  },
+  {
+    id:"kelty-cosmic-20", sku:"SHE-002", name:"Kelty Cosmic 20° Down Sleeping Bag",
+    brand:"Kelty", category:"shelter", grade:"A", gradeComposite:90,
+    tier:"T1", priceUsd:19900, priceUsdc:199.00, highTicket:false, inStock:true,
+    criticalFlag:false,
+    spec:"600-fill down. Rated 20°F. 3lb. Compression sack included. DWR shell.",
+    buildNote:"One per adult for cold-weather grid-down shelter. Pair with SOL bivvy as vapor barrier.",
+    stripePriceId:"price_placeholder_SHE002",
+    imageSlug:"kelty-cosmic-20",
+  },
+  {
+    id:"titan-survival-tarp", sku:"SHE-003", name:"Titan Multi-Use Survival Tarp",
+    brand:"Titan", category:"shelter", grade:"B", gradeComposite:80,
+    tier:"T1", priceUsd:4999, priceUsdc:49.99, highTicket:false, inStock:true,
+    criticalFlag:false,
+    spec:"12×8ft heavy-duty. Rain fly, ground cloth, heat reflector, shade. 1.9lb.",
+    buildNote:"Pack 2 per group. Reflective silver side doubles as signaling panel.",
+    stripePriceId:"price_placeholder_SHE003",
+    imageSlug:"titan-tarp",
   },
 ];
 
