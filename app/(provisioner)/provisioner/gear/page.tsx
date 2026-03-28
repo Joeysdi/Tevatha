@@ -249,7 +249,7 @@ export default function GearPage() {
               {(() => {
                 const imgSrc = PRODUCT_IMAGES[p.imageSlug];
                 return (
-                  <div className="relative h-36 bg-void-2 border-b border-border-protocol overflow-hidden flex-shrink-0">
+                  <div className="relative h-36 bg-[#f8f8f8] border-b border-border-protocol overflow-hidden flex-shrink-0">
                     {imgSrc ? (
                       <Image
                         src={imgSrc}
