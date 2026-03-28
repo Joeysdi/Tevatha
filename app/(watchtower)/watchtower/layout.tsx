@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { LiveClock } from "@/components/watchtower/live-clock";
+import { HeaderLocale } from "@/components/watchtower/header-locale";
 
 export const metadata: Metadata = {
   title: {
@@ -41,7 +42,11 @@ export default function WatchtowerLayout({ children }: { children: ReactNode }) 
             Global Threat Matrix
           </span>
         </div>
-        <LiveClock inline />
+        <div className="flex items-center gap-4">
+          <HeaderLocale />
+          <span className="w-px h-3 bg-border-protocol opacity-40" aria-hidden="true" />
+          <LiveClock inline />
+        </div>
       </header>
 
       {/* ── PAGE CONTENT ─────────────────────────────────────────────── */}

@@ -172,7 +172,7 @@ function buildUrl(
 }
 
 export function WatchtowerGlobeShell() {
-  const { t, locale, setLocale, locales, meta } = useTranslation();
+  const { t } = useTranslation();
   const searchParams = useSearchParams();
   const router       = useRouter();
 
@@ -507,33 +507,6 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
               </div>
             </div>
 
-            {/* Divider */}
-            <div style={{ height: 1, background: "rgba(255,255,255,0.04)" }} />
-
-            {/* ── Language ─────────────────────────────────────────── */}
-            <div className="pt-2 pb-2.5">
-              <div className="flex items-center gap-1.5 px-2.5 mb-1">
-                <div className="w-[2px] h-2.5 rounded-full bg-text-mute2/30 flex-shrink-0" />
-                <p className="font-mono text-[6.5px] tracking-[.2em] uppercase text-text-mute2/50">{t("language_label")}</p>
-              </div>
-              <div className="grid grid-cols-3 gap-0.5 px-2">
-                {locales.map((loc) => {
-                  const active = loc === locale;
-                  return (
-                    <button
-                      key={loc}
-                      onClick={(e) => { e.stopPropagation(); setLocale(loc); }}
-                      className={`flex items-center justify-center py-1 min-h-[44px] min-w-[44px] rounded-sm font-mono text-[7.5px] transition-all border
-                                  ${active
-                                    ? "border-gold-protocol/50 text-gold-bright"
-                                    : "text-text-mute2 hover:text-text-base border-transparent hover:border-white/[0.06]"}`}
-                    >
-                      <span className="text-[11px] leading-none">{meta[loc].flag}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
           </div>
         </div>
 
@@ -896,7 +869,7 @@ function TimelineScrubber({
   return (
     <div
       className="select-none touch-none"
-      style={{ width: "calc(100vw - 580px)" }}
+      style={{ width: "calc(100vw - 700px)" }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
