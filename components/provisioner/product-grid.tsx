@@ -26,8 +26,20 @@ const PRODUCT_IMAGES: Record<string, string> = {
   "noco-gb40":            "/products/noco-gb40.png",
   "berkey-big":           "/products/berkey-big.jpg",
   "sawyer-squeeze":       "/products/sawyer-squeeze.png",
-  "reolink-810a":         "/products/reolink-810a.png",
-  "faraday-xl":           "/products/faraday-xl.jpg",
+  "reolink-810a":               "/products/reolink-810a.png",
+  "faraday-xl":                 "/products/faraday-xl.jpg",
+  "rea-nz-south-island":        "/products/rea-nz-south-island.jpg",
+  "rea-switzerland-graubunden": "/products/rea-switzerland-graubunden.jpg",
+  "rea-iceland-westfjords":     "/products/rea-iceland-westfjords.jpg",
+  "rea-uruguay-rivera":         "/products/rea-uruguay-rivera.jpg",
+  "rea-portugal-alentejo":      "/products/rea-portugal-alentejo.jpg",
+  "rea-finland-lapland":        "/products/rea-finland-lapland.jpg",
+  "rea-australia-tasmania":     "/products/rea-australia-tasmania.jpg",
+  "rea-canada-bc-interior":     "/products/rea-canada-bc-interior.jpg",
+  "rea-norway-innlandet":       "/products/rea-norway-innlandet.jpg",
+  "rea-costa-rica-guanacaste":  "/products/rea-costa-rica-guanacaste.jpg",
+  "rea-chile-patagonia":        "/products/rea-chile-patagonia.jpg",
+  "rea-panama-boquete":         "/products/rea-panama-boquete.jpg",
 };
 
 type FilterTab = "all" | ProductCategory | "critical";
@@ -366,13 +378,13 @@ function ProductCard({ product: p, onInquire }: { product: Product; onInquire: (
         style={{ background: GRADE_BAR[p.grade] }}
       />
       {/* Product image */}
-      <div className="relative h-44 bg-white border-b border-border-protocol overflow-hidden">
+      <div className={`relative h-44 border-b border-border-protocol overflow-hidden ${p.category === "real_estate" ? "bg-void-2" : "bg-white"}`}>
         {imgSrc ? (
           <Image
             src={imgSrc}
             alt={p.name}
             fill
-            className="object-contain p-5"
+            className={p.category === "real_estate" ? "object-cover" : "object-contain p-5"}
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         ) : (

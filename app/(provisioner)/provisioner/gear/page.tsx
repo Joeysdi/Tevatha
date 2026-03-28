@@ -33,8 +33,20 @@ const PRODUCT_IMAGES: Record<string, string> = {
   "noco-gb40":            "/products/noco-gb40.png",
   "berkey-big":           "/products/berkey-big.jpg",
   "sawyer-squeeze":       "/products/sawyer-squeeze.png",
-  "reolink-810a":         "/products/reolink-810a.png",
-  "faraday-xl":           "/products/faraday-xl.jpg",
+  "reolink-810a":               "/products/reolink-810a.png",
+  "faraday-xl":                 "/products/faraday-xl.jpg",
+  "rea-nz-south-island":        "/products/rea-nz-south-island.jpg",
+  "rea-switzerland-graubunden": "/products/rea-switzerland-graubunden.jpg",
+  "rea-iceland-westfjords":     "/products/rea-iceland-westfjords.jpg",
+  "rea-uruguay-rivera":         "/products/rea-uruguay-rivera.jpg",
+  "rea-portugal-alentejo":      "/products/rea-portugal-alentejo.jpg",
+  "rea-finland-lapland":        "/products/rea-finland-lapland.jpg",
+  "rea-australia-tasmania":     "/products/rea-australia-tasmania.jpg",
+  "rea-canada-bc-interior":     "/products/rea-canada-bc-interior.jpg",
+  "rea-norway-innlandet":       "/products/rea-norway-innlandet.jpg",
+  "rea-costa-rica-guanacaste":  "/products/rea-costa-rica-guanacaste.jpg",
+  "rea-chile-patagonia":        "/products/rea-chile-patagonia.jpg",
+  "rea-panama-boquete":         "/products/rea-panama-boquete.jpg",
 };
 
 // ── Domain definitions ───────────────────────────────────────────────────────
@@ -249,13 +261,13 @@ export default function GearPage() {
               {(() => {
                 const imgSrc = PRODUCT_IMAGES[p.imageSlug];
                 return (
-                  <div className="relative h-36 bg-white border-b border-border-protocol overflow-hidden flex-shrink-0">
+                  <div className={`relative h-36 border-b border-border-protocol overflow-hidden flex-shrink-0 ${p.category === "real_estate" ? "bg-void-2" : "bg-white"}`}>
                     {imgSrc ? (
                       <Image
                         src={imgSrc}
                         alt={p.name}
                         fill
-                        className="object-contain p-4"
+                        className={p.category === "real_estate" ? "object-cover" : "object-contain p-4"}
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       />
                     ) : (
