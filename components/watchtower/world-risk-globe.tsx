@@ -742,37 +742,71 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
 
     } else if (item.type === "gate") {
       const tierCol = item.gateTier === "t4" ? "#e84040" : item.gateTier === "t3" ? "#f0a500" : "#38bdf8";
-      el.style.cssText = `
-        background: rgba(5,8,13,0.88);
-        border: 1.5px solid ${tierCol}88;
-        border-radius: 6px;
-        padding: 4px 7px;
-        pointer-events: auto;
-        cursor: pointer;
-        max-width: 120px;
-        backdrop-filter: blur(6px);
-        box-shadow: 0 0 12px ${tierCol}33;
-        transition: box-shadow 0.15s, border-color 0.15s;
-      `;
+
+      // Pre-baked screen-space offsets — fans labels out from their geographic cluster
+      // so they never overlap at the default globe view (lat:20, lng:15).
+      // North America: G1(Colorado) G2(Pentagon) G4(Wall St) G5(Chicago) G7(Montreal)
+      // Europe:        G3(Brussels) G6(Geneva) G8(Gdansk)
+      const GATE_OFFSETS: Record<string, [number, number]> = {
+        G1: [-118,  28],  // lower-left
+        G2: [  14,  28],  // lower-right
+        G3: [ -74, -50],  // upper-left  (Europe)
+        G4: [  14, -40],  // upper-right
+        G5: [-118, -22],  // left
+        G6: [ -26,  22],  // lower-center (Europe)
+        G7: [   4, -60],  // straight up
+        G8: [  56, -50],  // upper-right  (Europe)
+      };
+      const [ox, oy] = GATE_OFFSETS[item.gateId ?? ""] ?? [0, -35];
+
+      // Outer element: zero-size anchor pinned at the exact lat/lng
+      el.style.cssText = `width:0;height:0;overflow:visible;position:relative;pointer-events:none;`;
+
       el.innerHTML = `
-        <div style="font-family:monospace;font-size:7.5px;font-weight:bold;
-                    color:${tierCol};letter-spacing:.1em;">${item.gateLabel ?? ""}</div>
+        <div style="
+          position:absolute;left:-3px;top:-3px;
+          width:6px;height:6px;
+          background:${tierCol};border-radius:50%;
+          box-shadow:0 0 8px ${tierCol}99;
+          pointer-events:none;
+        "></div>
+        <div class="gate-card" style="
+          position:absolute;
+          transform:translate(${ox}px,${oy}px);
+          background:rgba(5,8,13,0.88);
+          border:1.5px solid ${tierCol}88;
+          border-radius:6px;
+          padding:4px 7px;
+          pointer-events:auto;
+          cursor:pointer;
+          white-space:nowrap;
+          backdrop-filter:blur(6px);
+          box-shadow:0 0 12px ${tierCol}33;
+          transition:box-shadow 0.15s,border-color 0.15s;
+        ">
+          <div style="font-family:monospace;font-size:7.5px;font-weight:bold;
+                      color:${tierCol};letter-spacing:.1em;">${item.gateLabel ?? ""}</div>
+        </div>
       `;
-      el.addEventListener("mouseenter", () => {
-        el.style.boxShadow = `0 4px 20px ${tierCol}66, 0 0 0 1px ${tierCol}88`;
-        el.style.borderColor = `${tierCol}cc`;
-      });
-      el.addEventListener("mouseleave", () => {
-        el.style.boxShadow = `0 0 12px ${tierCol}33`;
-        el.style.borderColor = `${tierCol}88`;
-      });
-      el.addEventListener("click", (e) => {
-        e.stopPropagation();
-        el.dispatchEvent(new CustomEvent("gate-pin-click", {
-          bubbles: true,
-          detail: { gateId: item.gateId },
-        }));
-      });
+
+      const card = el.querySelector(".gate-card") as HTMLElement | null;
+      if (card) {
+        card.addEventListener("mouseenter", () => {
+          card.style.boxShadow = `0 4px 20px ${tierCol}66, 0 0 0 1px ${tierCol}88`;
+          card.style.borderColor = `${tierCol}cc`;
+        });
+        card.addEventListener("mouseleave", () => {
+          card.style.boxShadow = `0 0 12px ${tierCol}33`;
+          card.style.borderColor = `${tierCol}88`;
+        });
+        card.addEventListener("click", (e) => {
+          e.stopPropagation();
+          el.dispatchEvent(new CustomEvent("gate-pin-click", {
+            bubbles: true,
+            detail: { gateId: item.gateId },
+          }));
+        });
+      }
 
     } else if (item.type === "commodity") {
       const up  = (item.commodityChange ?? 0) >= 0;
