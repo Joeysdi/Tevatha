@@ -748,14 +748,14 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
       // North America: G1(Colorado) G2(Pentagon) G4(Wall St) G5(Chicago) G7(Montreal)
       // Europe:        G3(Brussels) G6(Geneva) G8(Gdansk)
       const GATE_OFFSETS: Record<string, [number, number]> = {
-        G1: [-118,  28],  // lower-left
-        G2: [  14,  28],  // lower-right
-        G3: [ -74, -50],  // upper-left  (Europe)
+        G1: [ -50,  60],  // lower        (was -118 — pulled in to stay on globe)
+        G2: [  14,  32],  // lower-right
+        G3: [ -74, -50],  // upper-left   (Europe)
         G4: [  14, -40],  // upper-right
-        G5: [-118, -22],  // left
+        G5: [ -75, -10],  // left         (was -118 — pulled in to stay on globe)
         G6: [ -26,  22],  // lower-center (Europe)
-        G7: [   4, -60],  // straight up
-        G8: [  56, -50],  // upper-right  (Europe)
+        G7: [   4, -70],  // straight up
+        G8: [  18, -55],  // upper-right  (was 56  — pulled in to stay on globe)
       };
       const [ox, oy] = GATE_OFFSETS[item.gateId ?? ""] ?? [0, -35];
 
