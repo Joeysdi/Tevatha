@@ -14,7 +14,7 @@ export function ProvisionerHeader() {
   return (
     <>
       <header
-        className="backdrop-blur-sm bg-void-1/95 border-b border-border-protocol/40 relative z-20 px-4 sm:px-6 py-3 sm:py-3.5"
+        className="bg-void-1 border-b border-border-protocol/40 relative z-20 px-4 sm:px-6 py-3 sm:py-3.5"
         style={{ boxShadow: "0 0 24px rgba(201,168,76,0.06)" }}
       >
         {/* Gold top accent line */}

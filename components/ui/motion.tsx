@@ -16,9 +16,9 @@ interface FadeUpProps {
 export function FadeUp({ children, delay = 0, className }: FadeUpProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 18 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45, delay, ease: [0.25, 0.46, 0.45, 0.94] }}
+      transition={{ duration: 0.32, delay, ease: [0.25, 0.46, 0.45, 0.94] }}
       className={className}
     >
       {children}
@@ -32,7 +32,7 @@ export function FadeUp({ children, delay = 0, className }: FadeUpProps) {
 const staggerParentVariants = {
   hidden:  {},
   visible: (delayChildren: number) => ({
-    transition: { staggerChildren: 0.06, delayChildren },
+    transition: { staggerChildren: 0.04, delayChildren },
   }),
 };
 
@@ -64,11 +64,11 @@ export function StaggerParent({
 // Must be direct child of StaggerParent
 
 const staggerChildVariants = {
-  hidden:  { opacity: 0, y: 14 },
+  hidden:  { opacity: 0, y: 8 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] },
+    transition: { duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] },
   },
 };
 

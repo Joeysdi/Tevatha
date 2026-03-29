@@ -4,7 +4,7 @@
 import { useState, useMemo } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { StaggerParent, StaggerChild, FadeIn } from "@/components/ui/motion";
+import { StaggerParent, StaggerChild } from "@/components/ui/motion";
 import { GradeBadge }  from "./grade-badge";
 import { useCart }     from "@/lib/cart/store";
 import type { Product, ProductCategory } from "@/lib/provisioner/catalog";
@@ -437,7 +437,7 @@ export function ProductGrid({ products }: ProductGridProps) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="absolute inset-0 bg-void-0/80 backdrop-blur-sm"
+              className="absolute inset-0 bg-void-0/85"
               onClick={() => setFilterOpen(false)}
             />
             {/* Sheet */}
@@ -486,7 +486,7 @@ export function ProductGrid({ products }: ProductGridProps) {
       {/* ── Inquiry modal (bottom sheet on mobile, centered on desktop) ──── */}
       {inquiryProduct && (
         <div
-          className="fixed inset-0 z-50 flex sm:items-center items-end p-0 sm:p-4 bg-void-0/80 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex sm:items-center items-end p-0 sm:p-4 bg-void-0/85"
           onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
         >
           <motion.div
@@ -660,12 +660,10 @@ function ProductCard({ product: p, onInquire }: { product: Product; onInquire: (
   };
 
   return (
-    <motion.article
-      whileHover={{ y: -2 }}
-      transition={{ duration: 0.15 }}
+    <article
       className={`group relative bg-void-1 border rounded-xl overflow-hidden flex flex-col
-                  hover:shadow-[0_8px_24px_rgba(201,168,76,0.3)]
-                  transition-shadow duration-200 ${g.border}`}
+                  hover:shadow-[0_8px_24px_rgba(201,168,76,0.3)] hover:-translate-y-0.5
+                  transition-all duration-150 ${g.border}`}
     >
       {/* Top accent line */}
       <div
@@ -742,7 +740,7 @@ function ProductCard({ product: p, onInquire }: { product: Product; onInquire: (
         <div className="flex items-center justify-between gap-1 mb-2.5">
           <div>
             <div className="font-mono font-bold text-[14px] tabular-nums leading-none text-gold-protocol">
-              <FadeIn>{p.priceDisplay ?? `$${(p.priceUsd / 100).toFixed(2)}`}</FadeIn>
+              {p.priceDisplay ?? `$${(p.priceUsd / 100).toFixed(2)}`}
             </div>
             {p.category === "real_estate" && p.location && (
               <div className="font-mono text-[8px] text-text-mute2 mt-0.5 leading-tight">
@@ -801,6 +799,6 @@ function ProductCard({ product: p, onInquire }: { product: Product; onInquire: (
           )}
         </div>
       </div>
-    </motion.article>
+    </article>
   );
 }

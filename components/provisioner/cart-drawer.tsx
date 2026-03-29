@@ -80,7 +80,7 @@ export function CartDrawer() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+            className="fixed inset-0 bg-black/70 z-40"
             onClick={handleOverlayClick}
           />
 
@@ -89,7 +89,7 @@ export function CartDrawer() {
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
-            transition={{ type: "spring", stiffness: 320, damping: 32 }}
+            transition={{ type: "tween", duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
             className="fixed top-0 right-0 h-full w-full max-w-[440px] z-50
                        bg-void-1 border-l border-border-protocol flex flex-col"
             style={{ boxShadow: "-8px 0 40px rgba(0,0,0,0.5)" }}
