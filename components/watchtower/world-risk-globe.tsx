@@ -24,7 +24,6 @@ import { SIGNAL_PINS } from "@/lib/watchtower/signal-pins";
 import { DOMAIN_IMPACTS } from "@/lib/watchtower/domain-impacts";
 import { DOMAINS } from "@/lib/watchtower/data";
 import { GATE_PINS } from "@/lib/watchtower/gate-pins";
-import { GateLabelOverlay } from "./gate-label-overlay";
 import { COMMODITY_PINS } from "@/lib/watchtower/commodity-pins";
 import { NEWS_FEED_PINS } from "@/lib/watchtower/news-feed-pins";
 import { INSTABILITY_SCORES, INSTABILITY_DEFAULT, instabilityFill } from "@/lib/watchtower/instability-data";
@@ -1260,16 +1259,7 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
         />
       )}
 
-      {/* ── Gate label overlay — rAF-driven, collision-free ──────────────── */}
-      <GateLabelOverlay
-        globeRef={globeRef}
-        dims={dims}
-        showGates={gatePhase !== "P1" && gatePhase !== "P2" && gatePhase !== "P3"}
-        gateTier={GATE_TIER}
-        onGateClick={id => onGatePinClick?.(id)}
-      />
-
-      {/* ── Scenario mode badge ───────────────────────────────────────────── */}
+{/* ── Scenario mode badge ───────────────────────────────────────────── */}
       {scenarioId && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
           <div
