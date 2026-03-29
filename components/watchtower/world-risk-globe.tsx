@@ -24,6 +24,7 @@ import { SIGNAL_PINS } from "@/lib/watchtower/signal-pins";
 import { DOMAIN_IMPACTS } from "@/lib/watchtower/domain-impacts";
 import { DOMAINS } from "@/lib/watchtower/data";
 import { GATE_PINS } from "@/lib/watchtower/gate-pins";
+import { GateLabelOverlay } from "./gate-label-overlay";
 import { COMMODITY_PINS } from "@/lib/watchtower/commodity-pins";
 import { NEWS_FEED_PINS } from "@/lib/watchtower/news-feed-pins";
 import { INSTABILITY_SCORES, INSTABILITY_DEFAULT, instabilityFill } from "@/lib/watchtower/instability-data";
@@ -306,6 +307,11 @@ interface Props {
   onNewsFeedPinClick:    (newsId: string) => void;
 }
 
+// ─── Gate tier map (component-scope so GateLabelOverlay can receive it) ───────
+const GATE_TIER: Record<string, string> = {
+  G1:"t4", G2:"t4", G3:"t4", G4:"t4", G5:"t4", G6:"t3", G7:"t3", G8:"t2",
+};
+
 // ─── Component ────────────────────────────────────────────────────────────────
 export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMode, domainId, gatePhase, scrubVelocity, showCommodities, showInstability, showNewsFeed, onSignalPinClick, onPsychZoneClick, onGatePinClick, onCommodityPinClick, onNewsFeedPinClick }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -568,9 +574,6 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
     // Gate pins — visible in present/future phases (P4, P5, P6)
     const showGates = gatePhase !== "P1" && gatePhase !== "P2" && gatePhase !== "P3";
     if (showGates) {
-      const GATE_TIER: Record<string, string> = {
-        G1:"t4", G2:"t4", G3:"t4", G4:"t4", G5:"t4", G6:"t3", G7:"t3", G8:"t2",
-      };
       for (const pin of GATE_PINS) {
         items.push({
           type:      "gate",
@@ -741,82 +744,29 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
       });
 
     } else if (item.type === "gate") {
-      const tierCol = item.gateTier === "t4" ? "#e84040" : item.gateTier === "t3" ? "#f0a500" : "#38bdf8";
-
-      // Pre-baked screen-space offsets — fans labels out from their geographic cluster
-      // so they never overlap at the default globe view (lat:20, lng:15).
-      // North America: G1(Colorado) G2(Pentagon) G4(Wall St) G5(Chicago) G7(Montreal)
-      // Europe:        G3(Brussels) G6(Geneva) G8(Gdansk)
-      // Fan layout — each gate gets a unique angle so no two label boxes overlap.
-      // NA dots (G1 Colorado, G2 Pentagon, G4 Wall St, G5 Chicago, G7 Montreal)
-      // cluster in the left-center of the visible globe face, so the fan is
-      // biased rightward — leftward offsets for G1/G5 would push off the edge.
-      // Europe dots (G3 Brussels, G6 Geneva, G8 Gdansk) are right-center, so
-      // their labels go leftward toward the globe interior.
-      //
-      // Offsets verified non-overlapping: each [ox, oy] places the card's
-      // top-left at (dot + ox, dot + oy). With 100×22px cards and 8px padding
-      // no two bounding boxes intersect.
-      const GATE_OFFSETS: Record<string, [number, number]> = {
-        G7: [   0, -80],  // NA — straight up
-        G5: [  55, -55],  // NA — upper-right
-        G4: [  85,   0],  // NA — right
-        G2: [  55,  55],  // NA — lower-right
-        G1: [  30,  90],  // NA — below (slight right keeps it on globe)
-        G3: [ -74, -50],  // Europe — upper-left
-        G8: [ -70,  -5],  // Europe — center-left
-        G6: [ -26,  22],  // Europe — lower-center
-      };
-      const [ox, oy] = GATE_OFFSETS[item.gateId ?? ""] ?? [0, -35];
-
-      // Outer element: zero-size anchor pinned at the exact lat/lng
-      el.style.cssText = `width:0;height:0;overflow:visible;position:relative;pointer-events:none;`;
-
-      el.innerHTML = `
-        <div style="
-          position:absolute;left:-3px;top:-3px;
-          width:6px;height:6px;
-          background:${tierCol};border-radius:50%;
-          box-shadow:0 0 8px ${tierCol}99;
-          pointer-events:none;
-        "></div>
-        <div class="gate-card" style="
-          position:absolute;
-          transform:translate(${ox}px,${oy}px);
-          background:rgba(5,8,13,0.88);
-          border:1.5px solid ${tierCol}88;
-          border-radius:6px;
-          padding:4px 7px;
-          pointer-events:auto;
-          cursor:pointer;
-          white-space:nowrap;
-          backdrop-filter:blur(6px);
-          box-shadow:0 0 12px ${tierCol}33;
-          transition:box-shadow 0.15s,border-color 0.15s;
-        ">
-          <div style="font-family:monospace;font-size:7.5px;font-weight:bold;
-                      color:${tierCol};letter-spacing:.1em;">${item.gateLabel ?? ""}</div>
-        </div>
+      const tierCol = item.gateTier === "t4" ? "#e84040"
+                    : item.gateTier === "t3" ? "#f0a500" : "#38bdf8";
+      el.style.cssText = `
+        width:8px; height:8px;
+        background:${tierCol};
+        border-radius:50%;
+        box-shadow:0 0 10px ${tierCol}cc;
+        pointer-events:auto;
+        cursor:pointer;
+        transition:transform 0.15s, box-shadow 0.15s;
       `;
-
-      const card = el.querySelector(".gate-card") as HTMLElement | null;
-      if (card) {
-        card.addEventListener("mouseenter", () => {
-          card.style.boxShadow = `0 4px 20px ${tierCol}66, 0 0 0 1px ${tierCol}88`;
-          card.style.borderColor = `${tierCol}cc`;
-        });
-        card.addEventListener("mouseleave", () => {
-          card.style.boxShadow = `0 0 12px ${tierCol}33`;
-          card.style.borderColor = `${tierCol}88`;
-        });
-        card.addEventListener("click", (e) => {
-          e.stopPropagation();
-          el.dispatchEvent(new CustomEvent("gate-pin-click", {
-            bubbles: true,
-            detail: { gateId: item.gateId },
-          }));
-        });
-      }
+      el.addEventListener("mouseenter", () => {
+        el.style.transform = "scale(1.8)";
+        el.style.boxShadow = `0 0 18px ${tierCol}`;
+      });
+      el.addEventListener("mouseleave", () => {
+        el.style.transform = "scale(1)";
+        el.style.boxShadow = `0 0 10px ${tierCol}cc`;
+      });
+      el.addEventListener("click", e => {
+        e.stopPropagation();
+        el.dispatchEvent(new CustomEvent("gate-pin-click", { bubbles:true, detail:{ gateId:item.gateId } }));
+      });
 
     } else if (item.type === "commodity") {
       const up  = (item.commodityChange ?? 0) >= 0;
@@ -1309,6 +1259,15 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
           htmlElement={htmlElement}
         />
       )}
+
+      {/* ── Gate label overlay — rAF-driven, collision-free ──────────────── */}
+      <GateLabelOverlay
+        globeRef={globeRef}
+        dims={dims}
+        showGates={gatePhase !== "P1" && gatePhase !== "P2" && gatePhase !== "P3"}
+        gateTier={GATE_TIER}
+        onGateClick={id => onGatePinClick?.(id)}
+      />
 
       {/* ── Scenario mode badge ───────────────────────────────────────────── */}
       {scenarioId && (

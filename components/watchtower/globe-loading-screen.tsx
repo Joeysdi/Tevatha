@@ -156,9 +156,9 @@ export function GlobeLoadingScreen({ isReady = false }: { isReady?: boolean }) {
 
 
       {/* ── Main body ───────────────────────────────────────────────────────── */}
-      <div className="flex-1 flex flex-col lg:flex-row items-stretch gap-0 overflow-hidden relative z-10 min-h-0">
+      <div className="flex-1 flex flex-col items-stretch gap-0 overflow-hidden relative z-10 min-h-0">
 
-        {/* ── Left: Clock column ──────────────────────────────────────────── */}
+        {/* ── Clock column ────────────────────────────────────────────────── */}
         <div className="flex flex-col items-center justify-center px-6 py-6 flex-1 min-h-0 gap-5">
 
           {/* Eyebrow */}
@@ -309,10 +309,10 @@ export function GlobeLoadingScreen({ isReady = false }: { isReady?: boolean }) {
 
         </div>
 
-        {/* ── Right: Module init list ──────────────────────────────────────── */}
+        {/* ── Module init list ─────────────────────────────────────────────── */}
         <div
-          className="flex flex-col gap-3 px-6 py-6 lg:w-[340px] flex-shrink-0 justify-center"
-          style={{ borderLeft: "1px solid rgba(232,64,64,0.08)" }}
+          className="flex flex-col gap-3 px-6 pb-6 items-center"
+          style={{ borderTop: "1px solid rgba(232,64,64,0.08)" }}
         >
           <p className="font-mono text-[7.5px] tracking-[.22em] uppercase text-text-mute2/40 mb-1">
             MODULE INITIALISATION
