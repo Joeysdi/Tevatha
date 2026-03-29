@@ -747,15 +747,18 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
       // so they never overlap at the default globe view (lat:20, lng:15).
       // North America: G1(Colorado) G2(Pentagon) G4(Wall St) G5(Chicago) G7(Montreal)
       // Europe:        G3(Brussels) G6(Geneva) G8(Gdansk)
+      // All NA labels (G1 G2 G4 G5 G7) stack vertically to the RIGHT of their
+      // dots — dots sit on the US East Coast, so rightward = toward globe center.
+      // Europe labels (G3 G6 G8) go left from their dots for the same reason.
       const GATE_OFFSETS: Record<string, [number, number]> = {
-        G1: [ -50,  60],  // lower        (was -118 — pulled in to stay on globe)
-        G2: [  14,  32],  // lower-right
-        G3: [ -74, -50],  // upper-left   (Europe)
-        G4: [  14, -40],  // upper-right
-        G5: [ -75, -10],  // left         (was -118 — pulled in to stay on globe)
-        G6: [ -26,  22],  // lower-center (Europe)
-        G7: [   4, -70],  // straight up
-        G8: [  18, -55],  // upper-right  (was 56  — pulled in to stay on globe)
+        G7: [  10, -75],  // NA — top of stack
+        G4: [  10, -45],  // NA — second
+        G5: [  10, -15],  // NA — middle  (was far-left, now right of dot)
+        G2: [  10,  20],  // NA — fourth
+        G1: [  10,  50],  // NA — bottom  (was far-left, now right of dot)
+        G3: [ -74, -50],  // Europe — upper-left
+        G8: [ -70,  -5],  // Europe — center-left (was far-right, now left of dot)
+        G6: [ -26,  22],  // Europe — lower-center
       };
       const [ox, oy] = GATE_OFFSETS[item.gateId ?? ""] ?? [0, -35];
 
