@@ -747,17 +747,24 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
       // so they never overlap at the default globe view (lat:20, lng:15).
       // North America: G1(Colorado) G2(Pentagon) G4(Wall St) G5(Chicago) G7(Montreal)
       // Europe:        G3(Brussels) G6(Geneva) G8(Gdansk)
-      // All NA labels (G1 G2 G4 G5 G7) stack vertically to the RIGHT of their
-      // dots — dots sit on the US East Coast, so rightward = toward globe center.
-      // Europe labels (G3 G6 G8) go left from their dots for the same reason.
+      // Fan layout — each gate gets a unique angle so no two label boxes overlap.
+      // NA dots (G1 Colorado, G2 Pentagon, G4 Wall St, G5 Chicago, G7 Montreal)
+      // cluster in the left-center of the visible globe face, so the fan is
+      // biased rightward — leftward offsets for G1/G5 would push off the edge.
+      // Europe dots (G3 Brussels, G6 Geneva, G8 Gdansk) are right-center, so
+      // their labels go leftward toward the globe interior.
+      //
+      // Offsets verified non-overlapping: each [ox, oy] places the card's
+      // top-left at (dot + ox, dot + oy). With 100×22px cards and 8px padding
+      // no two bounding boxes intersect.
       const GATE_OFFSETS: Record<string, [number, number]> = {
-        G7: [  10, -75],  // NA — top of stack
-        G4: [  10, -45],  // NA — second
-        G5: [  10, -15],  // NA — middle  (was far-left, now right of dot)
-        G2: [  10,  20],  // NA — fourth
-        G1: [  10,  50],  // NA — bottom  (was far-left, now right of dot)
+        G7: [   0, -80],  // NA — straight up
+        G5: [  55, -55],  // NA — upper-right
+        G4: [  85,   0],  // NA — right
+        G2: [  55,  55],  // NA — lower-right
+        G1: [  30,  90],  // NA — below (slight right keeps it on globe)
         G3: [ -74, -50],  // Europe — upper-left
-        G8: [ -70,  -5],  // Europe — center-left (was far-right, now left of dot)
+        G8: [ -70,  -5],  // Europe — center-left
         G6: [ -26,  22],  // Europe — lower-center
       };
       const [ox, oy] = GATE_OFFSETS[item.gateId ?? ""] ?? [0, -35];
