@@ -1260,8 +1260,8 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
 
           globeImageUrl={oceanTextureUrl}
           backgroundColor="rgba(0,0,0,0)"
-          atmosphereColor="rgba(0,212,255,0.28)"
-          atmosphereAltitude={0.28}
+          atmosphereColor="rgba(0,212,255,0.22)"
+          atmosphereAltitude={0.24}
 
           polygonsData={countries}
           polygonCapColor={capColor}
@@ -1275,7 +1275,7 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
           pathPoints="coords"
           pathPointLat={(pt: unknown) => (pt as number[])[0]}
           pathPointLng={(pt: unknown) => (pt as number[])[1]}
-          pathPointAlt={0.001}
+          pathPointAlt={0.018}
           pathColor={(d: object) => {
             const p = d as GlobePath;
             if (p.pathType === "graticule") return "rgba(201,168,76,0.07)";
