@@ -474,7 +474,9 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
             if (!sp) return null;
             const events = TIMELINE_EVENTS.filter(e => {
               const yr = e.year.toLowerCase() === "now" ? 2026 : parseInt(e.year, 10) || 2026;
-              return yr >= sp.yearStart && yr < sp.yearEnd;
+              const inPhase = yr >= sp.yearStart && yr < sp.yearEnd;
+              const inDomain = !domainId || (e.domain ?? []).includes(domainId);
+              return inPhase && inDomain;
             }).slice(0, 4);
             const gateDetails = GATES.filter(g => (sp.gateIds as readonly string[]).includes(g.id));
             return (
@@ -508,6 +510,15 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
                         {sp.label}
                       </span>
                       <span className="font-mono text-[7px] text-text-mute2">{sp.yearRange}</span>
+                      {domainId && (() => {
+                        const dom = DOMAINS.find(d => d.id === domainId);
+                        const col = dom ? (DOMAIN_COLORS[dom.label] ?? "#c9a84c") : "#c9a84c";
+                        return (
+                          <span className="font-mono text-[6.5px] px-1.5 py-0.5 rounded" style={{ color: col, background: `${col}22`, border: `1px solid ${col}44` }}>
+                            {dom?.icon} {dom?.label}
+                          </span>
+                        );
+                      })()}
                     </div>
                     <button
                       onClick={() => { setEraPhase("P4"); setLivePhase("P4"); updateUrl({ era: null }); }}
@@ -521,7 +532,7 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
                     <p className="font-mono text-[8.5px] text-text-dim leading-relaxed">{sp.desc}</p>
 
                     {/* Key events */}
-                    {events.length > 0 && (
+                    {events.length > 0 ? (
                       <div>
                         <p className="font-mono text-[6.5px] tracking-[.16em] uppercase mb-1.5" style={{ color: `${sp.hex}88` }}>
                           Key Events
@@ -539,7 +550,11 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
                           })}
                         </div>
                       </div>
-                    )}
+                    ) : domainId ? (
+                      <p className="font-mono text-[8px] text-text-mute2/50 italic">
+                        No {DOMAINS.find(d => d.id === domainId)?.label ?? domainId} events recorded in this era.
+                      </p>
+                    ) : null}
 
                     {/* Decision gates */}
                     {gateDetails.length > 0 && (
@@ -588,6 +603,8 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
             }}
             onLivePhase={setLivePhase}
             onVelocityChange={setScrubVelocity}
+            activeDomainId={domainId}
+            domainColor={domainId ? (DOMAIN_COLORS[DOMAINS.find(d => d.id === domainId)?.label ?? ""] ?? null) : null}
           />
         </div>
 
@@ -640,11 +657,15 @@ function TimelineScrubber({
   onPhaseChange,
   onLivePhase,
   onVelocityChange,
+  activeDomainId,
+  domainColor,
 }: {
   activePhase:      string;
   onPhaseChange:    (id: string) => void;
   onLivePhase:      (id: string) => void;
   onVelocityChange: (vel: number) => void;
+  activeDomainId:   string | null;
+  domainColor:      string | null;
 }) {
   const trackRef    = useRef<HTMLDivElement>(null);
   const [trackW,   setTrackW]   = useState(300);
@@ -658,6 +679,19 @@ function TimelineScrubber({
   const activeIdx  = SCRUB_PHASES.findIndex((p) => p.id === activePhase);
   const displayIdx = dragIdx ?? activeIdx;
   const phase      = SCRUB_PHASES[displayIdx];
+
+  const domainPhaseIds = useMemo(() => {
+    if (!activeDomainId) return null;
+    const ids = new Set<string>();
+    for (const p of SCRUB_PHASES) {
+      const hasEvent = TIMELINE_EVENTS.some(e => {
+        const yr = e.year.toLowerCase() === "now" ? 2026 : parseInt(e.year, 10) || 2026;
+        return yr >= p.yearStart && yr < p.yearEnd && (e.domain ?? []).includes(activeDomainId);
+      });
+      if (hasEvent) ids.add(p.id);
+    }
+    return ids;
+  }, [activeDomainId]);
 
   // Measure track width
   useEffect(() => {
@@ -769,7 +803,9 @@ function TimelineScrubber({
               left: stopX(0),
               width: Math.max(0, stopX(displayIdx) - stopX(0)),
               height: 2,
-              background: `linear-gradient(90deg, ${SCRUB_PHASES[0].hex}44, ${phase.hex}cc)`,
+              background: domainColor
+                ? `linear-gradient(90deg, ${domainColor}44, ${domainColor}cc)`
+                : `linear-gradient(90deg, ${SCRUB_PHASES[0].hex}44, ${phase.hex}cc)`,
               transform: "translateY(-50%)",
               borderRadius: 1,
             }}
@@ -778,11 +814,17 @@ function TimelineScrubber({
           {/* Phase stops */}
           {SCRUB_PHASES.map((p, i) => {
             const isActive = i === displayIdx;
+            const inDomain = domainPhaseIds ? domainPhaseIds.has(p.id) : null;
+            const effectiveColor = domainColor && inDomain ? domainColor : p.hex;
             return (
               <div
                 key={p.id}
-                className="absolute top-1/2 -translate-x-1/2 pointer-events-none flex flex-col items-center"
-                style={{ left: stopX(i), transform: "translateX(-50%) translateY(-50%)" }}
+                className="absolute top-1/2 -translate-x-1/2 pointer-events-none flex flex-col items-center transition-opacity duration-300"
+                style={{
+                  left: stopX(i),
+                  transform: "translateX(-50%) translateY(-50%)",
+                  opacity: inDomain === false ? 0.18 : 1,
+                }}
               >
                 {/* Stop dot */}
                 <div
@@ -790,8 +832,12 @@ function TimelineScrubber({
                   style={{
                     width: isActive ? 6 : 4,
                     height: isActive ? 6 : 4,
-                    background: isActive ? p.hex : `${p.hex}55`,
-                    boxShadow: isActive ? `0 0 8px ${p.hex}` : "none",
+                    background: inDomain === false
+                      ? "#6b728055"
+                      : isActive ? effectiveColor : `${effectiveColor}55`,
+                    boxShadow: isActive
+                      ? `0 0 8px ${effectiveColor}`
+                      : inDomain === true && domainColor ? `0 0 5px ${domainColor}` : "none",
                   }}
                 />
               </div>
@@ -837,10 +883,10 @@ function TimelineScrubber({
             <div
               style={{
                 width: 14, height: 14,
-                background: phase.hex,
+                background: domainColor ?? phase.hex,
                 transform: "rotate(45deg)",
                 borderRadius: 2,
-                boxShadow: `0 0 14px ${phase.hex}aa, 0 0 4px ${phase.hex}`,
+                boxShadow: `0 0 14px ${(domainColor ?? phase.hex)}aa, 0 0 4px ${domainColor ?? phase.hex}`,
                 border: "1.5px solid rgba(255,255,255,0.4)",
               }}
             />
