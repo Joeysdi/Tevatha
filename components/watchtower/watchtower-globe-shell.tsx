@@ -193,7 +193,6 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
   const [scrubVelocity,     setScrubVelocity]     = useState(0);
 
   const [scenarioId,        setScenarioId]        = useState<string | null>(() => searchParams.get("scenario"));
-  const [psychologyMode,    setPsychologyMode]    = useState(() => searchParams.get("psych") === "1");
   const [selectedSignalIdx, setSelectedSignalIdx] = useState<number | null>(null);
   const [domainId,          setDomainId]          = useState<string | null>(() => searchParams.get("domain"));
   const [selectedPsychZone, setSelectedPsychZone] = useState<{ region: string; threat: string; note: string } | null>(null);
@@ -266,7 +265,6 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
         <WorldRiskGlobe
           eraPhase={eraPhase}
           scenarioId={scenarioId}
-          psychologyMode={psychologyMode}
           domainId={domainId}
           gatePhase={eraPhase}
           scrubVelocity={scrubVelocity}
@@ -455,27 +453,6 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
                 })}
               </div>
             </nav>
-
-            {/* Divider */}
-            <div style={{ height: 1, background: "rgba(255,255,255,0.04)" }} />
-
-            {/* ── Psychology + Signals ─────────────────────────────── */}
-            <div className="flex flex-col py-1">
-              <Link
-                href={buildUrl(searchParams, { psych: psychologyMode ? null : "1" })}
-                replace
-                onClick={(e) => { e.stopPropagation(); setPsychologyMode(!psychologyMode); }}
-                aria-pressed={psychologyMode}
-                aria-label={`${psychologyMode ? "Disable" : "Enable"} psychology mode`}
-                className={`flex items-center gap-2 pl-3 pr-2.5 py-1.5 min-h-[44px]
-                            font-mono text-[8px] transition-all duration-150 border-l-2
-                            ${psychologyMode ? "text-purple-300" : "text-text-mute2 hover:text-text-base"}`}
-                style={{ borderLeftColor: psychologyMode ? "#a855f7" : "transparent" }}
-              >
-                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${psychologyMode ? "bg-purple-400 animate-pulse" : "bg-text-mute2/25"}`} />
-                🧠 {t("nav_psychology")}
-              </Link>
-            </div>
 
             {/* Divider */}
             <div style={{ height: 1, background: "rgba(255,255,255,0.04)" }} />
@@ -726,22 +703,6 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
             );
           })}
         </nav>
-
-        <div className="w-px h-4 bg-border-protocol/60 flex-shrink-0" />
-
-        <button
-          onClick={() => {
-            const next = !psychologyMode;
-            setPsychologyMode(next);
-            updateUrl({ psych: next ? "1" : null });
-          }}
-          aria-pressed={psychologyMode}
-          aria-label={`${psychologyMode ? "Disable" : "Enable"} psychology mode`}
-          className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-2.5 rounded-lg border font-mono text-[9px] transition-all min-h-[44px]
-                      ${psychologyMode ? "border-purple-500/50 text-purple-300" : "bg-void-3 border-border-protocol text-text-mute2"}`}
-          style={{ background: psychologyMode ? "rgba(138,43,226,0.15)" : undefined }}>
-          🧠 {t("nav_psychology")}
-        </button>
 
         <div className="w-px h-4 bg-border-protocol/60 flex-shrink-0" />
 

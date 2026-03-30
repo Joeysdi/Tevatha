@@ -235,29 +235,29 @@ interface GeoFeature {
 
 // ─── Psychology zones ─────────────────────────────────────────────────────────
 interface PsychZone {
-  lat:    number;
-  lng:    number;
-  region: string;
+  lat:     number;
+  lng:     number;
+  region:  string;
+  domains: string[];
   threat: string;
   note:   string;
 }
 
 const PSYCH_ZONES: PsychZone[] = [
-  { lat: 49.0, lng: 31.5,   region: "Ukraine",      threat: "Combat Stress",          note: "3yr war → hypervigilance & moral injury at scale. Identity anchoring critical." },
-  { lat: 31.9, lng: 35.2,   region: "Gaza",         threat: "Infrastructure Collapse", note: "Complete social fabric destruction → anomie + learned helplessness cascade." },
-  { lat: 33.5, lng: 36.3,   region: "Syria",        threat: "Chronic Displacement",    note: "14yr conflict: compound trauma + grief without closure = identity dissolution." },
-  { lat: 15.5, lng: 32.5,   region: "Sudan",        threat: "Societal Fracture",       note: "Largest displacement crisis: community bonds severed = primary resilience failure." },
-  { lat: 39.0, lng: 125.75, region: "North Korea",  threat: "Information Blackout",    note: "Total information control → normalisation of abnormal. Cognitive capture complete." },
-  { lat:  2.0, lng: 45.3,   region: "Somalia",      threat: "State Collapse",          note: "33yr failed state: survival psychology becomes default — trust radius collapses to family." },
-  { lat: 34.5, lng: 69.2,   region: "Afghanistan",  threat: "Learned Helplessness",    note: "4 regime changes in 20yrs: agency loss → fatalism prevents adaptive action." },
-  { lat: 15.5, lng: 44.2,   region: "Yemen",        threat: "Famine Stress",           note: "Chronic hunger impairs cognition: decision quality collapses under caloric deficit." },
+  { lat: 49.0, lng: 31.5,   region: "Ukraine",      threat: "Combat Stress",           note: "3yr war → hypervigilance & moral injury at scale. Identity anchoring critical.",                                    domains: ["nuclear", "civil"] },
+  { lat: 31.9, lng: 35.2,   region: "Gaza",         threat: "Infrastructure Collapse",  note: "Complete social fabric destruction → anomie + learned helplessness cascade.",                                     domains: ["cyber", "civil", "economic"] },
+  { lat: 33.5, lng: 36.3,   region: "Syria",        threat: "Chronic Displacement",     note: "14yr conflict: compound trauma + grief without closure = identity dissolution.",                                   domains: ["civil", "climate"] },
+  { lat: 15.5, lng: 32.5,   region: "Sudan",        threat: "Societal Fracture",        note: "Largest displacement crisis: community bonds severed = primary resilience failure.",                               domains: ["civil", "economic", "bio", "climate"] },
+  { lat: 39.0, lng: 125.75, region: "North Korea",  threat: "Information Blackout",     note: "Total information control → normalisation of abnormal. Cognitive capture complete.",                               domains: ["nuclear", "cyber"] },
+  { lat:  2.0, lng: 45.3,   region: "Somalia",      threat: "State Collapse",           note: "33yr failed state: survival psychology becomes default — trust radius collapses to family.",                       domains: ["civil", "economic", "bio"] },
+  { lat: 34.5, lng: 69.2,   region: "Afghanistan",  threat: "Learned Helplessness",     note: "4 regime changes in 20yrs: agency loss → fatalism prevents adaptive action.",                                     domains: ["civil", "economic"] },
+  { lat: 15.5, lng: 44.2,   region: "Yemen",        threat: "Famine Stress",            note: "Chronic hunger impairs cognition: decision quality collapses under caloric deficit.",                              domains: ["economic", "bio", "climate"] },
 ];
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 interface Props {
   eraPhase:              string;
   scenarioId:            string | null;
-  psychologyMode:        boolean;
   domainId:              string | null;
   gatePhase:             string;
   scrubVelocity:         number;
@@ -278,7 +278,7 @@ const GATE_TIER: Record<string, string> = {
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
-export function WorldRiskGlobe({ eraPhase, scenarioId, psychologyMode, domainId, gatePhase, scrubVelocity, showCommodities, showInstability, showNewsFeed, onCityPinClick, onSignalPinClick, onPsychZoneClick, onGatePinClick, onCommodityPinClick, onNewsFeedPinClick }: Props) {
+export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scrubVelocity, showCommodities, showInstability, showNewsFeed, onCityPinClick, onSignalPinClick, onPsychZoneClick, onGatePinClick, onCommodityPinClick, onNewsFeedPinClick }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const globeRef     = useRef<GlobeMethods | undefined>(undefined);
   const [dims,         setDims]         = useState({ w: 0, h: 0 });
@@ -504,9 +504,9 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, psychologyMode, domainId,
       }
     }
 
-    // Psychology zone overlays
-    if (psychologyMode) {
-      for (const z of PSYCH_ZONES) {
+    // Psychology zone overlays — auto-show for active domain
+    if (domainId) {
+      for (const z of PSYCH_ZONES.filter(z => z.domains.includes(domainId))) {
         items.push({
           type:      "psych-zone",
           lat:       z.lat,
@@ -585,7 +585,7 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, psychologyMode, domainId,
     }
 
     return items;
-  }, [scenarioId, psychologyMode, domainId, domainColor, gatePhase, showCommodities, showNewsFeed]);
+  }, [scenarioId, domainId, domainColor, gatePhase, showCommodities, showNewsFeed]);
 
   const htmlElement = useCallback((d: object) => {
     const el = document.createElement("div");
@@ -1247,20 +1247,6 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, psychologyMode, domainId,
             <span className="w-1.5 h-1.5 rounded-full bg-red-bright animate-pulse" />
             <p className="font-mono text-[8.5px] tracking-[.14em] uppercase text-red-bright">
               {t("badge_scenario")} · {SCENARIO_IMPACTS.find(s => s.id === scenarioId)?.title ?? scenarioId}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* ── Psychology mode badge ─────────────────────────────────────────── */}
-      {psychologyMode && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 pointer-events-none"
-             style={{ marginTop: scenarioId ? "40px" : "0" }}>
-          <div className="flex items-center gap-2 rounded-full px-3.5 py-1.5 backdrop-blur-sm"
-               style={{ background: "rgba(11,13,24,0.88)", border: "1px solid rgba(138,43,226,0.4)" }}>
-            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "#8b2be2" }} />
-            <p className="font-mono text-[8.5px] tracking-[.14em] uppercase" style={{ color: "#c084fc" }}>
-              {t("badge_psych_overlay")}
             </p>
           </div>
         </div>
