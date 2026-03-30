@@ -498,17 +498,6 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
               </div>
               <div className="flex flex-col">
                 <button
-                  onClick={(e) => { e.stopPropagation(); setShowCommodities(v => !v); }}
-                  aria-pressed={showCommodities}
-                  className={`flex items-center gap-1.5 pl-3 pr-2.5 py-1 min-h-[44px] text-left
-                              transition-all duration-150 font-mono text-[8px] border-l-2
-                              ${showCommodities ? "text-emerald-400" : "text-text-mute2 hover:text-text-base"}`}
-                  style={{ borderLeftColor: showCommodities ? "#34d399" : "transparent" }}
-                >
-                  <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${showCommodities ? "bg-emerald-400 animate-pulse" : "bg-text-mute2/25"}`} />
-                  📊 Prices
-                </button>
-                <button
                   onClick={(e) => { e.stopPropagation(); setShowInstability(v => !v); }}
                   aria-pressed={showInstability}
                   className={`flex items-center gap-1.5 pl-3 pr-2.5 py-1 min-h-[44px] text-left
@@ -742,15 +731,6 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
         </nav>
 
         <div className="w-px h-4 bg-border-protocol/60 flex-shrink-0" />
-
-        <button
-          onClick={() => setShowCommodities(v => !v)}
-          aria-pressed={showCommodities}
-          className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-2.5 rounded-lg border font-mono text-[9px] transition-all min-h-[44px]
-                      ${showCommodities ? "border-emerald-500/40 text-emerald-400" : "bg-void-3 border-border-protocol text-text-mute2"}`}
-          style={{ background: showCommodities ? "rgba(16,185,129,0.10)" : undefined }}>
-          📊
-        </button>
 
         <button
           onClick={() => setShowInstability(v => !v)}
