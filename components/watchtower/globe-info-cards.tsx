@@ -189,7 +189,7 @@ function domainCardPositions(
   containerW: number,
   _containerH: number,
 ): Array<{ x: number; y: number }> {
-  const cardW = 288;
+  const cardW = 320;
   const rightX = Math.max(6, containerW - cardW - 20);
   const leftX = 20;
   const gatesCardH = 320;
@@ -203,6 +203,14 @@ function domainCardPositions(
     ];
   }
   // n === 3: Info right, Gates left-top, Live Feed left-below-gates
+  // Safety: if viewport can't fit left+right columns without overlap, stack right
+  if (rightX - leftX < cardW + 20) {
+    return [
+      { x: rightX, y: 56 },
+      { x: rightX, y: 56 + 360 + gap },
+      { x: rightX, y: 56 + 360 + gap + gatesCardH + gap },
+    ];
+  }
   return [
     { x: rightX, y: 56 },
     { x: leftX,  y: 56 },
@@ -214,7 +222,7 @@ function rightColumnPositions(
   n: number,
   containerW: number,
   containerH: number,
-  cardW = 288,
+  cardW = 320,
   cardH = 320,
 ) {
   const x = Math.max(6, containerW - cardW - 20);
@@ -271,7 +279,7 @@ interface RegistryEntry {
 
 // ── Drag card wrapper (registry-aware) ───────────────────────────────────────
 function DragCard({
-  cardKey, initX, initY, containerRef, width = 288, children,
+  cardKey, initX, initY, containerRef, width = 320, children,
   onRegister, onUnregister, onCardDrag,
 }: {
   cardKey:      string;
@@ -341,7 +349,7 @@ function CloseBtn({ onClick }: { onClick: (e: React.MouseEvent) => void }) {
   return (
     <button
       onClick={onClick}
-      className="font-mono text-[10px] text-text-mute2 hover:text-text-base transition-colors flex-shrink-0 w-7 h-7 flex items-center justify-center rounded hover:bg-white/[0.06]"
+      className="font-mono text-[11px] text-text-mute2 hover:text-text-base transition-colors flex-shrink-0 w-7 h-7 flex items-center justify-center rounded hover:bg-white/[0.06]"
     >
       ✕
     </button>
@@ -351,7 +359,7 @@ function CloseBtn({ onClick }: { onClick: (e: React.MouseEvent) => void }) {
 // ── Section label ─────────────────────────────────────────────────────────────
 function SectionLabel({ text, col }: { text: string; col: string }) {
   return (
-    <p className="font-mono text-[7.5px] tracking-[.18em] uppercase mb-2" style={{ color: `${col}99` }}>
+    <p className="font-mono text-[10px] tracking-[.18em] uppercase mb-2" style={{ color: `${col}99` }}>
       {text}
     </p>
   );
@@ -412,19 +420,19 @@ function DomainInfoCard({
 
   return (
     <Frame col={col}>
-      <div className="overflow-y-auto" style={{ maxHeight: "340px" }}>
+      <div className="overflow-y-auto" style={{ maxHeight: "380px" }}>
       <div className="px-4 py-3.5">
         {/* Header */}
         <div className="flex items-start justify-between gap-2 mb-3">
           <div className="flex items-center gap-2.5">
             <span className="text-[20px] leading-none flex-shrink-0">{domain.icon}</span>
             <div>
-              <p className="font-mono text-[7.5px] tracking-[.16em] uppercase mb-0.5" style={{ color: col }}>
+              <p className="font-mono text-[10px] tracking-[.16em] uppercase mb-0.5" style={{ color: col }}>
                 ARK SCORE · {domain.score}/100 · {domain.trend}
               </p>
               <p className="font-syne font-bold text-[14px] text-text-base leading-none">{domain.label}</p>
               <span
-                className="inline-block mt-1 font-mono text-[7px] px-1.5 py-0.5 rounded border font-bold"
+                className="inline-block mt-1 font-mono text-[9px] px-1.5 py-0.5 rounded border font-bold"
                 style={{ color: col, borderColor: `${col}40`, background: `${col}15` }}
               >
                 {domain.level}
@@ -436,7 +444,7 @@ function DomainInfoCard({
             <button
               onClick={handleSpeak}
               title={speaking ? "Stop narration" : "Play domain briefing"}
-              className="flex items-center gap-1 px-2 py-1 rounded-lg border font-mono text-[8px] transition-all duration-150 flex-shrink-0"
+              className="flex items-center gap-1 px-2 py-1 rounded-lg border font-mono text-[10px] transition-all duration-150 flex-shrink-0"
               style={speaking
                 ? { color: col, borderColor: `${col}60`, background: `${col}18` }
                 : { color: "rgba(150,165,180,0.6)", borderColor: "rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.03)" }
@@ -462,7 +470,7 @@ function DomainInfoCard({
         </div>
 
         {/* Summary */}
-        <p className="font-mono text-[9.5px] text-text-dim leading-relaxed mb-3">{domain.summary}</p>
+        <p className="font-mono text-[12px] text-text-dim leading-relaxed mb-3">{domain.summary}</p>
 
         {/* Drivers */}
         <div>
@@ -470,8 +478,8 @@ function DomainInfoCard({
           <div className="space-y-1.5">
             {domain.drivers.slice(0, 3).map((drv, i) => (
               <div key={i} className="flex items-start gap-2">
-                <span className="font-mono text-[9px] flex-shrink-0 mt-0.5 font-bold" style={{ color: col }}>→</span>
-                <p className="font-mono text-[8.5px] text-text-mute2 leading-snug">{drv}</p>
+                <span className="font-mono text-[11px] flex-shrink-0 mt-0.5 font-bold" style={{ color: col }}>→</span>
+                <p className="font-mono text-[11px] text-text-mute2 leading-snug">{drv}</p>
               </div>
             ))}
           </div>
@@ -499,15 +507,15 @@ function DomainGatesCard({ domainId, col }: { domainId: string; col: string }) {
               <div key={gate.id} className="border-b last:border-b-0 pb-2.5 last:pb-0" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
                 <div className="flex items-center gap-2 mb-1">
                   <span
-                    className="font-mono text-[7px] font-bold px-1.5 py-0.5 rounded border flex-shrink-0"
+                    className="font-mono text-[9px] font-bold px-1.5 py-0.5 rounded border flex-shrink-0"
                     style={{ color: gc, borderColor: `${gc}40`, background: `${gc}15` }}
                   >
                     {gate.id} · {gate.tier.toUpperCase()}
                   </span>
-                  <span className="font-mono text-[7.5px] text-text-mute2/60">{gate.window}</span>
+                  <span className="font-mono text-[10px] text-text-mute2/60">{gate.window}</span>
                 </div>
-                <p className="font-mono text-[9px] text-text-base leading-snug mb-1">{gate.trigger}</p>
-                <p className="font-mono text-[8.5px] font-bold leading-snug" style={{ color: gc }}>{gate.action}</p>
+                <p className="font-mono text-[11px] text-text-base leading-snug mb-1">{gate.trigger}</p>
+                <p className="font-mono text-[11px] font-bold leading-snug" style={{ color: gc }}>{gate.action}</p>
               </div>
             );
           })}
@@ -529,11 +537,11 @@ function GearStrip({ domainId, col }: { domainId: string; col: string; onOpenSho
       <div className="space-y-2 mb-3">
         {items.map((item, i) => (
           <div key={i} className="flex items-center gap-2">
-            <span className="font-mono text-[7px] px-1 py-0.5 rounded border border-border-protocol bg-void-3 text-text-mute2 flex-shrink-0">
+            <span className="font-mono text-[9px] px-1 py-0.5 rounded border border-border-protocol bg-void-3 text-text-mute2 flex-shrink-0">
               {item.tier}
             </span>
-            <p className="font-mono text-[9px] text-text-base flex-1 truncate">{item.name}</p>
-            <span className="font-mono text-[8px] text-gold-protocol flex-shrink-0 tabular-nums">{item.price}</span>
+            <p className="font-mono text-[11px] text-text-base flex-1 truncate">{item.name}</p>
+            <span className="font-mono text-[10px] text-gold-protocol flex-shrink-0 tabular-nums">{item.price}</span>
           </div>
         ))}
       </div>
@@ -570,21 +578,21 @@ function ScenarioOverviewCard({
           <div className="flex items-center gap-2.5">
             <span className="text-[18px] leading-none">{sc.icon}</span>
             <div>
-              <p className="font-mono text-[7.5px] tracking-[.14em] uppercase mb-0.5" style={{ color: col }}>
+              <p className="font-mono text-[10px] tracking-[.14em] uppercase mb-0.5" style={{ color: col }}>
                 {sc.prob}% PROBABILITY · {sc.window}
               </p>
               <p className="font-syne font-bold text-[14px] text-text-base leading-none">{sc.title}</p>
-              <p className="font-mono text-[8px] text-text-mute2 mt-0.5">Prep time: {sc.prepTime}</p>
+              <p className="font-mono text-[10px] text-text-mute2 mt-0.5">Prep time: {sc.prepTime}</p>
             </div>
           </div>
           <CloseBtn onClick={(e) => { e.stopPropagation(); onClose(); }} />
         </div>
-        <p className="font-mono text-[9.5px] text-text-dim leading-relaxed mb-3">{sc.summary}</p>
+        <p className="font-mono text-[12px] text-text-dim leading-relaxed mb-3">{sc.summary}</p>
         <div>
           <SectionLabel text="Cascade Effects" col={col} />
           <div className="flex flex-wrap gap-1.5">
             {sc.cascade.map((c, i) => (
-              <span key={i} className="font-mono text-[7.5px] px-1.5 py-0.5 rounded border border-amber-DEFAULT/25 bg-amber-dim text-amber-protocol">{c}</span>
+              <span key={i} className="font-mono text-[10px] px-1.5 py-0.5 rounded border border-amber-DEFAULT/25 bg-amber-dim text-amber-protocol">{c}</span>
             ))}
           </div>
         </div>
@@ -605,8 +613,8 @@ function ScenarioMitigationCard({ scenarioId, col }: { scenarioId: string; col: 
         <div className="space-y-1.5 mb-3">
           {sc.triggers.map((tr, i) => (
             <div key={i} className="flex items-start gap-2">
-              <span className="font-mono text-[9px] flex-shrink-0 mt-0.5 font-bold" style={{ color: col }}>→</span>
-              <p className="font-mono text-[8.5px] text-text-mute2 leading-snug">{tr}</p>
+              <span className="font-mono text-[11px] flex-shrink-0 mt-0.5 font-bold" style={{ color: col }}>→</span>
+              <p className="font-mono text-[11px] text-text-mute2 leading-snug">{tr}</p>
             </div>
           ))}
         </div>
@@ -615,11 +623,11 @@ function ScenarioMitigationCard({ scenarioId, col }: { scenarioId: string; col: 
           <div className="space-y-2">
             {sc.mitigation.filter((m) => m.pri === "1").slice(0, 4).map((m, i) => (
               <div key={i} className="flex items-start gap-2">
-                <span className="font-mono text-[7px] font-bold px-1 py-0.5 rounded flex-shrink-0 mt-0.5"
+                <span className="font-mono text-[9px] font-bold px-1 py-0.5 rounded flex-shrink-0 mt-0.5"
                       style={{ color: "#e84040", background: "rgba(232,64,64,0.1)" }}>P1</span>
                 <div>
-                  <p className="font-mono text-[8.5px] text-text-dim leading-snug">{m.action}</p>
-                  <p className="font-mono text-[7.5px] text-text-mute2">{m.cost}</p>
+                  <p className="font-mono text-[11px] text-text-dim leading-snug">{m.action}</p>
+                  <p className="font-mono text-[10px] text-text-mute2">{m.cost}</p>
                 </div>
               </div>
             ))}
@@ -648,20 +656,20 @@ function SignalDetailCard({
         <div className="flex items-start justify-between gap-2 mb-3">
           <div className="flex items-center gap-2 flex-wrap">
             <span
-              className={`font-mono text-[7px] px-1.5 py-0.5 rounded border font-bold flex-shrink-0
+              className={`font-mono text-[9px] px-1.5 py-0.5 rounded border font-bold flex-shrink-0
                 ${sig.tier === "t4" ? "text-red-bright border-red-protocol/40 bg-red-protocol/10"
                   : sig.tier === "t3" ? "text-amber-protocol border-amber-DEFAULT/30 bg-amber-dim"
                   : "text-blue-DEFAULT border-blue-DEFAULT/30 bg-blue-dim"}`}
             >
               {sig.tier.toUpperCase()}
             </span>
-            <p className="font-mono text-[7.5px] tracking-[.12em] uppercase text-text-mute2">
+            <p className="font-mono text-[10px] tracking-[.12em] uppercase text-text-mute2">
               {sig.domain} · Score {sig.score}
             </p>
           </div>
           <CloseBtn onClick={(e) => { e.stopPropagation(); onClose(); }} />
         </div>
-        <p className="font-mono text-[9.5px] text-text-base leading-relaxed mb-3">{sig.sig}</p>
+        <p className="font-mono text-[12px] text-text-base leading-relaxed mb-3">{sig.sig}</p>
         <a
           href={sig.sourceUrl} target="_blank" rel="noopener noreferrer"
           className="font-mono text-[8px] text-text-mute2/60 hover:text-amber-protocol/80 transition-colors"
@@ -693,15 +701,15 @@ function SignalGateCard({ signalIdx, col }: { signalIdx: number; col: string }) 
               <div key={gate.id} className="border-b last:border-b-0 pb-2.5 last:pb-0" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
                 <div className="flex items-center gap-2 mb-1">
                   <span
-                    className="font-mono text-[7px] font-bold px-1.5 py-0.5 rounded border flex-shrink-0"
+                    className="font-mono text-[9px] font-bold px-1.5 py-0.5 rounded border flex-shrink-0"
                     style={{ color: gc, borderColor: `${gc}40`, background: `${gc}15` }}
                   >
                     {gate.id}
                   </span>
-                  <span className="font-mono text-[7.5px] text-text-mute2/60">{gate.window}</span>
+                  <span className="font-mono text-[10px] text-text-mute2/60">{gate.window}</span>
                 </div>
-                <p className="font-mono text-[9px] text-text-base leading-snug mb-1">{gate.trigger}</p>
-                <p className="font-mono text-[8.5px] font-bold leading-snug" style={{ color: gc }}>{gate.action}</p>
+                <p className="font-mono text-[11px] text-text-base leading-snug mb-1">{gate.trigger}</p>
+                <p className="font-mono text-[11px] font-bold leading-snug" style={{ color: gc }}>{gate.action}</p>
               </div>
             );
           })}
@@ -724,13 +732,13 @@ function PsychDetailCard({
       <div className="px-4 py-3.5">
         <div className="flex items-start justify-between gap-2 mb-3">
           <div>
-            <p className="font-mono text-[7.5px] tracking-[.14em] uppercase text-purple-300/70 mb-0.5">🧠 PSYCH THREAT</p>
+            <p className="font-mono text-[10px] tracking-[.14em] uppercase text-purple-300/70 mb-0.5">🧠 PSYCH THREAT</p>
             <p className="font-syne font-bold text-[14px] text-text-base leading-none">{psychZone.region}</p>
-            <p className="font-mono text-[9px] text-purple-300 mt-1">{psychZone.threat}</p>
+            <p className="font-mono text-[11px] text-purple-300 mt-1">{psychZone.threat}</p>
           </div>
           <CloseBtn onClick={(e) => { e.stopPropagation(); onClose(); }} />
         </div>
-        <p className="font-mono text-[9.5px] text-text-dim leading-relaxed mb-3">{psychZone.note}</p>
+        <p className="font-mono text-[12px] text-text-dim leading-relaxed mb-3">{psychZone.note}</p>
         <div className="border-t pt-3" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
           <SectionLabel text="Ark Response" col={col} />
           <div className="space-y-2">
@@ -738,8 +746,8 @@ function PsychDetailCard({
               <div key={p.name} className="flex items-start gap-2">
                 <span className="text-[11px] flex-shrink-0 mt-0.5">{p.icon}</span>
                 <div>
-                  <p className="font-mono text-[9px] font-bold text-text-base">{p.name}</p>
-                  <p className="font-mono text-[8px] text-text-mute2 leading-snug">{p.tactics[0]}</p>
+                  <p className="font-mono text-[11px] font-bold text-text-base">{p.name}</p>
+                  <p className="font-mono text-[10px] text-text-mute2 leading-snug">{p.tactics[0]}</p>
                 </div>
               </div>
             ))}
@@ -766,20 +774,20 @@ function GateDetailCard({
         <div className="flex items-start justify-between gap-2 mb-3">
           <div className="flex items-center gap-2">
             <span
-              className="font-mono text-[7.5px] px-1.5 py-0.5 rounded border font-bold"
+              className="font-mono text-[9px] px-1.5 py-0.5 rounded border font-bold"
               style={{ color: col, borderColor: `${col}40`, background: `${col}15` }}
             >
               {gate.id} · {gate.tier.toUpperCase()}
             </span>
-            <span className="font-mono text-[8px] text-text-mute2">{gate.window}</span>
+            <span className="font-mono text-[10px] text-text-mute2">{gate.window}</span>
           </div>
           <CloseBtn onClick={(e) => { e.stopPropagation(); onClose(); }} />
         </div>
-        <p className="font-mono text-[7.5px] tracking-[.1em] uppercase mb-2" style={{ color: `${col}99` }}>TRIGGER</p>
-        <p className="font-mono text-[10px] text-text-base leading-relaxed mb-3">{gate.trigger}</p>
+        <p className="font-mono text-[10px] tracking-[.1em] uppercase mb-2" style={{ color: `${col}99` }}>TRIGGER</p>
+        <p className="font-mono text-[11px] text-text-base leading-relaxed mb-3">{gate.trigger}</p>
         <div className="rounded-lg px-3 py-2.5" style={{ background: `${col}12`, border: `1px solid ${col}30` }}>
-          <p className="font-mono text-[7px] tracking-[.1em] uppercase text-text-mute2 mb-1">Action on trigger</p>
-          <p className="font-mono text-[9.5px] font-bold leading-snug" style={{ color: col }}>{gate.action}</p>
+          <p className="font-mono text-[9px] tracking-[.1em] uppercase text-text-mute2 mb-1">Action on trigger</p>
+          <p className="font-mono text-[12px] font-bold leading-snug" style={{ color: col }}>{gate.action}</p>
         </div>
       </div>
     </Frame>
@@ -804,7 +812,7 @@ function CityDetailCard({ cityIdx, onClose }: { cityIdx: number; onClose: () => 
       <div className="px-4 py-3.5">
         <div className="flex items-start justify-between gap-2 mb-3">
           <div className="min-w-0 flex-1">
-            <p className="font-mono text-[7.5px] tracking-[.18em] uppercase mb-1" style={{ color: `${col}99` }}>
+            <p className="font-mono text-[10px] tracking-[.18em] uppercase mb-1" style={{ color: `${col}99` }}>
               {pin.flag} {pin.country} · CITY INTEL
             </p>
             <p className="font-syne font-bold text-[15px] text-text-base leading-none">{pin.name}</p>
@@ -814,7 +822,7 @@ function CityDetailCard({ cityIdx, onClose }: { cityIdx: number; onClose: () => 
               <div className="font-syne font-extrabold text-[26px] leading-none tabular-nums" style={{ color: col }}>
                 {pin.threatScore}
               </div>
-              <div className="font-mono text-[7px] text-text-mute2">threat</div>
+              <div className="font-mono text-[9px] text-text-mute2">threat</div>
             </div>
             <CloseBtn onClick={(e) => { e.stopPropagation(); onClose(); }} />
           </div>
@@ -831,7 +839,7 @@ function CityDetailCard({ cityIdx, onClose }: { cityIdx: number; onClose: () => 
 
         {/* Population */}
         <div className="flex items-center gap-2 mb-3 pb-3 border-b border-border-protocol/30">
-          <span className="font-mono text-[8px] text-text-mute2 tracking-[.14em] uppercase">Population</span>
+          <span className="font-mono text-[10px] text-text-mute2 tracking-[.14em] uppercase">Population</span>
           <span className="font-mono text-[11px] font-bold text-text-base ml-auto tabular-nums">
             {pin.pop >= 10 ? `${pin.pop.toFixed(0)}M` : `${pin.pop.toFixed(1)}M`}
           </span>
@@ -842,7 +850,7 @@ function CityDetailCard({ cityIdx, onClose }: { cityIdx: number; onClose: () => 
         <SectionLabel text="Active Intel" col={col} />
         <div className="flex items-start gap-1.5 mb-3">
           <span className="font-mono text-[9px] mt-[2px] flex-shrink-0" style={{ color: col }}>▸</span>
-          <p className="font-mono text-[9px] text-text-dim leading-relaxed">{pin.note}</p>
+          <p className="font-mono text-[11px] text-text-dim leading-relaxed">{pin.note}</p>
         </div>
 
         <div className="flex flex-col gap-1.5 pt-2 border-t" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
@@ -854,12 +862,12 @@ function CityDetailCard({ cityIdx, onClose }: { cityIdx: number; onClose: () => 
              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(232,64,64,0.06)"; }}
              onClick={(e) => e.stopPropagation()}
           >
-            <span className="font-mono text-[9px] font-bold">☢ Threat News</span>
+            <span className="font-mono text-[11px] font-bold">☢ Threat News</span>
             <span className="text-[10px] opacity-70">↗</span>
           </a>
           <a href={`https://news.google.com/search?q=${encodeURIComponent(pin.name + " " + pin.country)}`}
              target="_blank" rel="noopener noreferrer"
-             className="flex items-center justify-between w-full px-3 py-2 rounded-lg transition-all duration-150 font-mono text-[9px] text-text-mute2 hover:text-text-base"
+             className="flex items-center justify-between w-full px-3 py-2 rounded-lg transition-all duration-150 font-mono text-[11px] text-text-mute2 hover:text-text-base"
              style={{ border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.03)" }}
              onClick={(e) => e.stopPropagation()}
           >
@@ -886,11 +894,11 @@ function CommodityCard({ commodityId, onClose }: { commodityId: string; onClose:
       <div className="px-4 py-3.5">
         <div className="flex items-start justify-between gap-2 mb-3">
           <div>
-            <p className="font-mono text-[7.5px] tracking-[.18em] uppercase mb-1" style={{ color: `${col}99` }}>
+            <p className="font-mono text-[10px] tracking-[.18em] uppercase mb-1" style={{ color: `${col}99` }}>
               {CAT_LABEL[pin.category] ?? "COMMODITY"} · {pin.exchange}
             </p>
             <p className="font-syne font-bold text-[15px] text-text-base leading-none">{pin.name}</p>
-            <p className="font-mono text-[8px] text-text-mute2 mt-0.5">{pin.symbol}</p>
+            <p className="font-mono text-[10px] text-text-mute2 mt-0.5">{pin.symbol}</p>
           </div>
           <CloseBtn onClick={(e) => { e.stopPropagation(); onClose(); }} />
         </div>
@@ -901,24 +909,24 @@ function CommodityCard({ commodityId, onClose }: { commodityId: string; onClose:
             <p className="font-mono font-bold text-[28px] leading-none tabular-nums" style={{ color: col, textShadow: `0 0 20px ${col}44` }}>
               {pin.price}
             </p>
-            <p className="font-mono text-[9px] text-text-mute2 mt-0.5">{pin.unit}</p>
+            <p className="font-mono text-[11px] text-text-mute2 mt-0.5">{pin.unit}</p>
           </div>
           <div className="pb-1">
             <p className="font-mono font-bold text-[13px]" style={{ color: col }}>
               {up ? "▲" : "▼"} {Math.abs(pin.change).toFixed(1)}%
             </p>
-            <p className="font-mono text-[7.5px] text-text-mute2">24h change</p>
+            <p className="font-mono text-[10px] text-text-mute2">24h change</p>
           </div>
         </div>
 
         <div className="w-full h-px mb-3" style={{ background: `linear-gradient(90deg,${col}44,transparent)` }} />
 
         <SectionLabel text="Market Context" col={col} />
-        <p className="font-mono text-[9px] text-text-dim leading-relaxed mb-3">{pin.note}</p>
+        <p className="font-mono text-[11px] text-text-dim leading-relaxed mb-3">{pin.note}</p>
 
         <div className="flex items-center gap-2 pt-2 border-t" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
           <span className="w-1.5 h-1.5 rounded-full animate-pulse flex-shrink-0" style={{ background: col }} />
-          <p className="font-mono text-[7.5px] tracking-[.1em]" style={{ color: `${col}80` }}>
+          <p className="font-mono text-[10px] tracking-[.1em]" style={{ color: `${col}80` }}>
             LIVE · {pin.exchange.toUpperCase()}
           </p>
         </div>
@@ -945,12 +953,12 @@ function NewsFeedCard({ newsId, onClose, pins }: { newsId: string; onClose: () =
         <div className="flex items-start justify-between gap-2 mb-2.5">
           <div className="flex items-center gap-2 flex-wrap">
             <span
-              className="font-mono text-[7px] px-1.5 py-0.5 rounded border font-bold flex-shrink-0"
+              className="font-mono text-[9px] px-1.5 py-0.5 rounded border font-bold flex-shrink-0"
               style={{ color: tierCol, borderColor: `${tierCol}40`, background: `${tierCol}15` }}
             >
               {pin.tier.toUpperCase()} · {CAT_ICON[pin.category]} {CAT_LABEL[pin.category] ?? pin.category.toUpperCase()}
             </span>
-            <span className="font-mono text-[7px] text-text-mute2/60">{relativeTime(pin.date)}</span>
+            <span className="font-mono text-[9px] text-text-mute2/60">{relativeTime(pin.date)}</span>
           </div>
           <CloseBtn onClick={(e) => { e.stopPropagation(); onClose(); }} />
         </div>
@@ -970,13 +978,13 @@ function NewsFeedCard({ newsId, onClose, pins }: { newsId: string; onClose: () =
 
         <div className="w-full h-px mb-3" style={{ background: `linear-gradient(90deg,${tierCol}44,transparent)` }} />
 
-        <p className="font-mono text-[9.5px] text-text-dim leading-relaxed mb-3">{pin.summary}</p>
+        <p className="font-mono text-[12px] text-text-dim leading-relaxed mb-3">{pin.summary}</p>
 
         <a
           href={pin.sourceUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 font-mono text-[8px] px-2 py-1 rounded border transition-all"
+          className="inline-flex items-center gap-1.5 font-mono text-[10px] px-2 py-1 rounded border transition-all"
           style={{ color: tierCol, borderColor: `${tierCol}40`, background: `${tierCol}10` }}
           onMouseEnter={(e) => { e.currentTarget.style.background = `${tierCol}20`; e.currentTarget.style.borderColor = `${tierCol}80`; }}
           onMouseLeave={(e) => { e.currentTarget.style.background = `${tierCol}10`; e.currentTarget.style.borderColor = `${tierCol}40`; }}

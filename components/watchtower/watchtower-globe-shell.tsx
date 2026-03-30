@@ -368,7 +368,7 @@ export function WatchtowerGlobeShell() {
             <div className="pt-2.5 pb-1">
               <div className="flex items-center gap-1.5 px-2.5 mb-1">
                 <div className="w-[2px] h-2.5 rounded-full bg-red-protocol/60 flex-shrink-0" />
-                <p className="font-mono text-[6.5px] tracking-[.2em] uppercase text-text-mute2/50">Threat Domains</p>
+                <p className="font-mono text-[9px] tracking-[.2em] uppercase text-text-mute2/50">Threat Domains</p>
               </div>
               <div className="flex flex-col">
                 {DOMAINS.map((d) => {
@@ -382,7 +382,7 @@ export function WatchtowerGlobeShell() {
                         onClick={(e) => { e.stopPropagation(); setDomainId(active ? null : d.id); }}
                         aria-pressed={active}
                         className={`flex items-center gap-1.5 pl-3 pr-2.5 py-1 min-h-[44px] text-left
-                                    transition-all duration-150 font-mono text-[8px] border-l-2
+                                    transition-all duration-150 font-mono text-[10px] border-l-2
                                     ${active ? "" : "text-text-mute2 hover:text-text-base"}`}
                         style={active ? { color: col, borderLeftColor: col } : { borderLeftColor: "transparent" }}
                       >
@@ -390,9 +390,9 @@ export function WatchtowerGlobeShell() {
                           className="w-1.5 h-1.5 rounded-full flex-shrink-0"
                           style={{ background: active ? col : "rgba(150,165,180,0.25)", boxShadow: active ? `0 0 5px ${col}` : "none" }}
                         />
-                        <span className="text-[10px] leading-none">{d.icon}</span>
-                        <span className="truncate max-w-[80px]">{d.label}</span>
-                        <span className="ml-auto font-bold tabular-nums text-[7.5px]" style={{ color: active ? col : "rgba(150,165,180,0.35)" }}>{d.score}</span>
+                        <span className="text-[12px] leading-none">{d.icon}</span>
+                        <span className="truncate max-w-[110px]">{d.label}</span>
+                        <span className="ml-auto font-bold tabular-nums text-[10px]" style={{ color: active ? col : "rgba(150,165,180,0.35)" }}>{d.score}</span>
                       </Link>
                       {(d.scenarioIds ?? []).map(sid => {
                         const sc     = SCENARIOS.find(s => s.id === sid);
@@ -406,14 +406,14 @@ export function WatchtowerGlobeShell() {
                             replace
                             onClick={(e) => { e.stopPropagation(); setScenarioId(scActive ? null : sid); }}
                             className={`flex items-center gap-1.5 pl-7 pr-2.5 py-1 min-h-[36px] text-left
-                                        transition-all duration-150 font-mono text-[8px] border-l border-l-transparent
+                                        transition-all duration-150 font-mono text-[10px] border-l border-l-transparent
                                         ${scActive ? "" : "text-text-mute2 hover:text-text-base"}`}
                             style={scActive ? { color: col, borderLeftColor: `${col}80` } : {}}
                           >
-                            <span className="text-text-mute2/40 text-[8px] mr-0.5">└</span>
+                            <span className="text-text-mute2/40 text-[10px] mr-0.5">└</span>
                             <span className={`w-1 h-1 rounded-full flex-shrink-0 ${scActive ? "animate-pulse" : ""}`}
                                   style={{ background: scActive ? col : "rgba(150,165,180,0.2)" }} />
-                            <span className="text-[9px] leading-none">{sc.icon}</span>
+                            <span className="text-[11px] leading-none">{sc.icon}</span>
                             <span className="truncate">{sc.title}</span>
                           </Link>
                         );
@@ -432,7 +432,7 @@ export function WatchtowerGlobeShell() {
               <Link
                 href="/provisioner"
                 className="flex items-center gap-1.5 pl-3 pr-2.5 py-1 min-h-[44px]
-                           transition-all duration-150 font-mono text-[8px] border-l-2
+                           transition-all duration-150 font-mono text-[10px] border-l-2
                            text-text-mute2 hover:text-gold-protocol"
                 style={{ borderLeftColor: "transparent" }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderLeftColor = "#c9a84c80"; }}
@@ -440,9 +440,9 @@ export function WatchtowerGlobeShell() {
                 onClick={(e) => e.stopPropagation()}
               >
                 <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-text-mute2/25" />
-                <span className="text-[10px] leading-none">🛒</span>
+                <span className="text-[12px] leading-none">🛒</span>
                 <span className="truncate">Shop</span>
-                <span className="ml-auto text-[8px] text-text-mute2/30">◄</span>
+                <span className="ml-auto text-[10px] text-text-mute2/30">◄</span>
               </Link>
             </div>
 
@@ -456,7 +456,7 @@ export function WatchtowerGlobeShell() {
                 >
                   <div className="flex items-center gap-1.5 mb-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-protocol animate-pulse flex-shrink-0" />
-                    <span className="font-mono text-[7px] text-gold-protocol tracking-[.14em] uppercase">
+                    <span className="font-mono text-[9px] text-gold-protocol tracking-[.14em] uppercase">
                       What&apos;s your readiness tier?
                     </span>
                     <button
@@ -465,7 +465,7 @@ export function WatchtowerGlobeShell() {
                         sessionStorage.setItem("idle-cta-dismissed", "1");
                         setIdleCtaDismissed(true);
                       }}
-                      className="ml-auto font-mono text-[8px] text-text-mute2/40 hover:text-text-mute2 transition-colors"
+                      className="ml-auto font-mono text-[10px] text-text-mute2/40 hover:text-text-mute2 transition-colors"
                       aria-label="Dismiss"
                     >
                       ✕
@@ -474,7 +474,7 @@ export function WatchtowerGlobeShell() {
                   <Link
                     href="/provisioner/tiers"
                     onClick={(e) => e.stopPropagation()}
-                    className="block font-mono text-[7.5px] text-gold-protocol/70
+                    className="block font-mono text-[10px] text-gold-protocol/70
                                hover:text-gold-bright transition-colors"
                   >
                     Find out in 10 questions →
