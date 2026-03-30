@@ -14,7 +14,6 @@ import { SCENARIO_IMPACTS }       from "@/lib/watchtower/scenario-impacts";
 import { NEWS_FEED_PINS }         from "@/lib/watchtower/news-feed-pins";
 import type { NewsFeedPin }       from "@/lib/watchtower/news-feed-pins";
 import { fetchGdeltPins }         from "@/lib/watchtower/gdelt-fetch";
-import { PricesTicker }          from "./prices-ticker";
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -204,7 +203,6 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
 
   // ── New layer toggles ───────────────────────────────────────────────────────
   const [showCommodities,   setShowCommodities]   = useState(false);
-  const [showNewsFeed,      setShowNewsFeed]      = useState(false);
   const [newsPins,          setNewsPins]          = useState<NewsFeedPin[]>(NEWS_FEED_PINS);
   const [newsFeedStatus,    setNewsFeedStatus]    = useState<"loading" | "ok" | "error">("loading");
   const [selectedCommodityId, setSelectedCommodityId] = useState<string | null>(null);
@@ -288,7 +286,7 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
           scrubVelocity={scrubVelocity}
           showCommodities={showCommodities}
 
-          showNewsFeed={showNewsFeed}
+          showNewsFeed={true}
           newsFeedPins={newsPins}
           onSignalPinClick={setSelectedSignalIdx}
           onPsychZoneClick={setSelectedPsychZone}
@@ -489,27 +487,6 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
             {/* Divider */}
             <div style={{ height: 1, background: "rgba(255,255,255,0.04)" }} />
 
-            {/* ── Live Layers ──────────────────────────────────────── */}
-            <div className="pt-2 pb-1">
-              <div className="flex items-center gap-1.5 px-2.5 mb-1">
-                <div className="w-[2px] h-2.5 rounded-full bg-text-mute2/30 flex-shrink-0" />
-                <p className="font-mono text-[6.5px] tracking-[.2em] uppercase text-text-mute2/50">Live Layers</p>
-              </div>
-              <div className="flex flex-col">
-                <button
-                  onClick={(e) => { e.stopPropagation(); setShowNewsFeed(v => !v); }}
-                  aria-pressed={showNewsFeed}
-                  className={`flex items-center gap-1.5 pl-3 pr-2.5 py-1 min-h-[44px] text-left
-                              transition-all duration-150 font-mono text-[8px] border-l-2
-                              ${showNewsFeed ? "text-sky-300" : "text-text-mute2 hover:text-text-base"}`}
-                  style={{ borderLeftColor: showNewsFeed ? "#7dd3fc" : "transparent" }}
-                >
-                  <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${showNewsFeed ? "bg-sky-300 animate-pulse" : "bg-text-mute2/25"}`} />
-                  📰 News
-                </button>
-              </div>
-            </div>
-
           </div>
         </div>
 
@@ -536,6 +513,7 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
           selectedCityIdx={selectedCityIdx}
           onCloseCity={() => setSelectedCityIdx(null)}
           newsFeedPins={newsPins}
+          onNewsClick={setSelectedNewsId}
         />
 
 
@@ -663,8 +641,6 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
           />
         </div>
 
-        {/* ── Live prices ticker — bottom of globe, visible with news feed ─── */}
-        {showNewsFeed && <PricesTicker />}
       </div>
 
       {/* ── Mobile control bar (hidden sm+) ──────────────────────────────── */}
@@ -718,16 +694,6 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
           })}
         </nav>
 
-        <div className="w-px h-4 bg-border-protocol/60 flex-shrink-0" />
-
-        <button
-          onClick={() => setShowNewsFeed(v => !v)}
-          aria-pressed={showNewsFeed}
-          className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-2.5 rounded-lg border font-mono text-[9px] transition-all min-h-[44px]
-                      ${showNewsFeed ? "border-sky-500/40 text-sky-300" : "bg-void-3 border-border-protocol text-text-mute2"}`}
-          style={{ background: showNewsFeed ? "rgba(56,189,248,0.10)" : undefined }}>
-          📰
-        </button>
 
       </div>
 

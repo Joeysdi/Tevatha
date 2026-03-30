@@ -8,7 +8,7 @@ export interface NewsFeedPin {
   source:    string;
   summary:   string;
   sourceUrl: string;
-  category:  "war" | "economic" | "nuclear" | "health" | "climate" | "political";
+  category:  "war" | "economic" | "nuclear" | "health" | "climate" | "political" | "cyber";
   tier:      "t4" | "t3" | "t2";
   date:      string;
   region?:   string;
@@ -193,6 +193,72 @@ export const NEWS_FEED_PINS: NewsFeedPin[] = [
     sourceUrl: "https://ft.com",
     category:  "economic",
     tier:      "t3",
+    date:      "MAR 2026",
+  },
+  // ── Cyber fallback pins ──────────────────────────────────────────────────────
+  {
+    id:        "C01",
+    lat:        38.9,
+    lng:       -77.0,
+    headline:  "SALT Typhoon: 9 US Telecoms Backdoored",
+    source:    "FBI / CISA",
+    summary:   "FBI confirms Salt Typhoon (PRC) maintains persistent access inside at least nine major US telecommunications carriers. Live intercept capability on senior government communications. Campaign ongoing as of Q1 2026.",
+    sourceUrl: "https://cisa.gov",
+    category:  "cyber",
+    tier:      "t4",
+    region:    "USA",
+    date:      "MAR 2026",
+  },
+  {
+    id:        "C02",
+    lat:        47.6,
+    lng:       -122.3,
+    headline:  "Volt Typhoon Pre-Positioned in US Power Grids",
+    source:    "CISA",
+    summary:   "CISA and NSA confirm Volt Typhoon (PRC) has achieved persistent access within US critical infrastructure — power grids, water systems, ports. Assessment: positioned for wartime activation, not espionage.",
+    sourceUrl: "https://cisa.gov",
+    category:  "cyber",
+    tier:      "t4",
+    region:    "USA",
+    date:      "MAR 2026",
+  },
+  {
+    id:        "C03",
+    lat:        55.7,
+    lng:        37.6,
+    headline:  "Midnight Blizzard Targets NATO Ministries",
+    source:    "Microsoft MSTIC",
+    summary:   "Midnight Blizzard (SVR) spear-phishing campaign compromises email systems at three NATO foreign ministries. Exfiltration of diplomatic correspondence confirmed across six-month window.",
+    sourceUrl: "https://microsoft.com",
+    category:  "cyber",
+    tier:      "t3",
+    region:    "Russia/NATO",
+    date:      "MAR 2026",
+  },
+  {
+    id:        "C04",
+    lat:        51.5,
+    lng:        -0.1,
+    headline:  "NHS Ransomware: 1.1M Patient Records Encrypted",
+    source:    "NCSC",
+    summary:   "Qilin ransomware group disrupts NHS England pathology services. 1.1 million patient records encrypted; blood transfusion services suspended across six London trusts for 72 hours.",
+    sourceUrl: "https://ncsc.gov.uk",
+    category:  "cyber",
+    tier:      "t3",
+    region:    "UK",
+    date:      "MAR 2026",
+  },
+  {
+    id:        "C05",
+    lat:        35.6,
+    lng:       139.7,
+    headline:  "BlackCat Hits Japanese Defense Contractor",
+    source:    "JPCERT",
+    summary:   "ALPHV/BlackCat ransomware exfiltrates 240GB from Mitsubishi Heavy Industries subsidiary. Classified naval propulsion specifications among leaked data per JPCERT advisory.",
+    sourceUrl: "https://jpcert.or.jp",
+    category:  "cyber",
+    tier:      "t3",
+    region:    "Japan",
     date:      "MAR 2026",
   },
 ];

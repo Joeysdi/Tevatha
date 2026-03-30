@@ -6,6 +6,7 @@ import { motion, AnimatePresence, useMotionValue } from "framer-motion";
 import type { MotionValue } from "framer-motion";
 import type { RefObject } from "react";
 import { DOMAINS, SIGNALS, SCENARIOS, PSYCH_PILLARS, GEAR, GATES } from "@/lib/watchtower/data";
+import { DomainLiveFeedCard } from "./domain-live-feed-card";
 import { COMMODITY_PINS } from "@/lib/watchtower/commodity-pins";
 import { NEWS_FEED_PINS } from "@/lib/watchtower/news-feed-pins";
 import type { NewsFeedPin } from "@/lib/watchtower/news-feed-pins";
@@ -974,6 +975,7 @@ interface GlobeInfoCardsProps {
   selectedCityIdx:     number | null;
   onCloseCity:         () => void;
   newsFeedPins:        NewsFeedPin[];
+  onNewsClick:         (newsId: string) => void;
 }
 
 export function GlobeInfoCards({
@@ -983,7 +985,7 @@ export function GlobeInfoCards({
   onOpenShop,
   selectedCommodityId, selectedNewsId, onCloseCommodity, onCloseNews,
   selectedCityIdx, onCloseCity,
-  newsFeedPins,
+  newsFeedPins, onNewsClick,
 }: GlobeInfoCardsProps) {
   // ── Card registry for real-time repulsion ─────────────────────────────────
   const registryRef = useRef<Map<string, RegistryEntry>>(new Map());
@@ -1032,7 +1034,8 @@ export function GlobeInfoCards({
     const anchorX = geo.xPct * containerW;
     const anchorY = geo.yPct * containerH;
     const hasGates = (DOMAIN_GATES[domainId] ?? []).length > 0;
-    const n = hasGates ? 3 : 2;
+    // n = info + (optional gates) + gear + live-feed
+    const n = hasGates ? 4 : 3;
     const pos = spreadPositions(n, geo.angle, containerW, containerH, 288, 260, anchorX, anchorY);
     return (
       <>
@@ -1044,8 +1047,11 @@ export function GlobeInfoCards({
             <DomainGatesCard domainId={domainId} col={col} />
           </DragCard>
         )}
-        <DragCard key="domain-gear" cardKey="domain-gear" initX={pos[n - 1].x} initY={pos[n - 1].y} containerRef={containerRef} {...dragProps}>
+        <DragCard key="domain-gear" cardKey="domain-gear" initX={pos[n - 2].x} initY={pos[n - 2].y} containerRef={containerRef} {...dragProps}>
           <GearCard domainId={domainId} col={col} onOpenShop={onOpenShop} />
+        </DragCard>
+        <DragCard key="domain-live-feed" cardKey="domain-live-feed" initX={pos[n - 1].x} initY={pos[n - 1].y} containerRef={containerRef} {...dragProps}>
+          <DomainLiveFeedCard domainId={domainId} newsFeedPins={newsFeedPins} onNewsClick={onNewsClick} col={col} />
         </DragCard>
       </>
     );
