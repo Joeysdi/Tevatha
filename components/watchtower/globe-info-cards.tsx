@@ -8,6 +8,7 @@ import type { RefObject } from "react";
 import { DOMAINS, SIGNALS, SCENARIOS, PSYCH_PILLARS, GEAR, GATES } from "@/lib/watchtower/data";
 import { COMMODITY_PINS } from "@/lib/watchtower/commodity-pins";
 import { NEWS_FEED_PINS } from "@/lib/watchtower/news-feed-pins";
+import { CITY_PINS_DATA } from "@/lib/watchtower/city-pins";
 
 // ── Domain-to-gear category mapping ─────────────────────────────────────────
 const DOMAIN_GEAR_CATS: Record<string, string[]> = {
@@ -743,6 +744,92 @@ function GateDetailCard({
   );
 }
 
+// ── City threat color (duplicated from world-risk-globe for locality) ─────────
+function cityThreatColor(score: number): string {
+  if (score >= 80) return "#e84040";
+  if (score >= 60) return "#f0a500";
+  if (score >= 40) return "#38bdf8";
+  return "#1ae8a0";
+}
+
+// ── City detail card ──────────────────────────────────────────────────────────
+function CityDetailCard({ cityIdx, onClose }: { cityIdx: number; onClose: () => void }) {
+  const pin = CITY_PINS_DATA[cityIdx];
+  if (!pin) return null;
+  const col = cityThreatColor(pin.threatScore);
+  return (
+    <Frame col={col}>
+      <div className="px-4 py-3.5">
+        <div className="flex items-start justify-between gap-2 mb-3">
+          <div className="min-w-0 flex-1">
+            <p className="font-mono text-[7.5px] tracking-[.18em] uppercase mb-1" style={{ color: `${col}99` }}>
+              {pin.flag} {pin.country} · CITY INTEL
+            </p>
+            <p className="font-syne font-bold text-[15px] text-text-base leading-none">{pin.name}</p>
+          </div>
+          <div className="flex items-start gap-2 flex-shrink-0">
+            <div className="text-right">
+              <div className="font-syne font-extrabold text-[26px] leading-none tabular-nums" style={{ color: col }}>
+                {pin.threatScore}
+              </div>
+              <div className="font-mono text-[7px] text-text-mute2">threat</div>
+            </div>
+            <CloseBtn onClick={(e) => { e.stopPropagation(); onClose(); }} />
+          </div>
+        </div>
+
+        {/* Score bar */}
+        <div className="flex items-center gap-2 mb-3">
+          <div className="flex-1 h-1 rounded-full bg-void-3 overflow-hidden">
+            <div className="h-full rounded-full transition-all duration-500"
+                 style={{ width: `${pin.threatScore}%`, background: col, boxShadow: `0 0 8px ${col}99` }} />
+          </div>
+          <span className="font-mono text-[9px] text-text-mute2 flex-shrink-0">/100</span>
+        </div>
+
+        {/* Population */}
+        <div className="flex items-center gap-2 mb-3 pb-3 border-b border-border-protocol/30">
+          <span className="font-mono text-[8px] text-text-mute2 tracking-[.14em] uppercase">Population</span>
+          <span className="font-mono text-[11px] font-bold text-text-base ml-auto tabular-nums">
+            {pin.pop >= 10 ? `${pin.pop.toFixed(0)}M` : `${pin.pop.toFixed(1)}M`}
+          </span>
+        </div>
+
+        <div className="w-full h-px mb-3" style={{ background: `linear-gradient(90deg,${col}44,transparent)` }} />
+
+        <SectionLabel text="Active Intel" col={col} />
+        <div className="flex items-start gap-1.5 mb-3">
+          <span className="font-mono text-[9px] mt-[2px] flex-shrink-0" style={{ color: col }}>▸</span>
+          <p className="font-mono text-[9px] text-text-dim leading-relaxed">{pin.note}</p>
+        </div>
+
+        <div className="flex flex-col gap-1.5 pt-2 border-t" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
+          <a href={`https://news.google.com/search?q=${encodeURIComponent(pin.name + " security threat attack")}`}
+             target="_blank" rel="noopener noreferrer"
+             className="flex items-center justify-between w-full px-3 py-2 rounded-lg transition-all duration-150"
+             style={{ border: "1px solid rgba(232,64,64,0.3)", background: "rgba(232,64,64,0.06)", color: "#e05050" }}
+             onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(232,64,64,0.12)"; }}
+             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(232,64,64,0.06)"; }}
+             onClick={(e) => e.stopPropagation()}
+          >
+            <span className="font-mono text-[9px] font-bold">☢ Threat News</span>
+            <span className="text-[10px] opacity-70">↗</span>
+          </a>
+          <a href={`https://news.google.com/search?q=${encodeURIComponent(pin.name + " " + pin.country)}`}
+             target="_blank" rel="noopener noreferrer"
+             className="flex items-center justify-between w-full px-3 py-2 rounded-lg transition-all duration-150 font-mono text-[9px] text-text-mute2 hover:text-text-base"
+             style={{ border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.03)" }}
+             onClick={(e) => e.stopPropagation()}
+          >
+            <span>🌐 All News</span>
+            <span className="text-[10px] opacity-60">↗</span>
+          </a>
+        </div>
+      </div>
+    </Frame>
+  );
+}
+
 // ── Commodity detail card ─────────────────────────────────────────────────────
 function CommodityCard({ commodityId, onClose }: { commodityId: string; onClose: () => void }) {
   const pin = COMMODITY_PINS.find((p) => p.id === commodityId);
@@ -871,6 +958,8 @@ interface GlobeInfoCardsProps {
   selectedNewsId:      string | null;
   onCloseCommodity:    () => void;
   onCloseNews:         () => void;
+  selectedCityIdx:     number | null;
+  onCloseCity:         () => void;
 }
 
 export function GlobeInfoCards({
@@ -879,6 +968,7 @@ export function GlobeInfoCards({
   onCloseDomain, onCloseScenario, onCloseSignal, onClosePsych, onCloseGate,
   onOpenShop,
   selectedCommodityId, selectedNewsId, onCloseCommodity, onCloseNews,
+  selectedCityIdx, onCloseCity,
 }: GlobeInfoCardsProps) {
   // ── Card registry for real-time repulsion ─────────────────────────────────
   const registryRef = useRef<Map<string, RegistryEntry>>(new Map());
@@ -1043,6 +1133,17 @@ export function GlobeInfoCards({
     );
   })();
 
+  // ── City ───────────────────────────────────────────────────────────────────
+  const cityCards = (() => {
+    if (selectedCityIdx === null) return null;
+    const pos = spreadPositions(1, 100, containerW, containerH, 288, 260, containerW * 0.5, containerH * 0.35);
+    return (
+      <DragCard key="city-detail" cardKey="city-detail" initX={pos[0].x} initY={pos[0].y} containerRef={containerRef} {...dragProps}>
+        <CityDetailCard cityIdx={selectedCityIdx} onClose={onCloseCity} />
+      </DragCard>
+    );
+  })();
+
   // ── Commodity ──────────────────────────────────────────────────────────────
   const commodityCards = (() => {
     if (!selectedCommodityId) return null;
@@ -1066,7 +1167,7 @@ export function GlobeInfoCards({
     );
   })();
 
-  const hasAny = !!(domainId || scenarioId || selectedSignalIdx !== null || selectedPsychZone || selectedGateId || selectedCommodityId || selectedNewsId);
+  const hasAny = !!(domainId || scenarioId || selectedSignalIdx !== null || selectedPsychZone || selectedGateId || selectedCommodityId || selectedNewsId || selectedCityIdx !== null);
 
   return (
     <AnimatePresence>
@@ -1077,6 +1178,7 @@ export function GlobeInfoCards({
           {signalCards}
           {psychCards}
           {gateCards}
+          {cityCards}
           {commodityCards}
           {newsCards}
         </>

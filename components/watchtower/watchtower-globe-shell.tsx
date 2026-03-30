@@ -206,6 +206,7 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
   const [showNewsFeed,      setShowNewsFeed]      = useState(false);
   const [selectedCommodityId, setSelectedCommodityId] = useState<string | null>(null);
   const [selectedNewsId,    setSelectedNewsId]    = useState<string | null>(null);
+  const [selectedCityIdx,   setSelectedCityIdx]   = useState<number | null>(null);
 
   const globeContainerRef = useRef<HTMLDivElement>(null);
   const [containerW, setContainerW] = useState(800);
@@ -272,6 +273,7 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
           onSignalPinClick={setSelectedSignalIdx}
           onPsychZoneClick={setSelectedPsychZone}
           onGatePinClick={setSelectedGateId}
+          onCityPinClick={setSelectedCityIdx}
           onCommodityPinClick={setSelectedCommodityId}
           onNewsFeedPinClick={setSelectedNewsId}
         />
@@ -530,6 +532,8 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
           selectedNewsId={selectedNewsId}
           onCloseCommodity={() => setSelectedCommodityId(null)}
           onCloseNews={() => setSelectedNewsId(null)}
+          selectedCityIdx={selectedCityIdx}
+          onCloseCity={() => setSelectedCityIdx(null)}
         />
 
 
