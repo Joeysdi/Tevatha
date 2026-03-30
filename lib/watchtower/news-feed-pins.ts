@@ -11,6 +11,7 @@ export interface NewsFeedPin {
   category:  "war" | "economic" | "nuclear" | "health" | "climate" | "political";
   tier:      "t4" | "t3" | "t2";
   date:      string;
+  region?:   string;
 }
 
 export const NEWS_FEED_PINS: NewsFeedPin[] = [

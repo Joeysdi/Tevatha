@@ -11,6 +11,8 @@ import { GlobeInfoCards }         from "./globe-info-cards";
 
 import { DOMAINS, SCENARIOS, TIMELINE_EVENTS, GATES } from "@/lib/watchtower/data";
 import { SCENARIO_IMPACTS }       from "@/lib/watchtower/scenario-impacts";
+import { NEWS_FEED_PINS }         from "@/lib/watchtower/news-feed-pins";
+import type { NewsFeedPin }       from "@/lib/watchtower/news-feed-pins";
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -202,6 +204,8 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
   const [showCommodities,   setShowCommodities]   = useState(false);
   const [showInstability,   setShowInstability]   = useState(false);
   const [showNewsFeed,      setShowNewsFeed]      = useState(false);
+  const [newsPins,          setNewsPins]          = useState<NewsFeedPin[]>(NEWS_FEED_PINS);
+  const [newsFeedStatus,    setNewsFeedStatus]    = useState<"loading" | "ok" | "error">("loading");
   const [selectedCommodityId, setSelectedCommodityId] = useState<string | null>(null);
   const [selectedNewsId,    setSelectedNewsId]    = useState<string | null>(null);
   const [selectedCityIdx,   setSelectedCityIdx]   = useState<number | null>(null);
@@ -221,6 +225,20 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
     setContainerW(el.offsetWidth);
     setContainerH(el.offsetHeight);
     return () => ro.disconnect();
+  }, []);
+
+  // ── Live news feed fetch ──────────────────────────────────────────────────
+  useEffect(() => {
+    fetch("/api/watchtower/news")
+      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+      .then((data) => {
+        setNewsPins(data.pins.length > 0 ? data.pins : NEWS_FEED_PINS);
+        setNewsFeedStatus("ok");
+      })
+      .catch(() => {
+        setNewsPins(NEWS_FEED_PINS);
+        setNewsFeedStatus("error");
+      });
   }, []);
 
   // ── Zoom-neutral panel scale ──────────────────────────────────────────────
@@ -271,6 +289,7 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
           showCommodities={showCommodities}
           showInstability={showInstability}
           showNewsFeed={showNewsFeed}
+          newsFeedPins={newsPins}
           onSignalPinClick={setSelectedSignalIdx}
           onPsychZoneClick={setSelectedPsychZone}
           onGatePinClick={setSelectedGateId}
@@ -311,6 +330,19 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
             <span className="text-[9px]">◄</span>
           </Link>
         </div>
+
+        {/* ── News feed offline badge ──────────────────────────────────────── */}
+        {newsFeedStatus === "error" && (
+          <div className="absolute top-4 right-4 z-20 pointer-events-none">
+            <div className="flex items-center gap-2 rounded-full px-3.5 py-1.5 backdrop-blur-sm"
+                 style={{ background: "rgba(11,13,24,0.90)", border: "1px solid rgba(232,64,64,0.4)" }}>
+              <span className="w-1.5 h-1.5 rounded-full bg-red-protocol animate-pulse" />
+              <p className="font-mono text-[8.5px] tracking-[.14em] uppercase text-red-protocol">
+                NEWS FEED OFFLINE
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* ── Historical era badge ─────────────────────────────────────────── */}
         {isHistorical && !scenarioId && (
@@ -525,6 +557,7 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
           onCloseNews={() => setSelectedNewsId(null)}
           selectedCityIdx={selectedCityIdx}
           onCloseCity={() => setSelectedCityIdx(null)}
+          newsFeedPins={newsPins}
         />
 
 

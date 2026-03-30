@@ -25,7 +25,7 @@ import { DOMAIN_IMPACTS } from "@/lib/watchtower/domain-impacts";
 import { DOMAINS } from "@/lib/watchtower/data";
 import { GATE_PINS } from "@/lib/watchtower/gate-pins";
 import { COMMODITY_PINS } from "@/lib/watchtower/commodity-pins";
-import { NEWS_FEED_PINS } from "@/lib/watchtower/news-feed-pins";
+import type { NewsFeedPin } from "@/lib/watchtower/news-feed-pins";
 import { INSTABILITY_SCORES, INSTABILITY_DEFAULT, instabilityFill } from "@/lib/watchtower/instability-data";
 import { CITY_PINS_DATA } from "@/lib/watchtower/city-pins";
 
@@ -264,6 +264,7 @@ interface Props {
   showCommodities:       boolean;
   showInstability:       boolean;
   showNewsFeed:          boolean;
+  newsFeedPins:          NewsFeedPin[];
   onCityPinClick:        (cityIdx: number) => void;
   onSignalPinClick:      (sigIndex: number) => void;
   onPsychZoneClick:      (zone: { region: string; threat: string; note: string }) => void;
@@ -278,7 +279,7 @@ const GATE_TIER: Record<string, string> = {
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
-export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scrubVelocity, showCommodities, showInstability, showNewsFeed, onCityPinClick, onSignalPinClick, onPsychZoneClick, onGatePinClick, onCommodityPinClick, onNewsFeedPinClick }: Props) {
+export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scrubVelocity, showCommodities, showInstability, showNewsFeed, newsFeedPins, onCityPinClick, onSignalPinClick, onPsychZoneClick, onGatePinClick, onCommodityPinClick, onNewsFeedPinClick }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const globeRef     = useRef<GlobeMethods | undefined>(undefined);
   const [dims,         setDims]         = useState({ w: 0, h: 0 });
@@ -571,7 +572,7 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
 
     // World news feed pins
     if (showNewsFeed) {
-      for (const pin of NEWS_FEED_PINS) {
+      for (const pin of newsFeedPins) {
         items.push({
           type:         "news",
           lat:          pin.lat,
@@ -585,7 +586,7 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
     }
 
     return items;
-  }, [scenarioId, domainId, domainColor, gatePhase, showCommodities, showNewsFeed]);
+  }, [scenarioId, domainId, domainColor, gatePhase, showCommodities, showNewsFeed, newsFeedPins]);
 
   const htmlElement = useCallback((d: object) => {
     const el = document.createElement("div");

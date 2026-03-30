@@ -8,7 +8,9 @@ import type { RefObject } from "react";
 import { DOMAINS, SIGNALS, SCENARIOS, PSYCH_PILLARS, GEAR, GATES } from "@/lib/watchtower/data";
 import { COMMODITY_PINS } from "@/lib/watchtower/commodity-pins";
 import { NEWS_FEED_PINS } from "@/lib/watchtower/news-feed-pins";
+import type { NewsFeedPin } from "@/lib/watchtower/news-feed-pins";
 import { CITY_PINS_DATA } from "@/lib/watchtower/city-pins";
+import { relativeTime } from "@/lib/watchtower/relative-time";
 
 // ── Domain-to-gear category mapping ─────────────────────────────────────────
 const DOMAIN_GEAR_CATS: Record<string, string[]> = {
@@ -886,8 +888,8 @@ function CommodityCard({ commodityId, onClose }: { commodityId: string; onClose:
 }
 
 // ── News feed detail card ──────────────────────────────────────────────────────
-function NewsFeedCard({ newsId, onClose }: { newsId: string; onClose: () => void }) {
-  const pin = NEWS_FEED_PINS.find((p) => p.id === newsId);
+function NewsFeedCard({ newsId, onClose, pins }: { newsId: string; onClose: () => void; pins: NewsFeedPin[] }) {
+  const pin = pins.find((p) => p.id === newsId);
   if (!pin) return null;
   const tierCol = pin.tier === "t4" ? "#e84040" : pin.tier === "t3" ? "#f0a500" : "#38bdf8";
   const CAT_LABEL: Record<string, string> = {
@@ -908,7 +910,7 @@ function NewsFeedCard({ newsId, onClose }: { newsId: string; onClose: () => void
             >
               {pin.tier.toUpperCase()} · {CAT_ICON[pin.category]} {CAT_LABEL[pin.category] ?? pin.category.toUpperCase()}
             </span>
-            <span className="font-mono text-[7px] text-text-mute2/60">{pin.date}</span>
+            <span className="font-mono text-[7px] text-text-mute2/60">{relativeTime(pin.date)}</span>
           </div>
           <CloseBtn onClick={(e) => { e.stopPropagation(); onClose(); }} />
         </div>
@@ -960,6 +962,7 @@ interface GlobeInfoCardsProps {
   onCloseNews:         () => void;
   selectedCityIdx:     number | null;
   onCloseCity:         () => void;
+  newsFeedPins:        NewsFeedPin[];
 }
 
 export function GlobeInfoCards({
@@ -969,6 +972,7 @@ export function GlobeInfoCards({
   onOpenShop,
   selectedCommodityId, selectedNewsId, onCloseCommodity, onCloseNews,
   selectedCityIdx, onCloseCity,
+  newsFeedPins,
 }: GlobeInfoCardsProps) {
   // ── Card registry for real-time repulsion ─────────────────────────────────
   const registryRef = useRef<Map<string, RegistryEntry>>(new Map());
@@ -1162,7 +1166,7 @@ export function GlobeInfoCards({
     const pos = spreadPositions(1, 100, containerW, containerH, 288, 260, containerW * 0.5, containerH * 0.35);
     return (
       <DragCard key="news-detail" cardKey="news-detail" initX={pos[0].x} initY={pos[0].y} containerRef={containerRef} {...dragProps}>
-        <NewsFeedCard newsId={selectedNewsId} onClose={onCloseNews} />
+        <NewsFeedCard newsId={selectedNewsId} onClose={onCloseNews} pins={newsFeedPins} />
       </DragCard>
     );
   })();
