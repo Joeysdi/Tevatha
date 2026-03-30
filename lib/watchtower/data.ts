@@ -7,14 +7,15 @@ export type SevCode     = "EX" | "CR" | "HI" | "EL" | "ME";
 export type TrendDir    = "↑" | "→" | "↓";
 
 export interface ThreatDomain {
-  id:      string;
-  label:   string;
-  score:   number;
-  level:   ThreatLevel;
-  icon:    string;
-  trend:   TrendDir;
-  summary: string;    // one-sentence current situation
-  drivers: string[];  // 3 scored sub-factors driving the Ark Score
+  id:          string;
+  label:       string;
+  score:       number;
+  level:       ThreatLevel;
+  icon:        string;
+  trend:       TrendDir;
+  summary:     string;       // one-sentence current situation
+  drivers:     string[];     // 3 scored sub-factors driving the Ark Score
+  scenarioIds?: string[];    // scenarios nested under this domain in the sidebar
 }
 
 export interface Signal {
@@ -134,7 +135,7 @@ export const DOMAINS: ThreatDomain[] = [
     ],
   },
   {
-    id:"cyber", label:"Cyber / Tech", score:85, level:"CRITICAL", icon:"🤖", trend:"↑",
+    id:"cyber", label:"Cyber / Tech", score:85, level:"CRITICAL", icon:"🤖", trend:"↑", scenarioIds:["S05"],
     summary:"Salt Typhoon (China MSS) confirmed inside 9+ US telecoms — FBI calls campaign 'still very much ongoing' (Feb 2026). Volt Typhoon pre-positioned in US power, water, and transport for wartime activation. Nation-state cyber operations now routinely pre-position for wartime infrastructure denial.",
     drivers:[
       "Salt Typhoon: 9+ US telecoms and 200+ orgs in 80 countries compromised — access confirmed active as of Feb 2026 (FBI)",
@@ -145,7 +146,7 @@ export const DOMAINS: ThreatDomain[] = [
     ],
   },
   {
-    id:"civil", label:"Civil / Political", score:78, level:"HIGH", icon:"🔥", trend:"↑",
+    id:"civil", label:"Civil / Political", score:78, level:"HIGH", icon:"🔥", trend:"↑", scenarioIds:["S07","S09"],
     summary:"China's most extensive Taiwan drills ever (Dec 29, 2025) simulated full blockade. CFR rates a 2026 Taiwan Strait crisis at even-money. Sudan is now the world's largest humanitarian displacement crisis. Iran is weeks from weapons-grade uranium enrichment capability.",
     drivers:[
       "Taiwan: China's most extensive blockade drills ever (Dec 2025) — CFR rates 2026 crisis at 50%; Taiwan produces 92% of advanced semiconductors",
@@ -156,7 +157,7 @@ export const DOMAINS: ThreatDomain[] = [
     ],
   },
   {
-    id:"economic", label:"Economic", score:76, level:"HIGH", icon:"💸", trend:"↑",
+    id:"economic", label:"Economic", score:76, level:"HIGH", icon:"💸", trend:"↑", scenarioIds:["S01"],
     summary:"US debt reached $38.43T (~124% of GDP), growing $8B per day. Trump's 2025 tariff regime — 10% universal, 145% on China — represents the largest US tax increase as % of GDP since 1993. BRICS+ nations representing ~45% of global GDP are accelerating non-USD trade settlement.",
     drivers:[
       "Debt: $38.43T (~124% GDP, $8B/day) — interest consuming ~20% of federal revenue; CBO projects surpassing 1946 wartime peak by 2036",
@@ -167,7 +168,7 @@ export const DOMAINS: ThreatDomain[] = [
     ],
   },
   {
-    id:"bio", label:"Biological", score:74, level:"HIGH", icon:"🦠", trend:"↑",
+    id:"bio", label:"Biological", score:74, level:"HIGH", icon:"🦠", trend:"↑", scenarioIds:["S10"],
     summary:"Scientists describe H5N1 in animal reservoirs as 'completely out of control' (Jan 2026) — 70 US human cases, active in dairy herds. A novel recombinant MPXV strain (clade Ib+IIb, CFR 3–4%) was detected in India, January 13, 2026. Antimicrobial resistance now kills 1.27M/year — projected 10M/year by 2050.",
     drivers:[
       "H5N1: 'completely out of control' in animal reservoirs — 70+ US human cases, active dairy herd spread; historical CFR ~48%; no general-population vaccine stockpile",

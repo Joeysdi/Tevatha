@@ -1,7 +1,7 @@
 // components/watchtower/watchtower-globe-shell.tsx
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import React, { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
@@ -9,7 +9,7 @@ import { useTranslation } from "@/lib/i18n/use-translation";
 import { WorldRiskGlobe }         from "./world-risk-globe";
 import { GlobeInfoCards }         from "./globe-info-cards";
 
-import { DOMAINS, TIMELINE_EVENTS, GATES } from "@/lib/watchtower/data";
+import { DOMAINS, SCENARIOS, TIMELINE_EVENTS, GATES } from "@/lib/watchtower/data";
 import { SCENARIO_IMPACTS }       from "@/lib/watchtower/scenario-impacts";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -253,6 +253,11 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
 
   const isHistorical = eraPhase !== "P4";
 
+  const pairedScenarioIds = useMemo(
+    () => new Set(DOMAINS.flatMap(d => d.scenarioIds ?? [])),
+    []
+  );
+
   return (
     <div className="w-full h-full flex flex-col bg-void-0">
 
@@ -371,25 +376,50 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
                   const active = domainId === d.id;
                   const col    = DOMAIN_COLORS[d.label] ?? "#c9a84c";
                   return (
-                    <Link
-                      key={d.id}
-                      href={buildUrl(searchParams, { domain: active ? null : d.id })}
-                      replace
-                      onClick={(e) => { e.stopPropagation(); setDomainId(active ? null : d.id); }}
-                      aria-pressed={active}
-                      className={`flex items-center gap-1.5 pl-3 pr-2.5 py-1 min-h-[44px] text-left
-                                  transition-all duration-150 font-mono text-[8px] border-l-2
-                                  ${active ? "" : "text-text-mute2 hover:text-text-base"}`}
-                      style={active ? { color: col, borderLeftColor: col } : { borderLeftColor: "transparent" }}
-                    >
-                      <span
-                        className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                        style={{ background: active ? col : "rgba(150,165,180,0.25)", boxShadow: active ? `0 0 5px ${col}` : "none" }}
-                      />
-                      <span className="text-[10px] leading-none">{d.icon}</span>
-                      <span className="truncate max-w-[80px]">{d.label}</span>
-                      <span className="ml-auto font-bold tabular-nums text-[7.5px]" style={{ color: active ? col : "rgba(150,165,180,0.35)" }}>{d.score}</span>
-                    </Link>
+                    <React.Fragment key={d.id}>
+                      <Link
+                        href={buildUrl(searchParams, { domain: active ? null : d.id })}
+                        replace
+                        onClick={(e) => { e.stopPropagation(); setDomainId(active ? null : d.id); }}
+                        aria-pressed={active}
+                        className={`flex items-center gap-1.5 pl-3 pr-2.5 py-1 min-h-[44px] text-left
+                                    transition-all duration-150 font-mono text-[8px] border-l-2
+                                    ${active ? "" : "text-text-mute2 hover:text-text-base"}`}
+                        style={active ? { color: col, borderLeftColor: col } : { borderLeftColor: "transparent" }}
+                      >
+                        <span
+                          className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                          style={{ background: active ? col : "rgba(150,165,180,0.25)", boxShadow: active ? `0 0 5px ${col}` : "none" }}
+                        />
+                        <span className="text-[10px] leading-none">{d.icon}</span>
+                        <span className="truncate max-w-[80px]">{d.label}</span>
+                        <span className="ml-auto font-bold tabular-nums text-[7.5px]" style={{ color: active ? col : "rgba(150,165,180,0.35)" }}>{d.score}</span>
+                      </Link>
+                      {(d.scenarioIds ?? []).map(sid => {
+                        const sc     = SCENARIOS.find(s => s.id === sid);
+                        const impact = SCENARIO_IMPACTS.find(s => s.id === sid);
+                        if (!sc || !impact) return null;
+                        const scActive = scenarioId === sid;
+                        return (
+                          <Link
+                            key={sid}
+                            href={buildUrl(searchParams, { scenario: scActive ? null : sid })}
+                            replace
+                            onClick={(e) => { e.stopPropagation(); setScenarioId(scActive ? null : sid); }}
+                            className={`flex items-center gap-1.5 pl-7 pr-2.5 py-1 min-h-[36px] text-left
+                                        transition-all duration-150 font-mono text-[8px] border-l border-l-transparent
+                                        ${scActive ? "" : "text-text-mute2 hover:text-text-base"}`}
+                            style={scActive ? { color: col, borderLeftColor: `${col}80` } : {}}
+                          >
+                            <span className="text-text-mute2/40 text-[8px] mr-0.5">└</span>
+                            <span className={`w-1 h-1 rounded-full flex-shrink-0 ${scActive ? "animate-pulse" : ""}`}
+                                  style={{ background: scActive ? col : "rgba(150,165,180,0.2)" }} />
+                            <span className="text-[9px] leading-none">{sc.icon}</span>
+                            <span className="truncate">{sc.title}</span>
+                          </Link>
+                        );
+                      })}
+                    </React.Fragment>
                   );
                 })}
               </div>
@@ -405,7 +435,7 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
                 <p className="font-mono text-[6.5px] tracking-[.2em] uppercase text-text-mute2/50">{t("nav_scenarios")}</p>
               </div>
               <div className="flex flex-col">
-                {SCENARIO_IMPACTS.map((s) => {
+                {SCENARIO_IMPACTS.filter(s => !pairedScenarioIds.has(s.id)).map((s) => {
                   const active = scenarioId === s.id;
                   return (
                     <Link
