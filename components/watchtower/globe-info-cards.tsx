@@ -298,11 +298,12 @@ function SectionLabel({ text, col }: { text: string; col: string }) {
 
 // ── Domain info card ──────────────────────────────────────────────────────────
 function DomainInfoCard({
-  domainId, col, onClose,
+  domainId, col, onClose, onOpenShop,
 }: {
   domainId: string;
   col: string;
   onClose: () => void;
+  onOpenShop: () => void;
 }) {
   const domain = DOMAINS.find((d) => d.id === domainId);
   const [speaking, setSpeaking] = useState(false);
@@ -413,6 +414,7 @@ function DomainInfoCard({
             ))}
           </div>
         </div>
+        <GearStrip domainId={domainId} col={col} onOpenShop={onOpenShop} />
       </div>
     </Frame>
   );
@@ -452,57 +454,45 @@ function DomainGatesCard({ domainId, col }: { domainId: string; col: string }) {
   );
 }
 
-// ── Gear card ─────────────────────────────────────────────────────────────────
-function GearCard({
-  domainId, col, onOpenShop,
-}: {
-  domainId: string;
-  col: string;
-  onOpenShop: () => void;
-}) {
-  const items = getDomainGear(domainId);
+// ── Gear strip (inline, embedded at the bottom of info cards) ─────────────────
+function GearStrip({ domainId, col, onOpenShop }: { domainId: string; col: string; onOpenShop: () => void }) {
+  const items = getDomainGear(domainId, 3);
+  if (items.length === 0) return null;
   return (
-    <Frame col={col}>
-      <div className="px-4 py-3.5">
-        <SectionLabel text="⚙ Critical Gear" col={col} />
-        {items.length === 0 ? (
-          <p className="font-mono text-[9px] text-text-mute2 mb-3">No critical items mapped.</p>
-        ) : (
-          <div className="space-y-2 mb-3.5">
-            {items.map((item, i) => (
-              <div key={i} className="flex items-start gap-2">
-                <span className="font-mono text-[7px] px-1 py-0.5 rounded border border-border-protocol bg-void-3 text-text-mute2 flex-shrink-0 mt-0.5">
-                  {item.tier}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="font-mono text-[9px] text-text-base truncate">{item.name}</p>
-                  <p className="font-mono text-[7.5px] text-text-mute2 leading-snug line-clamp-1">{item.spec}</p>
-                </div>
-                <span className="font-mono text-[8px] text-gold-protocol flex-shrink-0 tabular-nums">{item.price}</span>
-              </div>
-            ))}
+    <div className="border-t mt-3 pt-3" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
+      <SectionLabel text="⚙ Fix the Risk" col={col} />
+      <div className="space-y-2 mb-3">
+        {items.map((item, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <span className="font-mono text-[7px] px-1 py-0.5 rounded border border-border-protocol bg-void-3 text-text-mute2 flex-shrink-0">
+              {item.tier}
+            </span>
+            <p className="font-mono text-[9px] text-text-base flex-1 truncate">{item.name}</p>
+            <span className="font-mono text-[8px] text-gold-protocol flex-shrink-0 tabular-nums">{item.price}</span>
           </div>
-        )}
-        <button
-          onClick={(e) => { e.stopPropagation(); onOpenShop(); }}
-          className="w-full font-mono text-[9px] font-bold py-2 rounded-lg border border-gold-dim
-                     bg-gold-glow text-gold-bright hover:-translate-y-px
-                     hover:shadow-[0_4px_16px_rgba(201,168,76,0.25)] transition-all duration-150"
-        >
-          Browse in Shop →
-        </button>
+        ))}
       </div>
-    </Frame>
+      <button
+        onClick={(e) => { e.stopPropagation(); onOpenShop(); }}
+        className="w-full font-mono text-[9px] font-bold py-2 rounded-lg border border-gold-dim
+                   bg-gold-glow text-gold-bright hover:-translate-y-px
+                   hover:shadow-[0_4px_16px_rgba(201,168,76,0.25)] transition-all duration-150"
+      >
+        Browse in Shop →
+      </button>
+    </div>
   );
 }
 
 // ── Scenario cards ────────────────────────────────────────────────────────────
 function ScenarioOverviewCard({
-  scenarioId, col, onClose,
+  scenarioId, col, onClose, domainId, onOpenShop,
 }: {
   scenarioId: string;
   col: string;
   onClose: () => void;
+  domainId: string;
+  onOpenShop: () => void;
 }) {
   const sc = SCENARIOS.find((s) => s.id === scenarioId);
   if (!sc) return null;
@@ -531,6 +521,7 @@ function ScenarioOverviewCard({
             ))}
           </div>
         </div>
+        <GearStrip domainId={domainId} col={col} onOpenShop={onOpenShop} />
       </div>
     </Frame>
   );
@@ -573,11 +564,13 @@ function ScenarioMitigationCard({ scenarioId, col }: { scenarioId: string; col: 
 
 // ── Signal cards ──────────────────────────────────────────────────────────────
 function SignalDetailCard({
-  signalIdx, col, onClose,
+  signalIdx, col, onClose, domainId, onOpenShop,
 }: {
   signalIdx: number;
   col: string;
   onClose: () => void;
+  domainId: string;
+  onOpenShop: () => void;
 }) {
   const sig = SIGNALS[signalIdx];
   if (!sig) return null;
@@ -608,6 +601,7 @@ function SignalDetailCard({
         >
           {sig.source} ↗
         </a>
+        <GearStrip domainId={domainId} col={col} onOpenShop={onOpenShop} />
       </div>
     </Frame>
   );
@@ -1011,22 +1005,19 @@ export function GlobeInfoCards({
     const anchorX = geo.xPct * containerW;
     const anchorY = geo.yPct * containerH;
     const hasGates = (DOMAIN_GATES[domainId] ?? []).length > 0;
-    // n = info + (optional gates) + gear + live-feed
-    const n = hasGates ? 4 : 3;
+    // n = info + (optional gates) + live-feed
+    const n = hasGates ? 3 : 2;
     const pos = spreadPositions(n, geo.angle, containerW, containerH, 288, 260, anchorX, anchorY);
     return (
       <>
         <DragCard key="domain-info" cardKey="domain-info" initX={pos[0].x} initY={pos[0].y} containerRef={containerRef} {...dragProps}>
-          <DomainInfoCard domainId={domainId} col={col} onClose={onCloseDomain} />
+          <DomainInfoCard domainId={domainId} col={col} onClose={onCloseDomain} onOpenShop={onOpenShop} />
         </DragCard>
         {hasGates && (
           <DragCard key="domain-gates" cardKey="domain-gates" initX={pos[1].x} initY={pos[1].y} containerRef={containerRef} {...dragProps}>
             <DomainGatesCard domainId={domainId} col={col} />
           </DragCard>
         )}
-        <DragCard key="domain-gear" cardKey="domain-gear" initX={pos[n - 2].x} initY={pos[n - 2].y} containerRef={containerRef} {...dragProps}>
-          <GearCard domainId={domainId} col={col} onOpenShop={onOpenShop} />
-        </DragCard>
         <DragCard key="domain-live-feed" cardKey="domain-live-feed" initX={pos[n - 1].x} initY={pos[n - 1].y} containerRef={containerRef} {...dragProps}>
           <DomainLiveFeedCard domainId={domainId} newsFeedPins={newsFeedPins} onNewsClick={onNewsClick} col={col} />
         </DragCard>
@@ -1044,17 +1035,14 @@ export function GlobeInfoCards({
     const geo = DOMAIN_GEO[gearDomain] ?? { xPct: 0.5, yPct: 0.5, angle: 100 };
     const anchorX = geo.xPct * containerW;
     const anchorY = geo.yPct * containerH;
-    const pos = spreadPositions(3, geo.angle, containerW, containerH, 288, 260, anchorX, anchorY);
+    const pos = spreadPositions(2, geo.angle, containerW, containerH, 288, 260, anchorX, anchorY);
     return (
       <>
         <DragCard key="sc-overview" cardKey="sc-overview" initX={pos[0].x} initY={pos[0].y} containerRef={containerRef} {...dragProps}>
-          <ScenarioOverviewCard scenarioId={scenarioId} col={col} onClose={onCloseScenario} />
+          <ScenarioOverviewCard scenarioId={scenarioId} col={col} onClose={onCloseScenario} domainId={gearDomain} onOpenShop={onOpenShop} />
         </DragCard>
         <DragCard key="sc-mitigation" cardKey="sc-mitigation" initX={pos[1].x} initY={pos[1].y} containerRef={containerRef} {...dragProps}>
           <ScenarioMitigationCard scenarioId={scenarioId} col={col} />
-        </DragCard>
-        <DragCard key="sc-gear" cardKey="sc-gear" initX={pos[2].x} initY={pos[2].y} containerRef={containerRef} {...dragProps}>
-          <GearCard domainId={gearDomain} col={col} onOpenShop={onOpenShop} />
         </DragCard>
       </>
     );
@@ -1070,21 +1058,18 @@ export function GlobeInfoCards({
     const anchorX = geo.xPct * containerW;
     const anchorY = geo.yPct * containerH;
     const hasGate = (DOMAIN_GATES[domId] ?? []).length > 0;
-    const n = hasGate ? 3 : 2;
+    const n = hasGate ? 2 : 1;
     const pos = spreadPositions(n, geo.angle, containerW, containerH, 288, 260, anchorX, anchorY);
     return (
       <>
         <DragCard key="sig-detail" cardKey="sig-detail" initX={pos[0].x} initY={pos[0].y} containerRef={containerRef} {...dragProps}>
-          <SignalDetailCard signalIdx={selectedSignalIdx} col={col} onClose={onCloseSignal} />
+          <SignalDetailCard signalIdx={selectedSignalIdx} col={col} onClose={onCloseSignal} domainId={domId} onOpenShop={onOpenShop} />
         </DragCard>
         {hasGate && (
           <DragCard key="sig-gate" cardKey="sig-gate" initX={pos[1].x} initY={pos[1].y} containerRef={containerRef} {...dragProps}>
             <SignalGateCard signalIdx={selectedSignalIdx} col={col} />
           </DragCard>
         )}
-        <DragCard key="sig-gear" cardKey="sig-gear" initX={pos[n - 1].x} initY={pos[n - 1].y} containerRef={containerRef} {...dragProps}>
-          <GearCard domainId={domId} col={col} onOpenShop={onOpenShop} />
-        </DragCard>
       </>
     );
   })();
