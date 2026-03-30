@@ -616,7 +616,7 @@ export function WatchtowerGlobeShell() {
                 exit={{ opacity: 0, y: 16 }}
                 transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
                 className="absolute bottom-3 z-25"
-                style={{ left: "50%", transform: `translateX(-50%) scale(${panelScale})`, transformOrigin: "bottom center" }}
+                style={{ left: "50%", x: "-50%", scale: panelScale, transformOrigin: "bottom center" }}
                 onClick={(e) => e.stopPropagation()}
               >
                 <DomainTimeline
