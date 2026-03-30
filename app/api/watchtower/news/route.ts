@@ -1,8 +1,8 @@
 // app/api/watchtower/news/route.ts
+import type { NewsFeedPin } from "@/lib/watchtower/news-feed-pins";
+
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
-
-import type { NewsFeedPin } from "@/lib/watchtower/news-feed-pins";
 
 const ANCHORS = [
   { query: "ukraine russia war",            lat: 49.8,  lng:  36.2,   category: "war",       tier: "t4", region: "Ukraine" },
@@ -25,14 +25,18 @@ function parseSeen(s: string): string {
   return new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6])).toISOString();
 }
 
+const GDELT_HEADERS = {
+  "User-Agent": "Mozilla/5.0 (compatible; Tevatha/1.0; +https://tevatha.com)",
+};
+
 export async function GET() {
   const results = await Promise.allSettled(
     ANCHORS.map((anchor) =>
       fetch(
         `https://api.gdeltproject.org/api/v2/doc/doc` +
           `?query=${encodeURIComponent(anchor.query)}` +
-          `&mode=artlist&maxrecords=3&format=json&timespan=48h&sort=date&sourcelang=english`,
-        { signal: AbortSignal.timeout(8000) },
+          `&mode=artlist&maxrecords=3&format=json&timespan=48h&sort=date`,
+        { headers: GDELT_HEADERS, signal: AbortSignal.timeout(12000) },
       ).then((r) => {
         if (!r.ok) throw new Error(`GDELT ${r.status}`);
         return r.json();
