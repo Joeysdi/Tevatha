@@ -300,6 +300,7 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
   const [countries,    setCountries]    = useState<GeoFeature[]>([]);
   const [hovered,      setHovered]      = useState<GeoFeature | null>(null);
   const [selectedFeat, setSelectedFeat] = useState<GeoFeature | null>(null);
+  const [expandedDomainId, setExpandedDomainId] = useState<string | null>(null);
   const [globeReady,      setGlobeReady]      = useState(false);
   const { t } = useTranslation();
   const isHistorical = eraPhase !== "P4";
@@ -1226,6 +1227,27 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
     return lookupRisk(selectedFeat);
   }, [selectedFeat, eraByIso, scenarioMap]);
 
+  // Reset expanded domain when selection changes
+  useEffect(() => { setExpandedDomainId(null); }, [selectedFeat]);
+
+  const DOMAIN_BADGE_COLORS: Record<string, string> = {
+    geopolitical:  "#e84040",
+    economic:      "#c9a84c",
+    environmental: "#1ae8a0",
+  };
+
+  const countryDomainLinks = useMemo(() => {
+    if (!selectedFeat) return [];
+    const iso = String(parseInt(String(selectedFeat.id ?? "0"), 10));
+    return DOMAIN_IMPACTS.flatMap(di => {
+      const entry = di.countries.find(c => c.iso === iso);
+      if (!entry) return [];
+      const domain = DOMAINS.find(d => d.id === di.id);
+      if (!domain) return [];
+      return [{ id: di.id, domain, entry }];
+    });
+  }, [selectedFeat]);
+
   // Solid-color PNG data URL for the ocean surface
   const oceanTextureUrl = useMemo(() => {
     if (typeof document === "undefined") return "";
@@ -1500,6 +1522,97 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
                   <span className="text-[10px] opacity-60">↗</span>
                 </a>
               </div>
+
+              {/* ── Relevant Domains (Layer 2 + 3) ──────────────────────── */}
+              {countryDomainLinks.length > 0 && (
+                <div className="mt-3 pt-2.5 border-t border-border-protocol/40">
+                  <p className="font-mono text-[7.5px] tracking-[.18em] uppercase text-text-mute2 mb-2">
+                    RELEVANT DOMAINS
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {countryDomainLinks.map(link => {
+                      const col = DOMAIN_BADGE_COLORS[link.id] ?? "#c9a84c";
+                      const active = expandedDomainId === link.id;
+                      return (
+                        <button
+                          key={link.id}
+                          onClick={() => setExpandedDomainId(active ? null : link.id)}
+                          className="flex items-center gap-1.5 rounded-full px-2.5 py-1 font-mono
+                                     text-[8px] font-bold tracking-[.1em] transition-all duration-150"
+                          style={{
+                            background: active ? `${col}22` : "rgba(255,255,255,0.04)",
+                            border: `1px solid ${active ? col : col + "44"}`,
+                            color: active ? col : `${col}cc`,
+                          }}
+                        >
+                          <span>{link.domain.icon}</span>
+                          <span>{link.domain.label.toUpperCase()}</span>
+                          <span style={{ opacity: 0.6, fontSize: "7px" }}>
+                            {link.entry.role.toUpperCase()}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Layer 3: expanded domain panel */}
+                  {expandedDomainId && (() => {
+                    const link = countryDomainLinks.find(l => l.id === expandedDomainId);
+                    if (!link) return null;
+                    const iso = String(parseInt(String(selectedFeat!.id ?? "0"), 10));
+                    const col = DOMAIN_BADGE_COLORS[link.id] ?? "#c9a84c";
+                    const relScenarios = SCENARIO_IMPACTS.filter(sc =>
+                      (link.domain.scenarioIds ?? []).includes(sc.id) &&
+                      sc.countries.some(c => c.iso === iso)
+                    );
+                    const countryScenarioNote = (sc: typeof SCENARIO_IMPACTS[0]) =>
+                      sc.countries.find(c => c.iso === iso)?.note ?? "";
+
+                    return (
+                      <div className="mt-2 rounded-lg p-3"
+                           style={{ background: `${col}0d`, border: `1px solid ${col}33` }}>
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="font-mono text-[7px] font-bold px-1.5 py-0.5 rounded"
+                                style={{ background: `${col}22`, color: col }}>
+                            {link.entry.role.toUpperCase()}
+                          </span>
+                          <span className="font-mono text-[9px] font-bold"
+                                style={{ color: col }}>
+                            {link.entry.label}
+                          </span>
+                        </div>
+                        {relScenarios.length > 0 ? (
+                          <>
+                            <p className="font-mono text-[7px] tracking-[.14em] uppercase text-text-mute2 mb-1.5">
+                              EXPOSURE SCENARIOS
+                            </p>
+                            <div className="space-y-1.5">
+                              {relScenarios.map(sc => (
+                                <div key={sc.id} className="flex items-start gap-1.5">
+                                  <span className="font-mono text-[8px] mt-px flex-shrink-0"
+                                        style={{ color: col }}>▸</span>
+                                  <div>
+                                    <p className="font-mono text-[8.5px] font-bold text-text-dim">
+                                      {sc.title}
+                                    </p>
+                                    <p className="font-mono text-[7.5px] text-text-mute2 leading-relaxed">
+                                      {countryScenarioNote(sc)}
+                                    </p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </>
+                        ) : (
+                          <p className="font-mono text-[7.5px] text-text-mute2">
+                            No active scenarios mapped for this country.
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
             </div>
           </div>
         </div>
