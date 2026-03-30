@@ -451,6 +451,28 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
               </div>
             </div>
 
+            {/* Divider */}
+            <div style={{ height: 1, background: "rgba(255,255,255,0.04)" }} />
+
+            {/* ── Shop ─────────────────────────────────────────────── */}
+            <div className="pb-1">
+              <Link
+                href="/provisioner"
+                className="flex items-center gap-1.5 pl-3 pr-2.5 py-1 min-h-[44px]
+                           transition-all duration-150 font-mono text-[8px] border-l-2
+                           text-text-mute2 hover:text-gold-protocol"
+                style={{ borderLeftColor: "transparent" }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderLeftColor = "#c9a84c80"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderLeftColor = "transparent"; }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-text-mute2/25" />
+                <span className="text-[10px] leading-none">🛒</span>
+                <span className="truncate">Shop</span>
+                <span className="ml-auto text-[8px] text-text-mute2/30">◄</span>
+              </Link>
+            </div>
+
           </div>
         </div>
 
