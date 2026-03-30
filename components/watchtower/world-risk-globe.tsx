@@ -246,10 +246,6 @@ interface GeoFeature {
   geometry?:   unknown;
 }
 
-interface GlobePath {
-  coords:   [number, number][];
-  pathType: "admin1";
-}
 
 // ─── Psychology zones ─────────────────────────────────────────────────────────
 interface PsychZone {
@@ -302,7 +298,6 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
   const globeRef     = useRef<GlobeMethods | undefined>(undefined);
   const [dims,         setDims]         = useState({ w: 0, h: 0 });
   const [countries,    setCountries]    = useState<GeoFeature[]>([]);
-  const [globePaths,   setGlobePaths]   = useState<GlobePath[]>([]);
   const [hovered,      setHovered]      = useState<GeoFeature | null>(null);
   const [selectedFeat, setSelectedFeat] = useState<GeoFeature | null>(null);
   const [globeReady,      setGlobeReady]      = useState(false);
@@ -970,43 +965,19 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
     return () => container.removeEventListener("news-pin-click", handler);
   }, [onNewsFeedPinClick]);
 
-  // ── Load + parse TopoJSON + border paths ─────────────────────────────────
+  // ── Load + parse TopoJSON ─────────────────────────────────────────────────
   useEffect(() => {
-    const paths: GlobePath[] = [];
-
-    Promise.all([
-      fetch("/world-50m.json").then(r => r.json()),
-      fetch("/admin1-lines.geojson").then(r => r.json()).catch(() => null),
-    ]).then(async ([world, admin1]) => {
-      const { feature } = await import("topojson-client");
-
-      // Country polygons
-      const geo = feature(world, world.objects.countries) as unknown as {
-        type: string; features: GeoFeature[];
-      };
-      setCountries(geo.features ?? []);
-
-      // Sub-national border lines (states, provinces, etc.) — country borders handled by polygonStrokeColor
-      if (admin1?.features) {
-        for (const f of admin1.features) {
-          if (f.geometry?.type === "LineString") {
-            paths.push({
-              coords:   f.geometry.coordinates.map(([lng, lat]: number[]) => [lat, lng] as [number, number]),
-              pathType: "admin1",
-            });
-          } else if (f.geometry?.type === "MultiLineString") {
-            for (const line of f.geometry.coordinates) {
-              paths.push({
-                coords:   line.map(([lng, lat]: number[]) => [lat, lng] as [number, number]),
-                pathType: "admin1",
-              });
-            }
-          }
-        }
-      }
-
-      setGlobePaths(paths);
-    }).catch((err) => console.error("[Globe] Failed to load geo data:", err));
+    fetch("/world-50m.json")
+      .then((r) => r.json())
+      .then(async (world) => {
+        const { feature } = await import("topojson-client");
+        const geo = feature(world, world.objects.countries) as unknown as {
+          type:     string;
+          features: GeoFeature[];
+        };
+        setCountries(geo.features ?? []);
+      })
+      .catch((err) => console.error("[Globe] Failed to load world-50m.json:", err));
   }, []);
 
   // ── Globe ready ───────────────────────────────────────────────────────────
@@ -1248,16 +1219,6 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
           polygonCapCurvatureResolution={5}
           onPolygonHover={handleHover as (f: object | null, p: object | null) => void}
 
-          pathsData={globePaths}
-          pathPoints="coords"
-          pathPointLat={(pt: unknown) => (pt as number[])[0]}
-          pathPointLng={(pt: unknown) => (pt as number[])[1]}
-          pathPointAlt={0.018}
-          pathColor={() => "rgba(255,255,255,0.14)"}
-          pathStroke={0.3}
-          pathDashLength={1}
-          pathDashGap={0}
-          pathTransitionDuration={0}
           onPolygonClick={(feat: object) => {
             const f = feat as GeoFeature;
             setSelectedFeat((prev) => (prev?.id === f.id ? null : f));
