@@ -13,6 +13,7 @@ import { DOMAINS, SCENARIOS, TIMELINE_EVENTS, GATES } from "@/lib/watchtower/dat
 import { SCENARIO_IMPACTS }       from "@/lib/watchtower/scenario-impacts";
 import { NEWS_FEED_PINS }         from "@/lib/watchtower/news-feed-pins";
 import type { NewsFeedPin }       from "@/lib/watchtower/news-feed-pins";
+import { fetchGdeltPins }         from "@/lib/watchtower/gdelt-fetch";
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -229,11 +230,10 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
 
   // ── Live news feed fetch ──────────────────────────────────────────────────
   useEffect(() => {
-    fetch("/api/watchtower/news")
-      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
-      .then((data) => {
-        setNewsPins(data.pins.length > 0 ? data.pins : NEWS_FEED_PINS);
-        setNewsFeedStatus("ok");
+    fetchGdeltPins()
+      .then((pins) => {
+        setNewsPins(pins.length > 0 ? pins : NEWS_FEED_PINS);
+        setNewsFeedStatus(pins.length > 0 ? "ok" : "error");
       })
       .catch(() => {
         setNewsPins(NEWS_FEED_PINS);
