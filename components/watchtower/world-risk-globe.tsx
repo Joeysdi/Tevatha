@@ -262,7 +262,6 @@ interface Props {
   gatePhase:             string;
   scrubVelocity:         number;
   showCommodities:       boolean;
-  showInstability:       boolean;
   showNewsFeed:          boolean;
   newsFeedPins:          NewsFeedPin[];
   onCityPinClick:        (cityIdx: number) => void;
@@ -279,7 +278,8 @@ const GATE_TIER: Record<string, string> = {
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
-export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scrubVelocity, showCommodities, showInstability, showNewsFeed, newsFeedPins, onCityPinClick, onSignalPinClick, onPsychZoneClick, onGatePinClick, onCommodityPinClick, onNewsFeedPinClick }: Props) {
+export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scrubVelocity, showCommodities, showNewsFeed, newsFeedPins, onCityPinClick, onSignalPinClick, onPsychZoneClick, onGatePinClick, onCommodityPinClick, onNewsFeedPinClick }: Props) {
+  const showInstability = domainId === "economic";
   const containerRef = useRef<HTMLDivElement>(null);
   const globeRef     = useRef<GlobeMethods | undefined>(undefined);
   const [dims,         setDims]         = useState({ w: 0, h: 0 });

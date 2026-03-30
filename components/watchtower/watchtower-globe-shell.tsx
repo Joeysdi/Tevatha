@@ -204,7 +204,6 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
 
   // ── New layer toggles ───────────────────────────────────────────────────────
   const [showCommodities,   setShowCommodities]   = useState(false);
-  const [showInstability,   setShowInstability]   = useState(false);
   const [showNewsFeed,      setShowNewsFeed]      = useState(false);
   const [newsPins,          setNewsPins]          = useState<NewsFeedPin[]>(NEWS_FEED_PINS);
   const [newsFeedStatus,    setNewsFeedStatus]    = useState<"loading" | "ok" | "error">("loading");
@@ -288,7 +287,7 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
           gatePhase={eraPhase}
           scrubVelocity={scrubVelocity}
           showCommodities={showCommodities}
-          showInstability={showInstability}
+
           showNewsFeed={showNewsFeed}
           newsFeedPins={newsPins}
           onSignalPinClick={setSelectedSignalIdx}
@@ -497,17 +496,6 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
                 <p className="font-mono text-[6.5px] tracking-[.2em] uppercase text-text-mute2/50">Live Layers</p>
               </div>
               <div className="flex flex-col">
-                <button
-                  onClick={(e) => { e.stopPropagation(); setShowInstability(v => !v); }}
-                  aria-pressed={showInstability}
-                  className={`flex items-center gap-1.5 pl-3 pr-2.5 py-1 min-h-[44px] text-left
-                              transition-all duration-150 font-mono text-[8px] border-l-2
-                              ${showInstability ? "text-amber-protocol" : "text-text-mute2 hover:text-text-base"}`}
-                  style={{ borderLeftColor: showInstability ? "#f0a500" : "transparent" }}
-                >
-                  <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${showInstability ? "bg-amber-protocol animate-pulse" : "bg-text-mute2/25"}`} />
-                  🌡 Instability
-                </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); setShowNewsFeed(v => !v); }}
                   aria-pressed={showNewsFeed}
@@ -731,15 +719,6 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
         </nav>
 
         <div className="w-px h-4 bg-border-protocol/60 flex-shrink-0" />
-
-        <button
-          onClick={() => setShowInstability(v => !v)}
-          aria-pressed={showInstability}
-          className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-2.5 rounded-lg border font-mono text-[9px] transition-all min-h-[44px]
-                      ${showInstability ? "border-amber-500/40 text-amber-protocol" : "bg-void-3 border-border-protocol text-text-mute2"}`}
-          style={{ background: showInstability ? "rgba(240,165,0,0.10)" : undefined }}>
-          🌡
-        </button>
 
         <button
           onClick={() => setShowNewsFeed(v => !v)}
