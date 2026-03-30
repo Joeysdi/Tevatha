@@ -2,7 +2,8 @@
 "use client";
 
 import { useRef, useEffect, useState, useCallback } from "react";
-import { TIMELINE_EVENTS, GATES } from "@/lib/watchtower/data";
+import { GATES } from "@/lib/watchtower/data";
+import { TIMELINE_EVENTS } from "@/lib/watchtower/data-timeline";
 import type { TimelineEvent, DecisionGate } from "@/lib/watchtower/data";
 import { useTranslation } from "@/lib/i18n/use-translation";
 import type { TranslationKey } from "@/lib/i18n/translations";

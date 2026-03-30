@@ -1,7 +1,7 @@
 // components/watchtower/world-risk-globe.tsx
 "use client";
 
-import { useRef, useEffect, useState, useCallback, useMemo } from "react";
+import { useRef, useEffect, useState, useCallback, useMemo, memo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import { useTranslation } from "@/lib/i18n/use-translation";
@@ -10,8 +10,8 @@ import {
   COUNTRY_RISK,
   RISK_COLORS,
   NO_DATA_FILL,
-} from "@/lib/watchtower/geo-risk";
-import type { CountryRisk, RiskLevel } from "@/lib/watchtower/geo-risk";
+} from "@/lib/watchtower/geo-risk-summary";
+import type { CountryRiskSummary, RiskLevel } from "@/lib/watchtower/geo-risk-summary";
 import {
   ERA_OVERRIDES,
   ERA_NEUTRAL_FILL,
@@ -26,7 +26,7 @@ import { GATE_PINS } from "@/lib/watchtower/gate-pins";
 import { COMMODITY_PINS } from "@/lib/watchtower/commodity-pins";
 import type { NewsFeedPin } from "@/lib/watchtower/news-feed-pins";
 import { INSTABILITY_SCORES, INSTABILITY_DEFAULT, instabilityFill } from "@/lib/watchtower/instability-data";
-import { CITY_PINS_DATA } from "@/lib/watchtower/city-pins";
+import type { CityPin } from "@/lib/watchtower/city-pins";
 
 // ─── Dynamic import — WebGL requires browser environment ──────────────────────
 const Globe = dynamic(() => import("react-globe.gl"), {
@@ -34,7 +34,7 @@ const Globe = dynamic(() => import("react-globe.gl"), {
 });
 
 // ─── Instability badge — "looks live" animated score ─────────────────────────
-function InstabilityBadge() {
+const InstabilityBadge = memo(function InstabilityBadge() {
   const [delta, setDelta] = useState(0);
   const [score, setScore] = useState(58.4);
 
@@ -67,10 +67,10 @@ function InstabilityBadge() {
       </div>
     </div>
   );
-}
+});
 
 // ─── Starfield canvas (static, rendered once) ─────────────────────────────────
-function StarfieldCanvas({ w, h }: { w: number; h: number }) {
+const StarfieldCanvas = memo(function StarfieldCanvas({ w, h }: { w: number; h: number }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const drawnRef  = useRef(false);
 
@@ -122,7 +122,7 @@ function StarfieldCanvas({ w, h }: { w: number; h: number }) {
       style={{ width: "100%", height: "100%" }}
     />
   );
-}
+});
 
 // ─── City threat color ─────────────────────────────────────────────────────────
 function cityThreatColor(score: number): string {
@@ -133,8 +133,8 @@ function cityThreatColor(score: number): string {
 }
 
 // ─── Data lookups ─────────────────────────────────────────────────────────────
-const riskByIso: Record<string, CountryRisk> = {};
-const riskByName: Record<string, CountryRisk> = {};
+const riskByIso: Record<string, CountryRiskSummary> = {};
+const riskByName: Record<string, CountryRiskSummary> = {};
 
 // City-pins uses abbreviated names — map them to the canonical COUNTRY_RISK names
 const CITY_COUNTRY_ALIASES: Record<string, string> = {
@@ -159,7 +159,7 @@ for (const [alias, canonical] of Object.entries(CITY_COUNTRY_ALIASES)) {
   if (riskByName[canonical]) riskByName[alias] = riskByName[canonical];
 }
 
-function lookupRisk(feat: GeoFeature | null): CountryRisk | null {
+function lookupRisk(feat: GeoFeature | null): CountryRiskSummary | null {
   if (!feat) return null;
   const isoNum = String(parseInt(String(feat.id ?? "0"), 10));
   if (riskByIso[isoNum]) return riskByIso[isoNum];
@@ -320,8 +320,26 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
   const [selectedFeat, setSelectedFeat] = useState<GeoFeature | null>(null);
   const [expandedDomainId, setExpandedDomainId] = useState<string | null>(null);
   const [globeReady,      setGlobeReady]      = useState(false);
+  // City pins — deferred until first country/domain activation (36 KB)
+  const [cityPins, setCityPins] = useState<CityPin[]>([]);
+  // Country incidents — deferred until first country card open (~50 KB)
+  const [countryIncidents, setCountryIncidents] = useState<Record<string, string[]> | null>(null);
   const { t } = useTranslation();
   const isHistorical = eraPhase !== "P4";
+
+  // ── Lazy-load city pins on first country or domain activation ──────────────
+  useEffect(() => {
+    if ((selectedFeat || domainId) && cityPins.length === 0) {
+      import("@/lib/watchtower/city-pins").then(m => setCityPins(m.CITY_PINS_DATA));
+    }
+  }, [selectedFeat, domainId, cityPins.length]);
+
+  // ── Lazy-load country incidents on first country click ─────────────────────
+  useEffect(() => {
+    if (selectedFeat && !countryIncidents) {
+      import("@/lib/watchtower/geo-risk-details").then(m => setCountryIncidents(m.COUNTRY_RISK_INCIDENTS));
+    }
+  }, [selectedFeat, countryIncidents]);
 
   // ── Scenario map ──────────────────────────────────────────────────────────
   const scenarioMap = useMemo<Record<string, ScenarioCountryImpact> | null>(() => {
@@ -502,19 +520,19 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
     if (selectedFeat || domainId) {
       if (selectedFeat && !domainId) {
         // Country only → top 5 by population
-        CITY_PINS_DATA
+        cityPins
           .filter(c => cityIso(c) === selectedIso)
           .sort((a, b) => b.pop - a.pop)
           .slice(0, 5)
           .forEach(city => {
             items.push({ type: "city", lat: city.lat, lng: city.lng,
-              cityIdx: CITY_PINS_DATA.indexOf(city), cityName: city.name, cityScore: city.threatScore });
+              cityIdx: cityPins.indexOf(city), cityName: city.name, cityScore: city.threatScore });
           });
       } else if (domainId && !selectedFeat) {
         // Domain only → top 3 per primary country, top 2 per secondary
         const ROLE_LIMIT: Record<string, number> = { primary: 3, secondary: 2, watch: 0 };
-        const byIso: Record<string, typeof CITY_PINS_DATA> = {};
-        for (const city of CITY_PINS_DATA) {
+        const byIso: Record<string, CityPin[]> = {};
+        for (const city of cityPins) {
           const iso = cityIso(city);
           if (!iso) continue;
           if (!byIso[iso]) byIso[iso] = [];
@@ -526,18 +544,18 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
           if (limit === 0) continue;
           cities.sort((a, b) => b.pop - a.pop).slice(0, limit).forEach(city => {
             items.push({ type: "city", lat: city.lat, lng: city.lng,
-              cityIdx: CITY_PINS_DATA.indexOf(city), cityName: city.name, cityScore: city.threatScore });
+              cityIdx: cityPins.indexOf(city), cityName: city.name, cityScore: city.threatScore });
           });
         }
       } else if (domainId && selectedFeat && selectedIso && domainMap?.[selectedIso]) {
         // Both → top 5 in selected country, only if country is in domain
-        CITY_PINS_DATA
+        cityPins
           .filter(c => cityIso(c) === selectedIso)
           .sort((a, b) => b.pop - a.pop)
           .slice(0, 5)
           .forEach(city => {
             items.push({ type: "city", lat: city.lat, lng: city.lng,
-              cityIdx: CITY_PINS_DATA.indexOf(city), cityName: city.name, cityScore: city.threatScore });
+              cityIdx: cityPins.indexOf(city), cityName: city.name, cityScore: city.threatScore });
           });
       }
     }
@@ -658,7 +676,7 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
     }
 
     return items;
-  }, [scenarioId, domainId, domainColor, domainMap, gatePhase, showCommodities, showNewsFeed, newsFeedPins, selectedFeat]);
+  }, [scenarioId, domainId, domainColor, domainMap, gatePhase, showCommodities, showNewsFeed, newsFeedPins, selectedFeat, cityPins]);
 
   const htmlElement = useCallback((d: object) => {
     const el = document.createElement("div");
@@ -1410,7 +1428,9 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
                   {scenarioId ? t("card_scenario_impact") : isHistorical ? t("card_historical") : t("card_active_incidents")}
                 </p>
                 <div className="space-y-2">
-                  {(hoveredCard.incidents ?? []).map((inc, i) => (
+                  {(("incidents" in hoveredCard ? hoveredCard.incidents : null) ??
+                    countryIncidents?.[String(parseInt(String(hovered?.id ?? "0"), 10))] ??
+                    []).map((inc, i) => (
                     <div key={i} className="flex items-start gap-1.5">
                       <span className="font-mono text-[9px] mt-[2px] flex-shrink-0"
                             style={{ color: RISK_COLORS[hoveredCard.level].fill }}>▸</span>
@@ -1445,7 +1465,7 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
             <div className="h-px w-full"
                  style={{ background: `linear-gradient(90deg,${RISK_COLORS[selectedCard.level].hover},transparent)` }} />
 
-            <div className="p-4">
+            <div className="p-4 overflow-y-auto max-h-[80dvh]">
               <div className="flex items-start justify-between gap-2 mb-3">
                 <div className="min-w-0 flex-1">
                   <p className="font-mono text-[8px] tracking-[.22em] uppercase mb-0.5"
@@ -1495,7 +1515,9 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
                   {scenarioId ? t("card_scenario_impact") : isHistorical ? t("card_historical") : t("card_active_incidents")}
                 </p>
                 <div className="space-y-1.5">
-                  {(selectedCard.incidents ?? []).map((inc, i) => (
+                  {(("incidents" in selectedCard ? selectedCard.incidents : null) ??
+                    countryIncidents?.[String(parseInt(String(selectedFeat?.id ?? "0"), 10))] ??
+                    []).map((inc, i) => (
                     <div key={i} className="flex items-start gap-1.5">
                       <span className="font-mono text-[9px] mt-[2px] flex-shrink-0"
                             style={{ color: RISK_COLORS[selectedCard.level].fill }}>▸</span>

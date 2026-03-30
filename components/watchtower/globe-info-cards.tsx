@@ -1,11 +1,13 @@
 // components/watchtower/globe-info-cards.tsx
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence, useMotionValue } from "framer-motion";
 import type { MotionValue } from "framer-motion";
 import type { RefObject } from "react";
-import { DOMAINS, SIGNALS, SCENARIOS, PSYCH_PILLARS, GEAR, GATES } from "@/lib/watchtower/data";
+import { DOMAINS, SIGNALS, SCENARIOS, PSYCH_PILLARS, GATES } from "@/lib/watchtower/data";
+import { GEAR } from "@/lib/watchtower/data-gear";
+import { DOMAIN_COLORS } from "@/lib/watchtower/domain-colors";
 import { DomainLiveFeedCard } from "./domain-live-feed-card";
 import { COMMODITY_PINS } from "@/lib/watchtower/commodity-pins";
 import { NEWS_FEED_PINS } from "@/lib/watchtower/news-feed-pins";
@@ -52,9 +54,6 @@ const TIER_HEX: Record<string, string> = {
   t4: "#e84040", t3: "#f0a500", t2: "#38bdf8", t1: "#1ae8a0",
 };
 
-const DOMAIN_COLORS: Record<string, string> = {
-  geopolitical: "#e84040", economic: "#c9a84c", environmental: "#1ae8a0",
-};
 
 // ── Domain voice scripts ──────────────────────────────────────────────────────
 const DOMAIN_VOICE: Record<string, string> = {
@@ -997,17 +996,42 @@ export function GlobeInfoCards({
   // Shorthand so every DragCard gets the same three callbacks
   const dragProps = { onRegister: registerCard, onUnregister: unregisterCard, onCardDrag: handleCardDrag };
 
-  // ── Domain ─────────────────────────────────────────────────────────────────
-  const domainCards = (() => {
+  // ── Memoized card positions (O(n²) spread only runs when layout deps change) ─
+  const domainPos = useMemo(() => {
     if (!domainId) return null;
-    const col = DOMAIN_COLORS[domainId] ?? "#c9a84c";
     const geo = DOMAIN_GEO[domainId] ?? { xPct: 0.5, yPct: 0.5, angle: 100 };
     const anchorX = geo.xPct * containerW;
     const anchorY = geo.yPct * containerH;
-    const hasGates = (DOMAIN_GATES[domainId] ?? []).length > 0;
-    // n = info + (optional gates) + live-feed
-    const n = hasGates ? 3 : 2;
-    const pos = spreadPositions(n, geo.angle, containerW, containerH, 288, 260, anchorX, anchorY);
+    const n = (DOMAIN_GATES[domainId] ?? []).length > 0 ? 3 : 2;
+    return { pos: spreadPositions(n, geo.angle, containerW, containerH, 288, 260, anchorX, anchorY), n };
+  }, [domainId, containerW, containerH]);
+
+  const scenarioPos = useMemo(() => {
+    if (!scenarioId) return null;
+    const gearDomain = SCENARIO_DOMAIN[scenarioId] ?? "cyber";
+    const geo = DOMAIN_GEO[gearDomain] ?? { xPct: 0.5, yPct: 0.5, angle: 100 };
+    const anchorX = geo.xPct * containerW;
+    const anchorY = geo.yPct * containerH;
+    return { pos: spreadPositions(2, geo.angle, containerW, containerH, 288, 260, anchorX, anchorY), gearDomain };
+  }, [scenarioId, containerW, containerH]);
+
+  const signalPos = useMemo(() => {
+    if (selectedSignalIdx === null || !SIGNALS[selectedSignalIdx]) return null;
+    const sig = SIGNALS[selectedSignalIdx];
+    const domId = SIGNAL_DOMAIN_ID[sig.domain] ?? "cyber";
+    const geo = DOMAIN_GEO[domId] ?? { xPct: 0.5, yPct: 0.5, angle: 100 };
+    const anchorX = geo.xPct * containerW;
+    const anchorY = geo.yPct * containerH;
+    const n = (DOMAIN_GATES[domId] ?? []).length > 0 ? 2 : 1;
+    return { pos: spreadPositions(n, geo.angle, containerW, containerH, 288, 260, anchorX, anchorY), domId, n };
+  }, [selectedSignalIdx, containerW, containerH]);
+
+  // ── Domain ─────────────────────────────────────────────────────────────────
+  const domainCards = (() => {
+    if (!domainId || !domainPos) return null;
+    const col = DOMAIN_COLORS[domainId] ?? "#c9a84c";
+    const { pos, n } = domainPos;
+    const hasGates = n === 3;
     return (
       <>
         <DragCard key="domain-info" cardKey="domain-info" initX={pos[0].x} initY={pos[0].y} containerRef={containerRef} {...dragProps}>
@@ -1027,15 +1051,11 @@ export function GlobeInfoCards({
 
   // ── Scenario ───────────────────────────────────────────────────────────────
   const scenarioCards = (() => {
-    if (!scenarioId) return null;
+    if (!scenarioId || !scenarioPos) return null;
     const sc = SCENARIOS.find((s) => s.id === scenarioId);
     if (!sc) return null;
     const col = "#e84040";
-    const gearDomain = SCENARIO_DOMAIN[scenarioId] ?? "cyber";
-    const geo = DOMAIN_GEO[gearDomain] ?? { xPct: 0.5, yPct: 0.5, angle: 100 };
-    const anchorX = geo.xPct * containerW;
-    const anchorY = geo.yPct * containerH;
-    const pos = spreadPositions(2, geo.angle, containerW, containerH, 288, 260, anchorX, anchorY);
+    const { pos, gearDomain } = scenarioPos;
     return (
       <>
         <DragCard key="sc-overview" cardKey="sc-overview" initX={pos[0].x} initY={pos[0].y} containerRef={containerRef} {...dragProps}>
@@ -1050,16 +1070,10 @@ export function GlobeInfoCards({
 
   // ── Signal ─────────────────────────────────────────────────────────────────
   const signalCards = (() => {
-    if (selectedSignalIdx === null || !SIGNALS[selectedSignalIdx]) return null;
-    const sig = SIGNALS[selectedSignalIdx];
-    const domId = SIGNAL_DOMAIN_ID[sig.domain] ?? "cyber";
+    if (selectedSignalIdx === null || !signalPos) return null;
+    const { pos, domId, n } = signalPos;
     const col = DOMAIN_COLORS[domId] ?? "#c9a84c";
-    const geo = DOMAIN_GEO[domId] ?? { xPct: 0.5, yPct: 0.5, angle: 100 };
-    const anchorX = geo.xPct * containerW;
-    const anchorY = geo.yPct * containerH;
-    const hasGate = (DOMAIN_GATES[domId] ?? []).length > 0;
-    const n = hasGate ? 2 : 1;
-    const pos = spreadPositions(n, geo.angle, containerW, containerH, 288, 260, anchorX, anchorY);
+    const hasGate = n === 2;
     return (
       <>
         <DragCard key="sig-detail" cardKey="sig-detail" initX={pos[0].x} initY={pos[0].y} containerRef={containerRef} {...dragProps}>

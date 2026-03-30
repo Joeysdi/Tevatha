@@ -10,6 +10,7 @@ import { WorldRiskGlobe }         from "./world-risk-globe";
 import { GlobeInfoCards }         from "./globe-info-cards";
 
 import { DOMAINS, SCENARIOS, TIMELINE_EVENTS, GATES } from "@/lib/watchtower/data";
+import { DOMAIN_COLORS } from "@/lib/watchtower/domain-colors";
 import { SCENARIO_IMPACTS }       from "@/lib/watchtower/scenario-impacts";
 import { NEWS_FEED_PINS }         from "@/lib/watchtower/news-feed-pins";
 import type { NewsFeedPin }       from "@/lib/watchtower/news-feed-pins";
@@ -152,11 +153,6 @@ const EVT_COLORS: Record<string, string> = {
   red: "#e84040", warn: "#f0a500", info: "#38bdf8", pink: "#ff0055",
 };
 
-const DOMAIN_COLORS: Record<string, string> = {
-  "Geopolitical":  "#e84040",
-  "Economic":      "#c9a84c",
-  "Environmental": "#1ae8a0",
-};
 
 /** Build a ?-prefixed URL string by applying updates to existing search params. */
 function buildUrl(
@@ -373,7 +369,7 @@ export function WatchtowerGlobeShell() {
               <div className="flex flex-col">
                 {DOMAINS.map((d) => {
                   const active = domainId === d.id;
-                  const col    = DOMAIN_COLORS[d.label] ?? "#c9a84c";
+                  const col    = DOMAIN_COLORS[d.label.toLowerCase()] ?? "#c9a84c";
                   return (
                     <React.Fragment key={d.id}>
                       <Link
@@ -495,12 +491,12 @@ export function WatchtowerGlobeShell() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 8 }}
                 transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-                className="absolute left-1/2 -translate-x-1/2 z-25 w-[360px] max-w-[calc(100vw-80px)]"
+                className="absolute left-1/2 -translate-x-1/2 z-25 w-[360px] max-w-[min(360px,calc(100vw-32px))]"
                 style={{ bottom: "108px" }}
                 onClick={(e) => e.stopPropagation()}
               >
                 <div
-                  className="rounded-xl overflow-hidden backdrop-blur-md"
+                  className="rounded-xl overflow-y-auto max-h-[85dvh] backdrop-blur-md"
                   style={{
                     background: "rgba(6,7,14,0.96)",
                     border: `1px solid ${sp.hex}33`,
@@ -521,7 +517,7 @@ export function WatchtowerGlobeShell() {
                       <span className="font-mono text-[7px] text-text-mute2">{sp.yearRange}</span>
                       {domainId && (() => {
                         const dom = DOMAINS.find(d => d.id === domainId);
-                        const col = dom ? (DOMAIN_COLORS[dom.label] ?? "#c9a84c") : "#c9a84c";
+                        const col = dom ? (DOMAIN_COLORS[dom.label.toLowerCase()] ?? "#c9a84c") : "#c9a84c";
                         return (
                           <span className="font-mono text-[6.5px] px-1.5 py-0.5 rounded" style={{ color: col, background: `${col}22`, border: `1px solid ${col}44` }}>
                             {dom?.icon} {dom?.label}
@@ -607,7 +603,7 @@ export function WatchtowerGlobeShell() {
         <AnimatePresence mode="wait">
           {domainId && (() => {
             const dom = DOMAINS.find(d => d.id === domainId);
-            const col = dom ? (DOMAIN_COLORS[dom.label] ?? "#c9a84c") : "#c9a84c";
+            const col = dom ? (DOMAIN_COLORS[dom.label.toLowerCase()] ?? "#c9a84c") : "#c9a84c";
             return (
               <motion.div
                 key={domainId}
@@ -649,7 +645,7 @@ export function WatchtowerGlobeShell() {
         {/* Domain buttons (mobile) */}
         {DOMAINS.map((d) => {
           const active = domainId === d.id;
-          const col    = DOMAIN_COLORS[d.label] ?? "#c9a84c";
+          const col    = DOMAIN_COLORS[d.label.toLowerCase()] ?? "#c9a84c";
           return (
             <button key={d.id}
               onClick={() => {

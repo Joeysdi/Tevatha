@@ -4,12 +4,11 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import {
-  SIGNALS, SCENARIOS, GEAR,
-  PSYCH_PILLARS, PSYCH_THREATS, TIMELINE_EVENTS, GATES,
-} from "@/lib/watchtower/data";
-import type { SevCode } from "@/lib/watchtower/data";
+import { SIGNALS, SCENARIOS, TIMELINE_EVENTS, GATES } from "@/lib/watchtower/data";
+import { GEAR } from "@/lib/watchtower/data-gear";
+import { PSYCH_PILLARS, PSYCH_THREATS } from "@/lib/watchtower/data-psych";
 import { useTranslation } from "@/lib/i18n/use-translation";
+import { SEV_STYLES, SEV_LABELS } from "@/lib/watchtower/severity-styles";
 
 export type IntelTab = "scenarios" | "signals" | "gear" | "psych" | "timeline";
 
@@ -29,17 +28,6 @@ const TABS: { id: IntelTab; label: string; href: string }[] = [
 ];
 
 // ── Shared constants ──────────────────────────────────────────────────────────
-
-const SEV_STYLES: Record<SevCode, string> = {
-  EX: "bg-[rgba(255,0,85,0.18)] text-[#ff0055] border border-[rgba(255,0,85,0.3)]",
-  CR: "bg-red-dim text-red-bright border border-red-protocol/28",
-  HI: "bg-amber-dim text-amber-protocol border border-amber-DEFAULT/26",
-  EL: "bg-blue-dim text-blue-DEFAULT border border-blue-DEFAULT/22",
-  ME: "bg-[rgba(168,85,247,0.12)] text-purple-DEFAULT border border-purple-DEFAULT/22",
-};
-const SEV_LABELS: Record<SevCode, string> = {
-  EX: "EXISTENTIAL", CR: "CRITICAL", HI: "HIGH", EL: "ELEVATED", ME: "MEDIUM",
-};
 
 const TIER_BADGE: Record<string, string> = {
   t4: "bg-red-protocol/25 text-red-bright border-red-protocol/30",
