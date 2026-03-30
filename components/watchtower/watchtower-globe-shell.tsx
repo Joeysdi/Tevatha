@@ -188,8 +188,12 @@ export function WatchtowerGlobeShell() {
   }, [searchParams, router]);
 
   // ── State (initialized from URL params) ────────────────────────────────────
-const [eraPhase,          setEraPhase]          = useState(() => searchParams.get("era") ?? "P4");
-  const [livePhase,         setLivePhase]         = useState(() => searchParams.get("era") ?? "P4");
+  const [domainEras,        setDomainEras]        = useState<Record<string, string>>(() => {
+    const era = searchParams.get("era");
+    const domain = searchParams.get("domain");
+    return era && domain ? { [domain]: era } : {};
+  });
+  const [domainLiveEras,    setDomainLiveEras]    = useState<Record<string, string>>({});
   const [scrubVelocity,     setScrubVelocity]     = useState(0);
 
   const [scenarioId,        setScenarioId]        = useState<string | null>(() => searchParams.get("scenario"));
@@ -262,6 +266,9 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
     return () => unwatch?.();
   }, []);
 
+  const eraPhase  = domainId ? (domainEras[domainId]     ?? "P4") : "P4";
+  const livePhase = domainId ? (domainLiveEras[domainId] ?? eraPhase) : "P4";
+
   const isHistorical = eraPhase !== "P4";
 
   const pairedScenarioIds = useMemo(
@@ -323,8 +330,10 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
                 aria-label={t("nav_back_to_now")}
                 onClick={(e) => {
                   e.stopPropagation();
-                  setEraPhase("P4");
-                  setLivePhase("P4");
+                  if (domainId) {
+                    setDomainEras(prev => ({ ...prev, [domainId]: "P4" }));
+                    setDomainLiveEras(prev => ({ ...prev, [domainId]: "P4" }));
+                  }
                   updateUrl({ era: null });
                 }}
               >
@@ -521,7 +530,13 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
                       })()}
                     </div>
                     <button
-                      onClick={() => { setEraPhase("P4"); setLivePhase("P4"); updateUrl({ era: null }); }}
+                      onClick={() => {
+                        if (domainId) {
+                          setDomainEras(prev => ({ ...prev, [domainId]: "P4" }));
+                          setDomainLiveEras(prev => ({ ...prev, [domainId]: "P4" }));
+                        }
+                        updateUrl({ era: null });
+                      }}
                       aria-label="Return to present"
                       className="min-w-[44px] min-h-[44px] font-mono text-[9px] text-text-mute2
                                  hover:text-text-base transition-colors flex-shrink-0
@@ -588,25 +603,39 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
           })()}
         </AnimatePresence>
 
-        {/* ── Timeline scrubber — bottom-center of globe ───────────────────── */}
-        <div
-          className="absolute bottom-3 z-25"
-          style={{ left: "50%", transform: `translateX(-50%) scale(${panelScale})`, transformOrigin: "bottom center" }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <TimelineScrubber
-            activePhase={eraPhase}
-            onPhaseChange={(id) => {
-              setEraPhase(id);
-              setLivePhase(id);
-              updateUrl({ era: id !== "P4" ? id : null });
-            }}
-            onLivePhase={setLivePhase}
-            onVelocityChange={setScrubVelocity}
-            activeDomainId={domainId}
-            domainColor={domainId ? (DOMAIN_COLORS[DOMAINS.find(d => d.id === domainId)?.label ?? ""] ?? null) : null}
-          />
-        </div>
+        {/* ── Domain timeline scrubber — appears when a domain is active ─────── */}
+        <AnimatePresence mode="wait">
+          {domainId && (() => {
+            const dom = DOMAINS.find(d => d.id === domainId);
+            const col = dom ? (DOMAIN_COLORS[dom.label] ?? "#c9a84c") : "#c9a84c";
+            return (
+              <motion.div
+                key={domainId}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 16 }}
+                transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+                className="absolute bottom-3 z-25"
+                style={{ left: "50%", transform: `translateX(-50%) scale(${panelScale})`, transformOrigin: "bottom center" }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <DomainTimeline
+                  domainId={domainId}
+                  domainColor={col}
+                  domainIcon={dom?.icon ?? ""}
+                  domainLabel={dom?.label ?? domainId}
+                  activePhase={eraPhase}
+                  onPhaseChange={(id) => {
+                    setDomainEras(prev => ({ ...prev, [domainId]: id }));
+                    updateUrl({ era: id !== "P4" ? id : null });
+                  }}
+                  onLivePhase={(id) => setDomainLiveEras(prev => ({ ...prev, [domainId]: id }))}
+                  onVelocityChange={setScrubVelocity}
+                />
+              </motion.div>
+            );
+          })()}
+        </AnimatePresence>
 
       </div>
 
@@ -648,52 +677,52 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
-// ── Timeline scrubber ─────────────────────────────────────────────────────────
+// ── Domain timeline (one per threat domain, compressed to domain events only) ──
 
 const SCRUB_PAD = 20; // px padding on each side of track
 
-function TimelineScrubber({
+function DomainTimeline({
+  domainId,
+  domainColor,
+  domainIcon,
+  domainLabel,
   activePhase,
   onPhaseChange,
   onLivePhase,
   onVelocityChange,
-  activeDomainId,
-  domainColor,
 }: {
-  activePhase:      string;
-  onPhaseChange:    (id: string) => void;
-  onLivePhase:      (id: string) => void;
-  onVelocityChange: (vel: number) => void;
-  activeDomainId:   string | null;
-  domainColor:      string | null;
+  domainId:        string;
+  domainColor:     string;
+  domainIcon:      string;
+  domainLabel:     string;
+  activePhase:     string;
+  onPhaseChange:   (id: string) => void;
+  onLivePhase:     (id: string) => void;
+  onVelocityChange:(vel: number) => void;
 }) {
-  const trackRef    = useRef<HTMLDivElement>(null);
-  const [trackW,   setTrackW]   = useState(300);
-  const [dragIdx,  setDragIdx]  = useState<number | null>(null);
-  const isDragging  = useRef(false);
-  const lastX       = useRef(0);
-  const velRef      = useRef(0);
-  const velTimer    = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const N          = SCRUB_PHASES.length - 1; // 5
-  const activeIdx  = SCRUB_PHASES.findIndex((p) => p.id === activePhase);
-  const displayIdx = dragIdx ?? activeIdx;
-  const phase      = SCRUB_PHASES[displayIdx];
-
-  const domainPhaseIds = useMemo(() => {
-    if (!activeDomainId) return null;
-    const ids = new Set<string>();
-    for (const p of SCRUB_PHASES) {
-      const hasEvent = TIMELINE_EVENTS.some(e => {
+  // Only phases that have ≥1 event tagged to this domain
+  const domainPhases = useMemo(() =>
+    SCRUB_PHASES.filter(p =>
+      TIMELINE_EVENTS.some(e => {
         const yr = e.year.toLowerCase() === "now" ? 2026 : parseInt(e.year, 10) || 2026;
-        return yr >= p.yearStart && yr < p.yearEnd && (e.domain ?? []).includes(activeDomainId);
-      });
-      if (hasEvent) ids.add(p.id);
-    }
-    return ids;
-  }, [activeDomainId]);
+        return yr >= p.yearStart && yr < p.yearEnd && (e.domain ?? []).includes(domainId);
+      })
+    ), [domainId]);
 
-  // Measure track width
+  const trackRef   = useRef<HTMLDivElement>(null);
+  const [trackW,   setTrackW]  = useState(300);
+  const [dragIdx,  setDragIdx] = useState<number | null>(null);
+  const isDragging = useRef(false);
+  const lastX      = useRef(0);
+  const velRef     = useRef(0);
+  const velTimer   = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const N = Math.max(1, domainPhases.length - 1);
+  const foundIdx   = domainPhases.findIndex(p => p.id === activePhase);
+  const activeIdx  = foundIdx >= 0 ? foundIdx : domainPhases.length - 1;
+  const displayIdx = dragIdx ?? activeIdx;
+  const phase      = domainPhases[displayIdx] ?? domainPhases[0];
+
   useEffect(() => {
     const el = trackRef.current;
     if (!el) return;
@@ -703,7 +732,6 @@ function TimelineScrubber({
     return () => ro.disconnect();
   }, []);
 
-  // Cleanup
   useEffect(() => () => { if (velTimer.current) clearInterval(velTimer.current); }, []);
 
   const innerW = Math.max(0, trackW - SCRUB_PAD * 2);
@@ -723,15 +751,14 @@ function TimelineScrubber({
     if (velTimer.current) clearInterval(velTimer.current);
     const idx = Math.round(getFrac(e.clientX) * N);
     setDragIdx(idx);
-    onLivePhase(SCRUB_PHASES[idx].id);
+    onLivePhase(domainPhases[idx].id);
   };
 
   const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!isDragging.current) return;
-    const frac = getFrac(e.clientX);
-    const idx  = Math.round(frac * N);
+    const idx = Math.round(getFrac(e.clientX) * N);
     setDragIdx(idx);
-    onLivePhase(SCRUB_PHASES[idx].id);
+    onLivePhase(domainPhases[idx].id);
     const dx = e.clientX - lastX.current;
     lastX.current = e.clientX;
     velRef.current = dx * 0.18;
@@ -742,9 +769,8 @@ function TimelineScrubber({
     if (!isDragging.current) return;
     isDragging.current = false;
     const finalIdx = dragIdx ?? activeIdx;
-    onPhaseChange(SCRUB_PHASES[finalIdx].id);
+    onPhaseChange(domainPhases[finalIdx].id);
     setDragIdx(null);
-    // Decay rotation velocity
     velTimer.current = setInterval(() => {
       velRef.current *= 0.72;
       onVelocityChange(velRef.current);
@@ -764,23 +790,32 @@ function TimelineScrubber({
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
     >
-      {/* Track wrapper — ghost/transparent Palantir style */}
       <div
         className="px-2 py-1"
         style={{ cursor: isDragging.current ? "grabbing" : "grab" }}
       >
-        {/* Phase label + year */}
+        {/* Domain label + current phase */}
         <div className="flex items-center justify-center gap-2 mb-2 pointer-events-none">
+          <span className="font-mono text-[8px]" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.9)" }}>{domainIcon}</span>
+          <span
+            className="font-mono text-[7px] tracking-[.18em] uppercase font-bold"
+            style={{ color: `${domainColor}99`, textShadow: "0 1px 4px rgba(0,0,0,0.9)" }}
+          >
+            {domainLabel}
+          </span>
+          <span className="font-mono text-[8px] tracking-[.05em]" style={{ color: "rgba(255,255,255,0.15)" }}>·</span>
           <motion.span
-            key={phase.id}
+            key={phase?.id}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="font-mono text-[8px] tracking-[.22em] uppercase font-bold"
-            style={{ color: phase.hex, textShadow: "0 1px 4px rgba(0,0,0,0.9)" }}
+            style={{ color: domainColor, textShadow: "0 1px 4px rgba(0,0,0,0.9)" }}
           >
-            {phase.label}
+            {phase?.label}
           </motion.span>
-          <span className="font-mono text-[7px] text-text-mute2/70" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.9)" }}>{phase.yearRange}</span>
+          <span className="font-mono text-[7px] text-text-mute2/70" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.9)" }}>
+            {phase?.yearRange}
+          </span>
         </div>
 
         {/* Track */}
@@ -791,78 +826,61 @@ function TimelineScrubber({
             style={{
               left: SCRUB_PAD, right: SCRUB_PAD,
               height: 1,
-              background: "rgba(255,255,255,0.22)",
+              background: "rgba(255,255,255,0.15)",
               transform: "translateY(-50%)",
             }}
           />
 
-          {/* Active segment — from P1 stop to current stop */}
+          {/* Active segment */}
           <div
             className="absolute top-1/2 pointer-events-none transition-all duration-200"
             style={{
               left: stopX(0),
               width: Math.max(0, stopX(displayIdx) - stopX(0)),
               height: 2,
-              background: domainColor
-                ? `linear-gradient(90deg, ${domainColor}44, ${domainColor}cc)`
-                : `linear-gradient(90deg, ${SCRUB_PHASES[0].hex}44, ${phase.hex}cc)`,
+              background: `linear-gradient(90deg, ${domainColor}33, ${domainColor}bb)`,
               transform: "translateY(-50%)",
               borderRadius: 1,
             }}
           />
 
           {/* Phase stops */}
-          {SCRUB_PHASES.map((p, i) => {
+          {domainPhases.map((p, i) => {
             const isActive = i === displayIdx;
-            const inDomain = domainPhaseIds ? domainPhaseIds.has(p.id) : null;
-            const effectiveColor = domainColor && inDomain ? domainColor : p.hex;
             return (
               <div
                 key={p.id}
-                className="absolute top-1/2 -translate-x-1/2 pointer-events-none flex flex-col items-center transition-opacity duration-300"
-                style={{
-                  left: stopX(i),
-                  transform: "translateX(-50%) translateY(-50%)",
-                  opacity: inDomain === false ? 0.18 : 1,
-                }}
+                className="absolute top-1/2 pointer-events-none flex flex-col items-center"
+                style={{ left: stopX(i), transform: "translateX(-50%) translateY(-50%)" }}
               >
-                {/* Stop dot */}
                 <div
                   className="rounded-full transition-all duration-200"
                   style={{
                     width: isActive ? 6 : 4,
                     height: isActive ? 6 : 4,
-                    background: inDomain === false
-                      ? "#6b728055"
-                      : isActive ? effectiveColor : `${effectiveColor}55`,
-                    boxShadow: isActive
-                      ? `0 0 8px ${effectiveColor}`
-                      : inDomain === true && domainColor ? `0 0 5px ${domainColor}` : "none",
+                    background: isActive ? domainColor : `${domainColor}55`,
+                    boxShadow: isActive ? `0 0 8px ${domainColor}` : `0 0 3px ${domainColor}44`,
                   }}
                 />
               </div>
             );
           })}
 
-          {/* Phase labels — below track */}
-          {SCRUB_PHASES.map((p, i) => {
+          {/* Phase labels — below track, only active visible */}
+          {domainPhases.map((p, i) => {
             const isActive = i === displayIdx;
             return (
               <div
                 key={p.id + "-lbl"}
                 className="absolute pointer-events-none"
-                style={{
-                  left: stopX(i),
-                  top: "calc(50% + 8px)",
-                  transform: "translateX(-50%)",
-                }}
+                style={{ left: stopX(i), top: "calc(50% + 8px)", transform: "translateX(-50%)" }}
               >
                 <p
                   className="font-mono whitespace-nowrap transition-all duration-200"
                   style={{
                     fontSize: "6.5px",
                     letterSpacing: ".1em",
-                    color: `${p.hex}cc`,
+                    color: `${domainColor}cc`,
                     fontWeight: "700",
                     opacity: isActive ? 1 : 0,
                   }}
@@ -873,7 +891,7 @@ function TimelineScrubber({
             );
           })}
 
-          {/* Draggable diamond handle */}
+          {/* Diamond handle */}
           <motion.div
             className="absolute top-1/2 pointer-events-none z-10"
             animate={{ left: stopX(displayIdx) }}
@@ -883,10 +901,10 @@ function TimelineScrubber({
             <div
               style={{
                 width: 14, height: 14,
-                background: domainColor ?? phase.hex,
+                background: domainColor,
                 transform: "rotate(45deg)",
                 borderRadius: 2,
-                boxShadow: `0 0 14px ${(domainColor ?? phase.hex)}aa, 0 0 4px ${domainColor ?? phase.hex}`,
+                boxShadow: `0 0 14px ${domainColor}aa, 0 0 4px ${domainColor}`,
                 border: "1.5px solid rgba(255,255,255,0.4)",
               }}
             />
