@@ -915,7 +915,18 @@ function NewsFeedCard({ newsId, onClose, pins }: { newsId: string; onClose: () =
           <CloseBtn onClick={(e) => { e.stopPropagation(); onClose(); }} />
         </div>
 
-        <p className="font-syne font-bold text-[13px] text-text-base leading-snug mb-3">{pin.headline}</p>
+        <a
+          href={pin.sourceUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block font-syne font-bold text-[13px] leading-snug mb-3 transition-colors"
+          style={{ color: "var(--color-text-base)" }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = tierCol)}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-text-base)")}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {pin.headline}
+        </a>
 
         <div className="w-full h-px mb-3" style={{ background: `linear-gradient(90deg,${tierCol}44,transparent)` }} />
 
@@ -925,13 +936,13 @@ function NewsFeedCard({ newsId, onClose, pins }: { newsId: string; onClose: () =
           href={pin.sourceUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1.5 font-mono text-[8px] transition-colors"
-          style={{ color: `${tierCol}80` }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = tierCol)}
-          onMouseLeave={(e) => (e.currentTarget.style.color = `${tierCol}80`)}
+          className="inline-flex items-center gap-1.5 font-mono text-[8px] px-2 py-1 rounded border transition-all"
+          style={{ color: tierCol, borderColor: `${tierCol}40`, background: `${tierCol}10` }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = `${tierCol}20`; e.currentTarget.style.borderColor = `${tierCol}80`; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = `${tierCol}10`; e.currentTarget.style.borderColor = `${tierCol}40`; }}
           onClick={(e) => e.stopPropagation()}
         >
-          <span>{pin.source}</span>
+          <span>READ FULL STORY</span>
           <span>↗</span>
         </a>
       </div>
