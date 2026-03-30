@@ -3,22 +3,16 @@ import type { NewsFeedPin } from "./news-feed-pins";
 
 /** Which news categories each domain should surface */
 export const DOMAIN_NEWS_CATEGORIES: Record<string, NewsFeedPin["category"][]> = {
-  nuclear:  ["nuclear"],
-  cyber:    ["cyber"],
-  civil:    ["war", "political"],
-  economic: ["economic"],
-  bio:      ["health"],
-  climate:  ["climate"],
+  geopolitical:  ["nuclear", "war", "political", "cyber"],
+  economic:      ["economic"],
+  environmental: ["health", "climate"],
 };
 
 /** Which LivePrices keys each domain should display (empty = no price strip) */
 export const DOMAIN_ASSETS: Record<string, string[]> = {
-  nuclear:  [],
-  cyber:    ["btc"],
-  civil:    ["usdRub"],
-  economic: ["xau", "wti", "btc", "usdRub"],
-  bio:      [],
-  climate:  ["wti"],
+  geopolitical:  ["btc", "usdRub"],
+  economic:      ["xau", "wti", "btc", "usdRub"],
+  environmental: ["wti"],
 };
 
 const TIER_ORDER: Record<string, number> = { t4: 4, t3: 3, t2: 2, t1: 1 };

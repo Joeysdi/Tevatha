@@ -15,46 +15,37 @@ import { relativeTime } from "@/lib/watchtower/relative-time";
 
 // ── Domain-to-gear category mapping ─────────────────────────────────────────
 const DOMAIN_GEAR_CATS: Record<string, string[]> = {
-  nuclear:  ["Communications", "Energy"],
-  cyber:    ["Communications", "Energy"],
-  civil:    ["Communications", "Mobility"],
-  economic: ["Medical", "Energy"],
-  bio:      ["Medical"],
-  climate:  ["Energy", "Medical"],
+  geopolitical:  ["Communications", "Energy", "Mobility"],
+  economic:      ["Medical", "Energy"],
+  environmental: ["Medical", "Energy"],
 };
 
 // ── Domain-to-gate mapping ───────────────────────────────────────────────────
 const DOMAIN_GATES: Record<string, string[]> = {
-  nuclear:  ["G1", "G2", "G5"],
-  cyber:    ["G2", "G3"],
-  civil:    ["G3", "G2"],
-  economic: ["G4", "G7", "G8"],
-  bio:      ["G6"],
-  climate:  ["G6"],
+  geopolitical:  ["G1", "G2", "G3", "G5"],
+  economic:      ["G4", "G7", "G8"],
+  environmental: ["G6"],
 };
 
 // ── Scenario domain mapping ──────────────────────────────────────────────────
 const SCENARIO_DOMAIN: Record<string, string> = {
-  S01: "economic", S03: "economic", S05: "cyber",
-  S07: "civil",    S09: "civil",    S10: "bio",
+  S01: "economic",      S03: "economic",      S05: "geopolitical",
+  S07: "geopolitical",  S09: "geopolitical",  S10: "environmental",
 };
 
 // ── Signal domain name → domain id ──────────────────────────────────────────
 const SIGNAL_DOMAIN_ID: Record<string, string> = {
-  Nuclear: "nuclear", Cyber: "cyber", Economic: "economic",
-  Geopolitical: "civil", Biological: "bio", Climate: "climate",
+  Nuclear: "geopolitical", Cyber: "geopolitical", Economic: "economic",
+  Geopolitical: "geopolitical", Biological: "environmental", Climate: "environmental",
 };
 
 // ── Geographic anchors — screen positions for default globe view (lat:20,lng:15)
 // xPct/yPct = where the primary affected region appears on screen
 // angle = fan direction (degrees, 0=right, 90=down) — opens cards toward globe center
 const DOMAIN_GEO: Record<string, { xPct: number; yPct: number; angle: number }> = {
-  nuclear:  { xPct: 0.74, yPct: 0.20, angle: 210 }, // Russia + N. Korea — upper right → fan lower-left
-  cyber:    { xPct: 0.22, yPct: 0.28, angle:  30 }, // USA (left face) — fan lower-right
-  civil:    { xPct: 0.64, yPct: 0.38, angle: 185 }, // Middle East / Taiwan — fan left
-  economic: { xPct: 0.50, yPct: 0.16, angle: 100 }, // US + EU (top center) — fan downward
-  bio:      { xPct: 0.56, yPct: 0.58, angle: 280 }, // Africa + SE Asia — fan upward
-  climate:  { xPct: 0.44, yPct: 0.10, angle: 105 }, // Arctic (top) — fan downward
+  geopolitical:  { xPct: 0.64, yPct: 0.28, angle: 180 }, // Middle East / Eurasia center — fan left
+  economic:      { xPct: 0.50, yPct: 0.16, angle: 100 }, // US + EU (top center) — fan downward
+  environmental: { xPct: 0.52, yPct: 0.50, angle: 240 }, // Africa / SE Asia — fan lower-left
 };
 
 const TIER_HEX: Record<string, string> = {
@@ -62,35 +53,25 @@ const TIER_HEX: Record<string, string> = {
 };
 
 const DOMAIN_COLORS: Record<string, string> = {
-  nuclear: "#e84040", cyber: "#00d4ff", civil: "#f0a500",
-  economic: "#c9a84c", bio: "#1ae8a0", climate: "#38bdf8",
+  geopolitical: "#e84040", economic: "#c9a84c", environmental: "#1ae8a0",
 };
 
 // ── Domain voice scripts ──────────────────────────────────────────────────────
 const DOMAIN_VOICE: Record<string, string> = {
-  nuclear:
-    "Nuclear and EMP threat: Critical. 93 out of 100. " +
-    "New START expired February 2026. No nuclear arms control treaty is in force " +
-    "for the first time in over 50 years. The Doomsday Clock stands at 85 seconds to midnight — " +
-    "an all-time record. China, Russia, North Korea, and four other states are simultaneously " +
-    "expanding their arsenals. Russia has lowered its nuclear use threshold to any critical threat " +
-    "to sovereignty. Head to the Tevatha store and build your essential gear now.",
-
-  cyber:
-    "Cyber and technology threat: Critical. 85 out of 100. " +
+  geopolitical:
+    "Geopolitical threat: Critical. 93 out of 100. " +
+    "The Doomsday Clock stands at 85 seconds to midnight — an all-time record in 79 years. " +
+    "New START expired February 2026. For the first time since 1972, no legally binding treaty " +
+    "limits US or Russian nuclear arsenals. China, Russia, North Korea, and four other states " +
+    "are simultaneously expanding their arsenals. Russia has lowered its nuclear use threshold " +
+    "to any critical threat to sovereignty. " +
     "Salt Typhoon has confirmed persistent access inside nine or more major US telecoms. " +
-    "The FBI confirms this campaign is still ongoing. Volt Typhoon is pre-positioned inside " +
-    "US power grids and water systems for wartime activation — not espionage, disruption. " +
-    "A grid-down event would cut food distribution within 72 hours, water pumping within 96. " +
-    "Build your communications and power resilience at the Tevatha store.",
-
-  civil:
-    "Civil and political threat: High. 78 out of 100. " +
+    "The FBI confirms this campaign is still very much ongoing. Volt Typhoon is pre-positioned " +
+    "inside US power grids and water systems for wartime activation — not espionage, disruption. " +
     "China conducted its most extensive Taiwan blockade drills ever in December 2025. " +
     "The Council on Foreign Relations rates a 2026 Taiwan Strait crisis at even money. " +
-    "Iran is three weeks from weapons-grade uranium capability. Sudan is the world's largest " +
-    "displacement crisis. Political scientists assess a 30 to 35 percent probability of active " +
-    "civil violence in the United States through 2026. Prepare now at the Tevatha store.",
+    "Ukraine enters its third year of war with no ceasefire. Iran is weeks from weapons-grade " +
+    "uranium capability. Build your essential gear now at the Tevatha store.",
 
   economic:
     "Economic threat: High. 76 out of 100. " +
@@ -101,23 +82,19 @@ const DOMAIN_VOICE: Record<string, string> = {
     "money that can be blocked, expired, or restricted. " +
     "Secure your financial sovereignty at the Tevatha store.",
 
-  bio:
-    "Biological threat: High. 74 out of 100. " +
+  environmental:
+    "Environmental threat: High. 74 out of 100. " +
     "H5N1 avian influenza is described by scientists as completely out of control in animal reservoirs. " +
     "There are 70 confirmed US human cases. Its historical fatality rate is approximately 48 percent. " +
-    "A novel recombinant Mpox strain combining two clade genomes was detected in India, January 2026, " +
-    "with a 3 to 4 percent fatality rate. " +
+    "A novel recombinant Mpox strain combining both clade genomes was detected in India in January 2026, " +
+    "with a 3 to 4 percent fatality rate — under active WHO investigation. " +
     "Any pathogen achieving sustained human-to-human transmission collapses health systems " +
-    "within 8 weeks. Get your medical kit at the Tevatha store now.",
-
-  climate:
-    "Climate threat: Elevated. 69 out of 100. " +
+    "within 8 weeks. " +
     "2024 was the hottest year ever recorded — the first calendar year to exceed " +
     "1.55 degrees Celsius above pre-industrial levels. Arctic sea ice volume is at a record low, " +
-    "approximately 20 percent below 2024 levels. 96 million people face acute food insecurity, " +
-    "triple the number from 2020. 2.4 billion live in water-stressed countries. " +
-    "Climate cascades amplify every other threat vector. " +
-    "Build your resilience at the Tevatha store.",
+    "approximately 20 percent below 2024 levels. 96 million people face acute food insecurity. " +
+    "Environmental cascades amplify every other threat vector. " +
+    "Build your medical and resilience kit at the Tevatha store.",
 };
 
 // ── Voice utilities ───────────────────────────────────────────────────────────

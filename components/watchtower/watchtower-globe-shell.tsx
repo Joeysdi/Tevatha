@@ -153,12 +153,9 @@ const EVT_COLORS: Record<string, string> = {
 };
 
 const DOMAIN_COLORS: Record<string, string> = {
-  "Nuclear / EMP":     "#e84040",
-  "Cyber / Tech":      "#00d4ff",
-  "Civil / Political": "#f0a500",
-  "Economic":          "#c9a84c",
-  "Biological":        "#1ae8a0",
-  "Climate":           "#38bdf8",
+  "Geopolitical":  "#e84040",
+  "Economic":      "#c9a84c",
+  "Environmental": "#1ae8a0",
 };
 
 /** Build a ?-prefixed URL string by applying updates to existing search params. */

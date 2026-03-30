@@ -124,36 +124,14 @@ export interface AlarmCategory {
 
 export const DOMAINS: ThreatDomain[] = [
   {
-    id:"nuclear", label:"Nuclear / EMP", score:93, level:"CRITICAL", icon:"☢️", trend:"↑",
-    summary:"New START expired Feb 5, 2026 — no nuclear arms control treaty in force for the first time in 50+ years. Doomsday Clock at 85s (all-time record). China racing to 1,000 warheads by 2030. Five nuclear states now simultaneously expanding arsenals.",
+    id:"geopolitical", label:"Geopolitical", score:93, level:"CRITICAL", icon:"⚔️", trend:"↑", scenarioIds:["S05","S07","S09"],
+    summary:"Doomsday Clock at 85s (all-time record) — New START expired Feb 2026, first time in 50+ years no treaty limits US-Russia arsenals. Salt Typhoon (China MSS) confirmed inside 9+ US telecoms; Volt Typhoon pre-positioned in US grids for wartime activation. China's most extensive Taiwan blockade drills ever (Dec 2025); CFR rates 2026 Taiwan Strait crisis at even-money.",
     drivers:[
-      "Treaty collapse: New START lapse removes all legal limits on US-Russia arsenals — first time since 1972",
-      "China ICBM build-up: 600+ warheads now (SIPRI 2025) → 1,000+ by 2030, constructing hundreds of new silos in Xinjiang, Gansu, Qinghai",
-      "Russia doctrine shift (Nov 2024): use threshold lowered from 'state existence' to 'critical threat to sovereignty' — materially broader trigger",
-      "North Korea: ~50 assembled warheads (SIPRI 2025) + fissile material for 40 more; Kim pledged 'exponential' expansion; ICBM range now covers CONUS",
-      "NATO forward deployment: 125–130 US B61-12 nuclear gravity bombs at 6 bases across Belgium, Germany, Italy, Netherlands, Turkey — live escalation targets",
-    ],
-  },
-  {
-    id:"cyber", label:"Cyber / Tech", score:85, level:"CRITICAL", icon:"🤖", trend:"↑", scenarioIds:["S05"],
-    summary:"Salt Typhoon (China MSS) confirmed inside 9+ US telecoms — FBI calls campaign 'still very much ongoing' (Feb 2026). Volt Typhoon pre-positioned in US power, water, and transport for wartime activation. Nation-state cyber operations now routinely pre-position for wartime infrastructure denial.",
-    drivers:[
-      "Salt Typhoon: 9+ US telecoms and 200+ orgs in 80 countries compromised — access confirmed active as of Feb 2026 (FBI)",
+      "Treaty collapse: New START lapse removes all legal limits on US-Russia arsenals — Doomsday Clock at 85 seconds, all-time record (BAS 2026)",
+      "China ICBM build-up: 600+ warheads now (SIPRI 2025) → 1,000+ by 2030; Russia doctrine shift lowers use threshold to 'critical threat to sovereignty'",
+      "Salt Typhoon: 9+ US telecoms and 200+ orgs in 80 countries compromised — FBI confirms access 'still very much ongoing' as of Feb 2026",
       "Volt Typhoon: pre-positioned inside US power grids, water systems, and transport — assessed as wartime disruption prep, not espionage",
-      "Midnight Blizzard (Russia SVR): breached Microsoft corporate email Jan 2024 — including senior leadership and US federal agency accounts; spear-phishing hit 100+ orgs through Oct 2024",
-      "Change Healthcare ransomware (Feb 2024): disrupted billing for 190M Americans — largest healthcare data breach ever; 74% of hospitals reported direct patient care impact",
-      "AI kill-chain in combat: Israel's Lavender + Habsora systems approve human targets in ~20 seconds; UN binding autonomous weapons treaty rejected by US + Russia",
-    ],
-  },
-  {
-    id:"civil", label:"Civil / Political", score:78, level:"HIGH", icon:"🔥", trend:"↑", scenarioIds:["S07","S09"],
-    summary:"China's most extensive Taiwan drills ever (Dec 29, 2025) simulated full blockade. CFR rates a 2026 Taiwan Strait crisis at even-money. Sudan is now the world's largest humanitarian displacement crisis. Iran is weeks from weapons-grade uranium enrichment capability.",
-    drivers:[
-      "Taiwan: China's most extensive blockade drills ever (Dec 2025) — CFR rates 2026 crisis at 50%; Taiwan produces 92% of advanced semiconductors",
-      "Ukraine: war enters 3rd year — US severed direct aid; no viable ceasefire; European NATO members absorbing full burden",
-      "Iran nuclear: 408.6 kg uranium enriched to 60% (IAEA May 2025) — ~3 weeks from weapons-grade conversion capability; nuclear breakout risk highest since 2015",
-      "Sudan: 10.1M internally displaced + 4.3M refugees — world's largest active displacement crisis; 30M+ require humanitarian aid (UNHCR 2025)",
-      "US domestic: CFR rates political violence high-likelihood 2026; emergency power precedents and institutional norm erosion accelerating",
+      "Taiwan: CFR rates 2026 Strait crisis at 50%; China conducted most extensive blockade drills ever Dec 2025; Iran weeks from weapons-grade enrichment",
     ],
   },
   {
@@ -168,25 +146,14 @@ export const DOMAINS: ThreatDomain[] = [
     ],
   },
   {
-    id:"bio", label:"Biological", score:74, level:"HIGH", icon:"🦠", trend:"↑", scenarioIds:["S10"],
-    summary:"Scientists describe H5N1 in animal reservoirs as 'completely out of control' (Jan 2026) — 70 US human cases, active in dairy herds. A novel recombinant MPXV strain (clade Ib+IIb, CFR 3–4%) was detected in India, January 13, 2026. Antimicrobial resistance now kills 1.27M/year — projected 10M/year by 2050.",
+    id:"environmental", label:"Environmental", score:74, level:"HIGH", icon:"🌍", trend:"↑", scenarioIds:["S10"],
+    summary:"Scientists describe H5N1 in animal reservoirs as 'completely out of control' (Jan 2026) — 70 US human cases, active in dairy herds. A novel recombinant MPXV strain (clade Ib+IIb, CFR 3–4%) detected in India, January 2026. 2024 confirmed as hottest year in recorded history (+1.55°C above pre-industrial); Arctic sea ice at record low Mar 2026.",
     drivers:[
       "H5N1: 'completely out of control' in animal reservoirs — 70+ US human cases, active dairy herd spread; historical CFR ~48%; no general-population vaccine stockpile",
-      "MPXV recombinant: novel clade Ib+IIb strain detected India Jan 2026 — combines genomes of both clades; CFR 3–4% vs <1% for 2022 outbreak strain; under WHO investigation",
-      "Antimicrobial resistance (AMR): 1.27M deaths/year currently (Lancet 2024); WHO-commissioned O'Neill review projects 10M/year by 2050; ESKAPE pathogens resistant to last-resort antibiotics in 89+ countries",
-      "Drug-resistant TB: 1.25M deaths/year (WHO 2024); XDR-TB spreading in former Soviet states — requires 18–24 month treatments; pipeline of new antibiotics near-empty",
-      "Pandemic infrastructure gap: WHO PHEIC response capacity strained post-COVID; international pandemic prevention treaty stalled; no coordinated H5N1 human-use vaccine reserve",
-    ],
-  },
-  {
-    id:"climate", label:"Climate", score:69, level:"ELEVATED", icon:"🌊", trend:"↑",
-    summary:"2024 confirmed as hottest year in recorded history — first calendar year to exceed +1.55°C above pre-industrial (WMO). Arctic sea ice volume at record low (Mar 2026). 96M face acute food insecurity. 2.4B people live in water-stressed countries.",
-    drivers:[
-      "Temperature record: 2024 at +1.55°C above pre-industrial (WMO) — hottest year in recorded history; consecutive records now set 2023 and 2024",
-      "Arctic collapse: sea ice volume at record low (Mar 2026) — ~20% below 2024 levels; Arctic warming at 4× the global average rate, accelerating feedback loops",
-      "Food insecurity: 96M facing weather-driven acute hunger — 3× increase since 2020; climate-driven food prices rising 4× faster than non-climate-driven inflation",
-      "Water stress: 2.4B people living in water-stressed countries (UN 2025); 1.8B facing absolute water scarcity; aquifer depletion accelerating in India, Middle East, US High Plains",
-      "Harvest disruption: Argentina Pampas drought + Black Sea wheat winterkill (Jan–Feb 2026) threatening Q2 2026 grain supply; La Niña active Q1–Q2 2026 compounding risk",
+      "MPXV recombinant: novel clade Ib+IIb strain detected India Jan 2026 — combines genomes of both clades; CFR 3–4% vs <1% for 2022 outbreak strain",
+      "Antimicrobial resistance (AMR): 1.27M deaths/year currently (Lancet 2024); WHO projects 10M/year by 2050; ESKAPE pathogens resistant to last-resort antibiotics in 89+ countries",
+      "Temperature record: 2024 at +1.55°C above pre-industrial (WMO) — hottest year ever recorded; Arctic sea ice volume ~20% below 2024 levels (Mar 2026)",
+      "Food + water cascades: 96M facing acute hunger (3× since 2020); 2.4B in water-stressed countries; La Niña + harvest disruptions compounding Q2 2026 grain supply",
     ],
   },
 ];
