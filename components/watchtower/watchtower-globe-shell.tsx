@@ -14,6 +14,7 @@ import { SCENARIO_IMPACTS }       from "@/lib/watchtower/scenario-impacts";
 import { NEWS_FEED_PINS }         from "@/lib/watchtower/news-feed-pins";
 import type { NewsFeedPin }       from "@/lib/watchtower/news-feed-pins";
 import { fetchGdeltPins }         from "@/lib/watchtower/gdelt-fetch";
+import { PricesTicker }          from "./prices-ticker";
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -684,6 +685,9 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
             onVelocityChange={setScrubVelocity}
           />
         </div>
+
+        {/* ── Live prices ticker — bottom of globe, visible with news feed ─── */}
+        {showNewsFeed && <PricesTicker />}
       </div>
 
       {/* ── Mobile control bar (hidden sm+) ──────────────────────────────── */}
