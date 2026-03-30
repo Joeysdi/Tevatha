@@ -157,7 +157,7 @@ export const DOMAINS: ThreatDomain[] = [
     ],
   },
   {
-    id:"economic", label:"Economic", score:76, level:"HIGH", icon:"💸", trend:"↑", scenarioIds:["S01"],
+    id:"economic", label:"Economic", score:76, level:"HIGH", icon:"💸", trend:"↑", scenarioIds:["S01","S03"],
     summary:"US debt reached $38.43T (~124% of GDP), growing $8B per day. Trump's 2025 tariff regime — 10% universal, 145% on China — represents the largest US tax increase as % of GDP since 1993. BRICS+ nations representing ~45% of global GDP are accelerating non-USD trade settlement.",
     drivers:[
       "Debt: $38.43T (~124% GDP, $8B/day) — interest consuming ~20% of federal revenue; CBO projects surpassing 1946 wartime peak by 2036",
