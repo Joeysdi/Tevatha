@@ -136,9 +136,27 @@ function cityThreatColor(score: number): string {
 const riskByIso: Record<string, CountryRisk> = {};
 const riskByName: Record<string, CountryRisk> = {};
 
+// City-pins uses abbreviated names — map them to the canonical COUNTRY_RISK names
+const CITY_COUNTRY_ALIASES: Record<string, string> = {
+  "usa":            "united states",
+  "uk":             "united kingdom",
+  "n. korea":       "north korea",
+  "s. korea":       "south korea",
+  "czech rep.":     "czechia",
+  "dom. republic":  "dominican republic",
+  "n. macedonia":   "north macedonia",
+  "bosnia":         "bosnia and herzegovina",
+  "türkiye":        "turkey",
+  "china (sar)":    "china",
+};
+
 for (const c of COUNTRY_RISK) {
   riskByIso[c.iso] = c;
   riskByName[c.name.toLowerCase()] = c;
+}
+// Register aliases so cityIso() resolves abbreviated names
+for (const [alias, canonical] of Object.entries(CITY_COUNTRY_ALIASES)) {
+  if (riskByName[canonical]) riskByName[alias] = riskByName[canonical];
 }
 
 function lookupRisk(feat: GeoFeature | null): CountryRisk | null {
