@@ -201,16 +201,9 @@ export function TevatahSplash() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (sessionStorage.getItem("tevatha-splash")) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      sessionStorage.setItem("tevatha-splash", "1");
-      return;
-    }
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     setVisible(true);
-    const t = setTimeout(() => {
-      setVisible(false);
-      sessionStorage.setItem("tevatha-splash", "1");
-    }, 3500);
+    const t = setTimeout(() => setVisible(false), 3500);
     return () => clearTimeout(t);
   }, []);
 
