@@ -209,6 +209,20 @@ const SIGNAL_PIN_COLORS = {
   info: "#38bdf8",
 } as const;
 
+// ─── Threat domain → signal pin type mapping ──────────────────────────────────
+const DOMAIN_SIGNAL_TYPES: Record<string, string[]> = {
+  geopolitical:  ["nuclear", "cyber", "civil"],
+  economic:      ["economic"],
+  environmental: ["bio", "climate"],
+};
+
+// ─── Threat domain → gate ID mapping ─────────────────────────────────────────
+const DOMAIN_GATE_IDS: Record<string, string[]> = {
+  geopolitical:  ["G1", "G2", "G3", "G5"],
+  economic:      ["G4", "G7", "G8"],
+  environmental: ["G6"],
+};
+
 // ─── Domain → pin color map ───────────────────────────────────────────────────
 const DOMAIN_ID_COLORS: Record<string, string> = {
   nuclear:  "#e84040",
@@ -470,9 +484,10 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
       });
     });
 
-    // Signal pins — auto-show for active domain
+    // Signal pins — show only signal types belonging to active domain
     if (domainId) {
-      for (const pin of SIGNAL_PINS.filter(p => p.domainId === domainId)) {
+      const signalTypes = DOMAIN_SIGNAL_TYPES[domainId] ?? [];
+      for (const pin of SIGNAL_PINS.filter(p => signalTypes.includes(p.domainId))) {
         items.push({
           type:     "signal",
           lat:      pin.lat,
@@ -537,10 +552,10 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
       }
     }
 
-    // Gate pins — visible in present/future phases (P4, P5, P6)
-    const showGates = gatePhase !== "P1" && gatePhase !== "P2" && gatePhase !== "P3";
-    if (showGates) {
-      for (const pin of GATE_PINS) {
+    // Gate pins — only show for active domain, filtered to domain-relevant gates
+    if (domainId) {
+      const gateIds = DOMAIN_GATE_IDS[domainId] ?? [];
+      for (const pin of GATE_PINS.filter(p => gateIds.includes(p.gateId))) {
         items.push({
           type:      "gate",
           lat:       pin.lat,
@@ -552,8 +567,8 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
       }
     }
 
-    // Commodity price ticker pins
-    if (showCommodities) {
+    // Commodity price ticker pins — Economic domain only
+    if (showCommodities && domainId === "economic") {
       for (const pin of COMMODITY_PINS) {
         items.push({
           type:             "commodity",
@@ -569,8 +584,8 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
       }
     }
 
-    // World news feed pins
-    if (showNewsFeed) {
+    // World news feed pins — only show when a domain is active
+    if (showNewsFeed && domainId) {
       for (const pin of newsFeedPins) {
         items.push({
           type:         "news",
