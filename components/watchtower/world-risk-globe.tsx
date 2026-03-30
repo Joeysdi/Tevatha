@@ -1273,17 +1273,20 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
 
           pathsData={globePaths}
           pathPoints="coords"
+          pathPointLat={(pt: unknown) => (pt as number[])[0]}
+          pathPointLng={(pt: unknown) => (pt as number[])[1]}
+          pathPointAlt={0.001}
           pathColor={(d: object) => {
             const p = d as GlobePath;
-            if (p.pathType === "graticule") return "rgba(201,168,76,0.022)";
-            if (p.pathType === "admin1")    return "rgba(255,255,255,0.045)";
-            return "rgba(255,255,255,0.10)";
+            if (p.pathType === "graticule") return "rgba(201,168,76,0.07)";
+            if (p.pathType === "admin1")    return "rgba(255,255,255,0.12)";
+            return "rgba(255,255,255,0.25)";
           }}
           pathStroke={(d: object) => {
             const p = d as GlobePath;
-            if (p.pathType === "graticule") return 0.25;
-            if (p.pathType === "admin1")    return 0.2;
-            return 0.45;
+            if (p.pathType === "graticule") return 0.3;
+            if (p.pathType === "admin1")    return 0.25;
+            return 0.5;
           }}
           pathDashLength={1}
           pathDashGap={0}
