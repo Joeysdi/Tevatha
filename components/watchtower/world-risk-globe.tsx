@@ -975,18 +975,6 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
     ctrl.minDistance     = 180;
     ctrl.maxDistance     = 600;
 
-    // Color the ocean surface — traverse scene for the globe sphere mesh
-    const scene = (globeRef.current as any).scene?.();
-    if (scene) {
-      scene.traverse((obj: any) => {
-        if (obj.name === "globe" && obj.isMesh) {
-          obj.material.color.setHex(0x060f1e);
-          obj.material.emissive.setHex(0x010508);
-          obj.material.needsUpdate = true;
-        }
-      });
-    }
-
     // Begin zoom — quick sharp 1.2s fly-in from space
     setTimeout(() => {
       globeRef.current?.pointOfView({ lat: 20, lng: 15, altitude: 2.4 }, 1200);
@@ -1162,6 +1150,17 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
     return lookupRisk(selectedFeat);
   }, [selectedFeat, eraByIso, scenarioMap]);
 
+  // Build a solid-color PNG data URL for the ocean surface
+  const oceanTextureUrl = useMemo(() => {
+    if (typeof document === "undefined") return "";
+    const canvas = document.createElement("canvas");
+    canvas.width = 2; canvas.height = 2;
+    const ctx = canvas.getContext("2d")!;
+    ctx.fillStyle = "#060f1e";
+    ctx.fillRect(0, 0, 2, 2);
+    return canvas.toDataURL("image/png");
+  }, []);
+
   return (
     <div ref={containerRef} className="w-full h-full relative overflow-hidden select-none"
          style={{ background: "#000005" }}>
@@ -1178,6 +1177,7 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
           height={dims.h}
           onGlobeReady={handleGlobeReady}
 
+          globeImageUrl={oceanTextureUrl}
           backgroundColor="rgba(0,0,0,0)"
           atmosphereColor="rgba(0,212,255,0.22)"
           atmosphereAltitude={0.24}
