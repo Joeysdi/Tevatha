@@ -296,39 +296,6 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
           onNewsFeedPinClick={setSelectedNewsId}
         />
 
-        {/* ── Provisioner (right) — navigate to shop page ─────────────── */}
-        <div
-          className="absolute right-0 z-20 flex flex-col gap-0.5"
-          style={{ top: "50%", transform: `translateY(-50%) scale(${panelScale})`, transformOrigin: "right center" }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Link
-            href="/provisioner"
-            className="py-3 sm:py-5 px-2 min-h-[44px] min-w-[44px] rounded-l border-l border-y
-                       flex flex-col items-center gap-1.5 transition-all duration-200
-                       text-text-mute2 hover:text-text-base"
-            style={{
-              background: "rgba(6,7,14,0.40)",
-              borderColor: "rgba(255,255,255,0.06)",
-              backdropFilter: "blur(4px)",
-            }}
-            onMouseEnter={e => {
-              (e.currentTarget as HTMLElement).style.background = "#c9a84c0f";
-              (e.currentTarget as HTMLElement).style.borderColor = "#c9a84c40";
-            }}
-            onMouseLeave={e => {
-              (e.currentTarget as HTMLElement).style.background = "rgba(6,7,14,0.40)";
-              (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.06)";
-            }}
-            aria-label={t("nav_shop")}
-          >
-            <span className="font-mono text-[7.5px] [writing-mode:vertical-rl] rotate-180 tracking-[.18em] uppercase leading-none">
-              {t("nav_shop")}
-            </span>
-            <span className="text-[9px]">◄</span>
-          </Link>
-        </div>
-
         {/* ── News feed offline badge ──────────────────────────────────────── */}
         {newsFeedStatus === "error" && (
           <div className="absolute top-4 right-4 z-20 pointer-events-none">
@@ -449,6 +416,28 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
                   );
                 })}
               </div>
+            </div>
+
+            {/* Divider */}
+            <div style={{ height: 1, background: "rgba(255,255,255,0.04)" }} />
+
+            {/* ── Shop ─────────────────────────────────────────────── */}
+            <div className="pb-1">
+              <Link
+                href="/provisioner"
+                className="flex items-center gap-1.5 pl-3 pr-2.5 py-1 min-h-[44px]
+                           transition-all duration-150 font-mono text-[8px] border-l-2
+                           text-text-mute2 hover:text-gold-protocol"
+                style={{ borderLeftColor: "transparent" }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderLeftColor = "#c9a84c80"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderLeftColor = "transparent"; }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-text-mute2/25" />
+                <span className="text-[10px] leading-none">🛒</span>
+                <span className="truncate">Shop</span>
+                <span className="ml-auto text-[8px] text-text-mute2/30">◄</span>
+              </Link>
             </div>
 
           </div>
