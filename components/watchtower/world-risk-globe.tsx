@@ -591,6 +591,7 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
         background: ${col}20;
         box-shadow: 0 0 8px ${col}99, 0 0 2px ${col};
         cursor: pointer;
+        pointer-events: auto;
         color: ${col};
         transform: rotate(45deg);
         transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
@@ -624,6 +625,7 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
         box-shadow: 0 0 10px ${colHex}, 0 0 20px ${colHex}44;
         border: 1.5px solid rgba(255,255,255,0.5);
         cursor: pointer;
+        pointer-events: auto;
         transition: transform 0.15s;
       `;
       el.title = item.label ?? "";
