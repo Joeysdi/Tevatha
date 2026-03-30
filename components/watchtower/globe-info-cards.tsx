@@ -189,7 +189,7 @@ function rightColumnPositions(
   containerW: number,
   containerH: number,
   cardW = 288,
-  cardH = 268,
+  cardH = 320,
 ) {
   const x = Math.max(6, containerW - cardW - 20);
   const gap = 12;
@@ -1037,10 +1037,10 @@ export function GlobeInfoCards({
 
   // ── Memoized card positions (O(n²) spread only runs when layout deps change) ─
   const domainPos = useMemo(() => {
-    if (!domainId) return null;
+    if (!domainId || !!scenarioId) return null;   // scenario takes over
     const n = (DOMAIN_GATES[domainId] ?? []).length > 0 ? 3 : 2;
     return { pos: rightColumnPositions(n, containerW, containerH), n };
-  }, [domainId, containerW, containerH]);
+  }, [domainId, scenarioId, containerW, containerH]);
 
   const scenarioPos = useMemo(() => {
     if (!scenarioId) return null;

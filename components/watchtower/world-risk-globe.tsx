@@ -602,6 +602,7 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
           a.role === "primary" ? -1 : b.role === "primary" ? 1 : 0,
         );
         const scItems = sorted
+          .filter(c => c.role === "primary")   // cascade = color highlight only, no text label
           .map(c => ({ c, risk: riskByIso[c.iso] }))
           .filter(({ risk }) => !!risk)
           .map(({ c, risk }) => ({
@@ -1398,7 +1399,7 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
       )}
 
       {/* ── Hover info overlay ────────────────────────────────────────────── */}
-      {hoveredCard && !selectedFeat && (
+      {hoveredCard && !selectedFeat && !domainId && !scenarioId && (
         <div className="absolute top-4 right-4 w-[288px] z-20 pointer-events-none hidden sm:block">
           <div
             className="rounded-xl overflow-hidden backdrop-blur-md"
@@ -1470,7 +1471,7 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
       )}
 
       {/* ── Country selected card ─────────────────────────────────────────── */}
-      {selectedCard && (
+      {selectedCard && !domainId && !scenarioId && (
         <div className="absolute bottom-4 sm:top-4 sm:bottom-auto
                         left-3 right-3 sm:left-auto sm:right-4 sm:w-[308px] z-25">
           <div
