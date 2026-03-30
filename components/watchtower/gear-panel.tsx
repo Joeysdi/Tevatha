@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import type { GearCategory } from "@/lib/watchtower/data";
 import { useTranslation } from "@/lib/i18n/use-translation";
@@ -11,6 +12,20 @@ const DOMAIN_MAP: Record<string, string> = {
   Medical:        "D1 Pandemic + B8 Hospital",
   Energy:         "B1 Grid-Down + B6 Fuel",
   Mobility:       "C1 Civil + B5 Food Distribution",
+};
+
+const CATEGORY_OUTCOME: Record<string, string> = {
+  Communications: "When the grid fails, your comms hold.",
+  Medical:        "Your household runs self-sufficient in isolation.",
+  Energy:         "Your power is live when the grid is not.",
+  Mobility:       "You move before the crowd moves.",
+};
+
+const CATEGORY_DOMAIN: Record<string, string> = {
+  Communications: "cyber",
+  Medical:        "bio",
+  Energy:         "nuclear",
+  Mobility:       "civil",
 };
 
 function Stars({ n }: { n: number }) {
@@ -72,6 +87,13 @@ export function GearPanel({ categories }: GearPanelProps) {
           {t("gear_scenario_desc")}
         </span>
       </div>
+
+      {/* Category outcome headline */}
+      {current && CATEGORY_OUTCOME[current.cat] && (
+        <p className="font-syne font-bold text-[16px] text-text-base leading-snug mb-3 px-1">
+          {CATEGORY_OUTCOME[current.cat]}
+        </p>
+      )}
 
       {/* Gear table */}
       {current && (
@@ -157,6 +179,22 @@ export function GearPanel({ categories }: GearPanelProps) {
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {/* SHOP CTA */}
+      {current && (
+        <div className="mb-3">
+          <Link
+            href={`/provisioner/gear?domain=${CATEGORY_DOMAIN[current.cat] ?? "nuclear"}`}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg
+                       bg-gold-protocol text-void-0 font-syne font-bold text-[12px]
+                       tracking-[.06em] hover:bg-gold-bright hover:-translate-y-0.5
+                       hover:shadow-[0_8px_24px_rgba(201,168,76,0.3)]
+                       transition-all duration-200"
+          >
+            SHOP {current.items.length} ITEMS →
+          </Link>
         </div>
       )}
 

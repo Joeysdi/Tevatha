@@ -205,6 +205,10 @@ export function WatchtowerGlobeShell() {
   const [selectedCommodityId, setSelectedCommodityId] = useState<string | null>(null);
   const [selectedNewsId,    setSelectedNewsId]    = useState<string | null>(null);
   const [selectedCityIdx,   setSelectedCityIdx]   = useState<number | null>(null);
+  const [idleCtaDismissed,  setIdleCtaDismissed]  = useState(() => {
+    if (typeof window === "undefined") return false;
+    return sessionStorage.getItem("idle-cta-dismissed") === "1";
+  });
 
   const globeContainerRef = useRef<HTMLDivElement>(null);
   const [containerW, setContainerW] = useState(800);
@@ -441,6 +445,43 @@ export function WatchtowerGlobeShell() {
                 <span className="ml-auto text-[8px] text-text-mute2/30">◄</span>
               </Link>
             </div>
+
+            {/* ── Idle CTA — tier quiz prompt ───────────────────────── */}
+            {!domainId && !scenarioId && selectedSignalIdx === null && !idleCtaDismissed && (
+              <>
+                <div style={{ height: 1, background: "rgba(255,255,255,0.04)" }} />
+                <div
+                  className="px-2.5 py-2.5"
+                  style={{ background: "rgba(201,168,76,0.05)" }}
+                >
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-protocol animate-pulse flex-shrink-0" />
+                    <span className="font-mono text-[7px] text-gold-protocol tracking-[.14em] uppercase">
+                      What&apos;s your readiness tier?
+                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        sessionStorage.setItem("idle-cta-dismissed", "1");
+                        setIdleCtaDismissed(true);
+                      }}
+                      className="ml-auto font-mono text-[8px] text-text-mute2/40 hover:text-text-mute2 transition-colors"
+                      aria-label="Dismiss"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <Link
+                    href="/provisioner/tiers"
+                    onClick={(e) => e.stopPropagation()}
+                    className="block font-mono text-[7.5px] text-gold-protocol/70
+                               hover:text-gold-bright transition-colors"
+                  >
+                    Find out in 10 questions →
+                  </Link>
+                </div>
+              </>
+            )}
 
           </div>
         </div>

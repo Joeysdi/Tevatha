@@ -2,10 +2,12 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { StaggerParent, StaggerChild } from "@/components/ui/motion";
 import type { Scenario } from "@/lib/watchtower/data";
 import { SEV_STYLES, SEV_LABELS } from "@/lib/watchtower/severity-styles";
+import { SCENARIO_GEAR_MAP } from "@/lib/watchtower/data-gear";
 import { useTranslation } from "@/lib/i18n/use-translation";
 
 const PRI_COLORS = { "1":"#e84040", "2":"#f0a500", "3":"#c9a84c" } as const;
@@ -167,6 +169,31 @@ export function ScenarioAccordion({ scenarios }: ScenarioAccordionProps) {
                     </table>
                   </div>
                 </div>
+
+                {/* Priority gear row */}
+                {SCENARIO_GEAR_MAP[s.id] && (
+                  <div className="mt-4 pt-3 border-t border-border-protocol">
+                    <p className="font-mono text-[8.5px] text-text-mute2 tracking-[.14em] uppercase mb-2">
+                      PRIORITY GEAR
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {SCENARIO_GEAR_MAP[s.id].skus.map((sku) => (
+                        <Link
+                          key={sku}
+                          href={`/provisioner/gear?domain=${SCENARIO_GEAR_MAP[s.id].domain}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full
+                                     border border-gold-protocol/30 bg-gold-glow
+                                     font-mono text-[9px] text-gold-bright
+                                     hover:border-gold-protocol/60 hover:-translate-y-px
+                                     transition-all duration-150"
+                        >
+                          {sku}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
               </motion.div>
             )}

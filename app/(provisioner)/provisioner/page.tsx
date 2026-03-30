@@ -50,6 +50,15 @@ export default function ShopPage() {
             </p>
           </StaggerChild>
           <StaggerChild>
+            <div className="font-mono text-[10px] tracking-[.06em] mb-3 flex flex-wrap gap-x-3 gap-y-1">
+              <span className="text-red-bright">73% FINANCIAL COLLAPSE PROBABILITY</span>
+              <span className="text-text-mute2/40">·</span>
+              <span className="text-amber-protocol">68% INFRASTRUCTURE FAILURE</span>
+              <span className="text-text-mute2/40">·</span>
+              <span className="text-gold-protocol">85 SECONDS TO MIDNIGHT</span>
+            </div>
+          </StaggerChild>
+          <StaggerChild>
             <h1 className="font-syne font-extrabold text-[clamp(26px,5vw,34px)]
                            leading-[1.12] text-text-base mb-2.5">
               {t("shop_hero_title")}{" "}

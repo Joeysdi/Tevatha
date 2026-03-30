@@ -4,6 +4,15 @@
 
 import type { GearCategory } from "@/lib/watchtower/data";
 
+export const SCENARIO_GEAR_MAP: Record<string, { skus: string[]; domain: string }> = {
+  S01: { domain: "economic",  skus: ["WAT-001", "ENE-001", "MOB-001"] }, // Hyperinflation
+  S03: { domain: "economic",  skus: ["WAT-001", "WAT-002", "ENE-001"] }, // CBDC displacement
+  S05: { domain: "nuclear",   skus: ["COM-001", "ENE-001", "SEC-003"] }, // Grid-Down EMP / Cyber
+  S07: { domain: "civil",     skus: ["COM-001", "COM-002", "MOB-001"] }, // US Constitutional Crisis
+  S09: { domain: "nuclear",   skus: ["COM-001", "ENE-002", "SEC-003"] }, // Taiwan Strait
+  S10: { domain: "bio",       skus: ["MED-001", "WAT-001", "COM-001"] }, // H5N1 Pandemic
+};
+
 export const GEAR: GearCategory[] = [
   {
     cat:"Communications",

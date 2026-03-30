@@ -13,7 +13,7 @@ const TIERS = [
     id:       "T1",
     label:    "Essentials",
     sub:      "72-Hour Capable",
-    desc:     "Emergency bag, 72-hour water and food, basic comms, first aid. Minimum viable for short-term disruptions and evacuations.",
+    desc:     "After 72 hours without grid or supply chain, you are still operational. This is the non-negotiable floor.",
     cost:     "$300–$600",
     window:   "72 hours",
     color:    "text-blue-DEFAULT",
@@ -38,7 +38,7 @@ const TIERS = [
     id:       "T2",
     label:    "Standard",
     sub:      "30-Day Capable",
-    desc:     "T1 plus independent water filtration, 30-day food, solar or battery backup, and off-grid communications. Viable through most regional disruptions.",
+    desc:     "While the crisis extends past the first week, your household runs self-sufficient. Most threats peak in this window.",
     cost:     "$1,500–$4,000",
     window:   "30 days",
     color:    "text-gold-bright",
@@ -63,7 +63,7 @@ const TIERS = [
     id:       "T3",
     label:    "Advanced",
     sub:      "90-Day Capable",
-    desc:     "T2 plus off-grid solar array, deep water storage, security measures, and extended medical capability. Resilient through grid-down events lasting months.",
+    desc:     "If the system does not recover in a month, you hold for 90 days without external resupply.",
     cost:     "$6,000–$18,000",
     window:   "90 days",
     color:    "text-amber-protocol",
@@ -88,7 +88,7 @@ const TIERS = [
     id:       "T4",
     label:    "Ark Level",
     sub:      "1-Year Sovereign",
-    desc:     "T3 plus location independence, full satellite comms suite, Faraday protection for electronics, and EMP-hardened systems. Viable through existential-class events.",
+    desc:     "Full-year sovereignty. No dependency on grid, supply chain, comms infrastructure, or financial system.",
     cost:     "$20,000+",
     window:   "1 year+",
     color:    "text-red-bright",
@@ -187,99 +187,8 @@ export default function TiersPage() {
         </header>
       </FadeUp>
 
-      {/* Tier cards */}
-      <section>
-        <div className="flex items-center gap-3 mb-1">
-          <span className="font-mono text-[9px] text-text-mute2 tracking-[.14em] uppercase">READINESS TIERS</span>
-          <div className="flex-1 h-px bg-border-protocol" />
-        </div>
-        <div className="flex items-center gap-3 mb-4">
-          <h2 className="font-syne font-bold text-[17px] text-text-base">{t("tiers_section_framework")}</h2>
-        </div>
-
-        <StaggerParent className="grid gap-3 sm:grid-cols-2">
-          {TIERS.map((tier) => (
-            <StaggerChild key={tier.id}>
-              <button
-                onClick={() => setActiveTier(activeTier === tier.id ? null : tier.id as TierId)}
-                className={`w-full text-left relative rounded-xl border p-5 overflow-hidden
-                            transition-all duration-200 hover:-translate-y-0.5
-                            ${activeTier === tier.id ? `${tier.bg} ${tier.border}` : "bg-void-1 border-border-protocol hover:border-border-bright/40"}`}
-                style={{ borderLeft: `3px solid ${tier.bar}` }}
-              >
-                <div
-                  className="absolute top-0 left-0 right-0 h-px"
-                  style={{ background: `linear-gradient(90deg,transparent,${tier.bar}80,transparent)` }}
-                />
-                <div className="flex items-center justify-between mb-2">
-                  <span className={`font-mono text-[10px] font-bold px-2 py-0.5 rounded
-                                   border ${tier.border} ${tier.bg} ${tier.color}`}>
-                    {tier.id}
-                  </span>
-                  <span className="font-mono text-[9px] text-text-mute2">{tier.window}</span>
-                </div>
-                <p className={`font-syne font-bold text-[16px] leading-tight mb-0.5 ${activeTier === tier.id ? tier.color : "text-text-base"}`}>
-                  {tier.label}
-                </p>
-                <p className={`font-mono text-[9px] tracking-[.1em] uppercase mb-3 ${activeTier === tier.id ? tier.color : "text-text-mute2"}`}>
-                  {tier.sub}
-                </p>
-                <p className="font-mono text-[10.5px] text-text-dim leading-relaxed mb-3">
-                  {tier.desc}
-                </p>
-
-                {activeTier === tier.id && (
-                  <div className="space-y-3 mt-3 pt-3 border-t border-white/[0.07]">
-                    <div>
-                      <p className="font-mono text-[8.5px] text-text-mute2 tracking-[.14em] uppercase mb-2">
-                        {t("tiers_requirements")}
-                      </p>
-                      <ul className="space-y-1.5">
-                        {tier.requirements.map((r, i) => (
-                          <li key={i} className="flex items-start gap-2">
-                            <span className="font-mono text-[10px] flex-shrink-0 mt-px" style={{ color: tier.bar }}>→</span>
-                            <span className="font-mono text-[10px] text-text-dim leading-relaxed">{r}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <div>
-                      <p className="font-mono text-[8.5px] text-text-mute2 tracking-[.14em] uppercase mb-2">
-                        {t("tiers_key_gear")}
-                      </p>
-                      <div className="flex flex-col gap-1.5">
-                        {tier.skuLinks.map((s) => (
-                          <Link
-                            key={s.sku}
-                            href="/provisioner"
-                            onClick={(e) => e.stopPropagation()}
-                            className="inline-flex items-center gap-1.5 font-mono text-[10px]
-                                       text-text-mute2 hover:text-text-base transition-colors
-                                       border-l-2 border-l-gold-protocol/50 pl-2"
-                          >
-                            <span className="text-gold-DEFAULT">→</span>
-                            {s.label}
-                            <span className="text-text-mute2 text-[9px]">({s.sku})</span>
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-1">
-                      <span className="font-mono text-[9px] text-text-mute2">{t("tiers_cost_label")}</span>
-                      <span className={`font-mono text-[13px] font-bold ${tier.color}`}>{tier.cost}</span>
-                    </div>
-                  </div>
-                )}
-              </button>
-            </StaggerChild>
-          ))}
-        </StaggerParent>
-      </section>
-
       {/* Self-assessment quiz */}
-      <FadeUp delay={0.1}>
+      <FadeUp delay={0.05}>
         <section>
           <div className="flex items-center gap-3 mb-4">
             <h2 className="font-syne font-bold text-[17px] text-text-base">{t("tiers_section_quiz")}</h2>
@@ -397,6 +306,97 @@ export default function TiersPage() {
           )}
         </section>
       </FadeUp>
+
+      {/* Tier cards */}
+      <section>
+        <div className="flex items-center gap-3 mb-1">
+          <span className="font-mono text-[9px] text-text-mute2 tracking-[.14em] uppercase">READINESS TIERS</span>
+          <div className="flex-1 h-px bg-border-protocol" />
+        </div>
+        <div className="flex items-center gap-3 mb-4">
+          <h2 className="font-syne font-bold text-[17px] text-text-base">{t("tiers_section_framework")}</h2>
+        </div>
+
+        <StaggerParent className="grid gap-3 sm:grid-cols-2">
+          {TIERS.map((tier) => (
+            <StaggerChild key={tier.id}>
+              <button
+                onClick={() => setActiveTier(activeTier === tier.id ? null : tier.id as TierId)}
+                className={`w-full text-left relative rounded-xl border p-5 overflow-hidden
+                            transition-all duration-200 hover:-translate-y-0.5
+                            ${activeTier === tier.id ? `${tier.bg} ${tier.border}` : "bg-void-1 border-border-protocol hover:border-border-bright/40"}`}
+                style={{ borderLeft: `3px solid ${tier.bar}` }}
+              >
+                <div
+                  className="absolute top-0 left-0 right-0 h-px"
+                  style={{ background: `linear-gradient(90deg,transparent,${tier.bar}80,transparent)` }}
+                />
+                <div className="flex items-center justify-between mb-2">
+                  <span className={`font-mono text-[10px] font-bold px-2 py-0.5 rounded
+                                   border ${tier.border} ${tier.bg} ${tier.color}`}>
+                    {tier.id}
+                  </span>
+                  <span className="font-mono text-[9px] text-text-mute2">{tier.window}</span>
+                </div>
+                <p className={`font-syne font-bold text-[16px] leading-tight mb-0.5 ${activeTier === tier.id ? tier.color : "text-text-base"}`}>
+                  {tier.label}
+                </p>
+                <p className={`font-mono text-[9px] tracking-[.1em] uppercase mb-3 ${activeTier === tier.id ? tier.color : "text-text-mute2"}`}>
+                  {tier.sub}
+                </p>
+                <p className="font-mono text-[10.5px] text-text-dim leading-relaxed mb-3">
+                  {tier.desc}
+                </p>
+
+                {activeTier === tier.id && (
+                  <div className="space-y-3 mt-3 pt-3 border-t border-white/[0.07]">
+                    <div>
+                      <p className="font-mono text-[8.5px] text-text-mute2 tracking-[.14em] uppercase mb-2">
+                        {t("tiers_requirements")}
+                      </p>
+                      <ul className="space-y-1.5">
+                        {tier.requirements.map((r, i) => (
+                          <li key={i} className="flex items-start gap-2">
+                            <span className="font-mono text-[10px] flex-shrink-0 mt-px" style={{ color: tier.bar }}>→</span>
+                            <span className="font-mono text-[10px] text-text-dim leading-relaxed">{r}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div>
+                      <p className="font-mono text-[8.5px] text-text-mute2 tracking-[.14em] uppercase mb-2">
+                        {t("tiers_key_gear")}
+                      </p>
+                      <div className="flex flex-col gap-1.5">
+                        {tier.skuLinks.map((s) => (
+                          <Link
+                            key={s.sku}
+                            href="/provisioner"
+                            onClick={(e) => e.stopPropagation()}
+                            className="inline-flex items-center gap-1.5 font-mono text-[10px]
+                                       text-text-mute2 hover:text-text-base transition-colors
+                                       border-l-2 border-l-gold-protocol/50 pl-2"
+                          >
+                            <span className="text-gold-DEFAULT">→</span>
+                            {s.label}
+                            <span className="text-text-mute2 text-[9px]">({s.sku})</span>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1">
+                      <span className="font-mono text-[9px] text-text-mute2">{t("tiers_cost_label")}</span>
+                      <span className={`font-mono text-[13px] font-bold ${tier.color}`}>{tier.cost}</span>
+                    </div>
+                  </div>
+                )}
+              </button>
+            </StaggerChild>
+          ))}
+        </StaggerParent>
+      </section>
 
       {/* CTA */}
       <FadeUp delay={0.15}>

@@ -69,6 +69,7 @@ interface ThreatDomainDef {
   icon:       string;
   color:      string;
   borderHex:  string;
+  outcome:    string;
   rationale:  string;
   skus:       string[];
 }
@@ -80,6 +81,7 @@ const THREAT_DOMAINS: ThreatDomainDef[] = [
     icon:     "☢️",
     color:    "text-red-bright",
     borderHex:"#e84040",
+    outcome:  "Your power is live when the grid is not.",
     rationale:"EMP destroys unshielded electronics and collapses grid power instantly. Priority is off-grid energy independence, EMP-shielded communications, and satellite fallback when terrestrial networks fail.",
     skus:     ["COM-001","COM-002","COM-005","ENE-001","ENE-002","ENE-003","SEC-003","COM-003","COM-004","MOB-003","SHE-001","REA-001","REA-003","REA-006"],
   },
@@ -89,6 +91,7 @@ const THREAT_DOMAINS: ThreatDomainDef[] = [
     icon:     "💸",
     color:    "text-gold-bright",
     borderHex:"#c9a84c",
+    outcome:  "You still eat and drink when the shelves don't restock.",
     rationale:"Supply chain collapse means no resupply — what you have pre-crisis is what you operate with. Priority: water independence, grid-free energy, and fuel reserves to maintain mobility when supply networks seize.",
     skus:     ["ENE-001","ENE-002","ENE-003","WAT-001","WAT-002","MOB-001","MOB-002","COM-003","WAT-003","WAT-004","ENE-004","MOB-003","SHE-001","SHE-002","REA-001","REA-004","REA-005","REA-010","REA-011"],
   },
@@ -98,6 +101,7 @@ const THREAT_DOMAINS: ThreatDomainDef[] = [
     icon:     "🔥",
     color:    "text-amber-protocol",
     borderHex:"#f0a500",
+    outcome:  "You know before the crowd knows. You move before they do.",
     rationale:"Societal fracture events demand perimeter awareness, rapid evacuation capability, and off-grid communications independent of compromised infrastructure. Know before the crowd knows.",
     skus:     ["COM-001","COM-002","COM-005","MOB-001","MOB-002","SEC-001","COM-003","COM-004","MOB-003","SEC-002","SHE-001","REA-001","REA-002","REA-004","REA-007","REA-008"],
   },
@@ -107,6 +111,7 @@ const THREAT_DOMAINS: ThreatDomainDef[] = [
     icon:     "🤖",
     color:    "text-cyan-DEFAULT",
     borderHex:"#00d4ff",
+    outcome:  "Your comms hold when digital infrastructure fails.",
     rationale:"Coordinated cyberattacks target grid and communications infrastructure simultaneously. EMP-hardened communications, off-grid power, and Faraday-shielded devices preserve operational capability when digital infrastructure collapses.",
     skus:     ["COM-001","COM-002","COM-005","ENE-001","ENE-002","SEC-003","COM-003","ENE-004","MOB-003"],
   },
@@ -116,6 +121,7 @@ const THREAT_DOMAINS: ThreatDomainDef[] = [
     icon:     "🦠",
     color:    "text-green-protocol",
     borderHex:"#1ae8a0",
+    outcome:  "Your household runs self-sufficient in full isolation.",
     rationale:"Isolation and medical self-sufficiency are the Ark response to biological events. Medical supplies, independent water filtration, and satellite communications for monitoring without exposure to compromised networks.",
     skus:     ["MED-001","MED-002","MED-003","WAT-001","WAT-002","COM-001","MED-004","MED-005","WAT-004","SHE-001"],
   },
@@ -125,6 +131,7 @@ const THREAT_DOMAINS: ThreatDomainDef[] = [
     icon:     "🌊",
     color:    "text-blue-DEFAULT",
     borderHex:"#38bdf8",
+    outcome:  "Your water is clean when municipal systems fail.",
     rationale:"Water access failure and supply chain disruption are the primary climate cascade vectors. Independent water filtration, renewable energy, and fuel reserves maintain operational capability through extended disruption windows.",
     skus:     ["WAT-001","WAT-002","ENE-002","ENE-003","MOB-001","WAT-003","WAT-004","ENE-004","SHE-001","SHE-002","SHE-003"],
   },
@@ -163,12 +170,11 @@ export default function GearPage() {
           </p>
           <h1 className="font-syne font-extrabold text-[clamp(22px,5vw,32px)]
                           text-text-base leading-tight mb-2">
-            Shop by{" "}
-            <span className="text-gold-protocol">Threat Domain</span>
+            Your Risk Analysis{" "}
+            <span className="text-gold-protocol">Points Here.</span>
           </h1>
           <p className="text-text-dim text-[13px] leading-relaxed max-w-xl">
-            Every item mapped to the threat it defeats. Filter by the scenario
-            you are preparing for — not by product category.
+            Select the threat your Watchtower analysis says is most probable. The gear you need to stay operational when it arrives is below.
           </p>
         </header>
       </FadeUp>
@@ -227,17 +233,20 @@ export default function GearPage() {
               </p>
             </div>
           </div>
-          <div className="flex gap-4 mt-3">
-            <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-bright" />
-              <span className="font-mono text-[9px] text-text-mute2">
-                {gradeACount} GRADE A
-              </span>
-            </div>
+          <p className="font-syne font-bold text-[22px] leading-snug text-text-base mb-3">
+            {activeDomain.outcome}
+          </p>
+          <div className="flex gap-4 mt-1 mb-4">
             <div className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-red-bright animate-pulse" />
               <span className="font-mono text-[9px] text-text-mute2">
                 {criticalCount} CRITICAL
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-bright" />
+              <span className="font-mono text-[9px] text-text-mute2">
+                {gradeACount} GRADE A
               </span>
             </div>
             <div className="flex items-center gap-1.5">
@@ -247,10 +256,20 @@ export default function GearPage() {
               </span>
             </div>
           </div>
+          <a
+            href={`#domain-products`}
+            className="inline-flex items-center gap-2 px-5 py-2 rounded-lg
+                       bg-gold-protocol text-void-0 font-syne font-bold text-[12px]
+                       tracking-[.06em] hover:bg-gold-bright hover:-translate-y-0.5
+                       hover:shadow-[0_8px_24px_rgba(201,168,76,0.3)] transition-all duration-200"
+          >
+            SHOP {domainProducts.length} ITEMS →
+          </a>
         </div>
       </FadeUp>
 
       {/* Product grid */}
+      <div id="domain-products">
       <StaggerParent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {domainProducts.map((p) => (
           <StaggerChild key={p.id}>
@@ -379,6 +398,7 @@ export default function GearPage() {
           </StaggerChild>
         ))}
       </StaggerParent>
+      </div>
 
       {/* Link to full catalog */}
       <FadeUp delay={0.1}>

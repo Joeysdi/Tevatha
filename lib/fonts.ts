@@ -1,4 +1,4 @@
-import { Cinzel, Inter, JetBrains_Mono, Syne } from "next/font/google";
+import { Cinzel, Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
 
 export const cinzel = Cinzel({
   subsets: ["latin"],
@@ -21,9 +21,9 @@ export const jetbrains = JetBrains_Mono({
   display: "swap",
 });
 
-export const syne = Syne({
+export const syne = Space_Grotesk({
   subsets: ["latin"],
-  weight: ["700", "800"],
+  weight: ["600", "700"],
   variable: "--font-syne",
   display: "swap",
 });
