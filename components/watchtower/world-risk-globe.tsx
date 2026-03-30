@@ -1231,30 +1231,14 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
     return lookupRisk(selectedFeat);
   }, [selectedFeat, eraByIso, scenarioMap]);
 
-  // Ocean depth texture — equirectangular gradient (deeper = darker, poles = lighter)
+  // Solid-color PNG data URL for the ocean surface
   const oceanTextureUrl = useMemo(() => {
     if (typeof document === "undefined") return "";
-    const W = 512, H = 256;
     const canvas = document.createElement("canvas");
-    canvas.width = W; canvas.height = H;
+    canvas.width = 2; canvas.height = 2;
     const ctx = canvas.getContext("2d")!;
-    // Base: very dark blue-black
-    ctx.fillStyle = "#040a14";
-    ctx.fillRect(0, 0, W, H);
-    // Equatorial deep ocean — slightly darker band in the middle
-    const depthGrad = ctx.createLinearGradient(0, 0, 0, H);
-    depthGrad.addColorStop(0,    "rgba(10,22,45,0.70)");  // north pole — lighter
-    depthGrad.addColorStop(0.25, "rgba(4,10,22,0.80)");   // mid north
-    depthGrad.addColorStop(0.5,  "rgba(2,6,14,0.90)");    // equator — deepest
-    depthGrad.addColorStop(0.75, "rgba(4,10,22,0.80)");   // mid south
-    depthGrad.addColorStop(1,    "rgba(10,22,45,0.70)");  // south pole — lighter
-    ctx.fillStyle = depthGrad;
-    ctx.fillRect(0, 0, W, H);
-    // Subtle horizontal shimmer for ocean surface scattering
-    for (let i = 0; i < H; i += 8) {
-      ctx.fillStyle = `rgba(0,40,80,${0.018 + Math.sin(i * 0.4) * 0.010})`;
-      ctx.fillRect(0, i, W, 1);
-    }
+    ctx.fillStyle = "#060f1e";
+    ctx.fillRect(0, 0, 2, 2);
     return canvas.toDataURL("image/png");
   }, []);
 
