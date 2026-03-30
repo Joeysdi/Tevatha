@@ -387,7 +387,7 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
           };
         });
     }
-    if (!isHistorical) return PULSE_RINGS_P4;
+    if (!isHistorical) return domainId ? PULSE_RINGS_P4 : [];
     return (ERA_OVERRIDES[eraPhase as EraPhase] ?? [])
       .filter((c) => c.level === "CRITICAL" || c.level === "HIGH")
       .map((c) => ({
@@ -614,26 +614,25 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
       el.style.cssText = `
         width: 8px; height: 8px;
         border: 1.5px solid ${col};
-        background: ${col}20;
+        background: ${col}44;
         box-shadow: 0 0 8px ${col}99, 0 0 2px ${col};
         cursor: pointer;
         pointer-events: auto;
         color: ${col};
-        transform: rotate(45deg);
+        border-radius: 50%;
         transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
-        border-radius: 1px;
         ${high ? `animation: city-pulse 2s ease-in-out infinite;` : ""}
       `;
       el.title = `${item.cityName ?? ""} — Click for intel`;
       el.addEventListener("mouseenter", () => {
-        el.style.transform = "rotate(45deg) scale(2.2)";
+        el.style.transform = "scale(2.2)";
         el.style.boxShadow = `0 0 16px ${col}cc, 0 0 5px ${col}`;
-        el.style.background = `${col}44`;
+        el.style.background = `${col}88`;
       });
       el.addEventListener("mouseleave", () => {
-        el.style.transform = "rotate(45deg) scale(1)";
+        el.style.transform = "scale(1)";
         el.style.boxShadow = `0 0 8px ${col}99, 0 0 2px ${col}`;
-        el.style.background = `${col}20`;
+        el.style.background = `${col}44`;
       });
       el.addEventListener("click", (e) => {
         e.stopPropagation();
