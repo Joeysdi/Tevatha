@@ -5,7 +5,6 @@ import { useRef, useEffect, useState, useCallback, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import { useTranslation } from "@/lib/i18n/use-translation";
-import { GlobeLoadingScreen } from "./globe-loading-screen";
 import type { GlobeMethods } from "react-globe.gl";
 import {
   COUNTRY_RISK,
@@ -1443,17 +1442,15 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
         </div>
       )}
 
-      {/* ── Loading veil — unified loading experience, exits when globe ready ── */}
+      {/* ── Loading veil — dark hold until globe canvas is ready ── */}
       <AnimatePresence>
         {!globeReady && (
           <motion.div
-            className="absolute inset-0 z-30"
+            className="absolute inset-0 z-30 bg-void-0"
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
-          >
-            <GlobeLoadingScreen isReady={false} />
-          </motion.div>
+          />
         )}
       </AnimatePresence>
     </div>
