@@ -117,6 +117,7 @@ export function DomainLiveFeedCard({
       {/* Top accent line */}
       <div className="h-px w-full" style={{ background: `linear-gradient(90deg,${col},transparent)` }} />
 
+      <div className="overflow-y-auto" style={{ maxHeight: "72vh" }}>
       {/* Header */}
       <div className="flex items-center gap-2 px-3.5 pt-2.5 pb-1.5">
         <span
@@ -182,6 +183,7 @@ export function DomainLiveFeedCard({
           </div>
         </>
       )}
+      </div>
     </div>
   );
 }

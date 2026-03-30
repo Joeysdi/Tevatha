@@ -184,6 +184,23 @@ function spreadPositions(
   return pos;
 }
 
+function rightColumnPositions(
+  n: number,
+  containerW: number,
+  containerH: number,
+  cardW = 288,
+  cardH = 268,
+) {
+  const x = Math.max(6, containerW - cardW - 20);
+  const gap = 12;
+  const totalH = n * cardH + (n - 1) * gap;
+  const startY = Math.max(56, Math.round((containerH - totalH) / 2));
+  return Array.from({ length: n }, (_, i) => ({
+    x,
+    y: Math.min(startY + i * (cardH + gap), containerH - cardH - 6),
+  }));
+}
+
 // Watchtower domain → provisioner gear page domain
 const DOMAIN_PROV_MAP: Record<string, string> = {
   geopolitical:  "nuclear",
@@ -365,6 +382,7 @@ function DomainInfoCard({
 
   return (
     <Frame col={col}>
+      <div className="overflow-y-auto" style={{ maxHeight: "72vh" }}>
       <div className="px-4 py-3.5">
         {/* Header */}
         <div className="flex items-start justify-between gap-2 mb-3">
@@ -429,6 +447,7 @@ function DomainInfoCard({
           </div>
         </div>
         <GearStrip domainId={domainId} col={col} onOpenShop={onOpenShop} />
+      </div>
       </div>
     </Frame>
   );
@@ -515,6 +534,7 @@ function ScenarioOverviewCard({
   if (!sc) return null;
   return (
     <Frame col={col}>
+      <div className="overflow-y-auto" style={{ maxHeight: "72vh" }}>
       <div className="px-4 py-3.5">
         <div className="flex items-start justify-between gap-2 mb-3">
           <div className="flex items-center gap-2.5">
@@ -539,6 +559,7 @@ function ScenarioOverviewCard({
           </div>
         </div>
         <GearStrip domainId={domainId} col={col} onOpenShop={onOpenShop} />
+      </div>
       </div>
     </Frame>
   );
@@ -1017,31 +1038,22 @@ export function GlobeInfoCards({
   // ── Memoized card positions (O(n²) spread only runs when layout deps change) ─
   const domainPos = useMemo(() => {
     if (!domainId) return null;
-    const geo = DOMAIN_GEO[domainId] ?? { xPct: 0.5, yPct: 0.5, angle: 100 };
-    const anchorX = geo.xPct * containerW;
-    const anchorY = geo.yPct * containerH;
     const n = (DOMAIN_GATES[domainId] ?? []).length > 0 ? 3 : 2;
-    return { pos: spreadPositions(n, geo.angle, containerW, containerH, 288, 260, anchorX, anchorY), n };
+    return { pos: rightColumnPositions(n, containerW, containerH), n };
   }, [domainId, containerW, containerH]);
 
   const scenarioPos = useMemo(() => {
     if (!scenarioId) return null;
     const gearDomain = SCENARIO_DOMAIN[scenarioId] ?? "cyber";
-    const geo = DOMAIN_GEO[gearDomain] ?? { xPct: 0.5, yPct: 0.5, angle: 100 };
-    const anchorX = geo.xPct * containerW;
-    const anchorY = geo.yPct * containerH;
-    return { pos: spreadPositions(2, geo.angle, containerW, containerH, 288, 260, anchorX, anchorY), gearDomain };
+    return { pos: rightColumnPositions(2, containerW, containerH), gearDomain };
   }, [scenarioId, containerW, containerH]);
 
   const signalPos = useMemo(() => {
     if (selectedSignalIdx === null || !SIGNALS[selectedSignalIdx]) return null;
     const sig = SIGNALS[selectedSignalIdx];
     const domId = SIGNAL_DOMAIN_ID[sig.domain] ?? "cyber";
-    const geo = DOMAIN_GEO[domId] ?? { xPct: 0.5, yPct: 0.5, angle: 100 };
-    const anchorX = geo.xPct * containerW;
-    const anchorY = geo.yPct * containerH;
     const n = (DOMAIN_GATES[domId] ?? []).length > 0 ? 2 : 1;
-    return { pos: spreadPositions(n, geo.angle, containerW, containerH, 288, 260, anchorX, anchorY), domId, n };
+    return { pos: rightColumnPositions(n, containerW, containerH), domId, n };
   }, [selectedSignalIdx, containerW, containerH]);
 
   // ── Domain ─────────────────────────────────────────────────────────────────
@@ -1151,7 +1163,7 @@ export function GlobeInfoCards({
   // ── City ───────────────────────────────────────────────────────────────────
   const cityCards = (() => {
     if (selectedCityIdx === null) return null;
-    const pos = spreadPositions(1, 100, containerW, containerH, 288, 260, containerW * 0.5, containerH * 0.35);
+    const pos = rightColumnPositions(1, containerW, containerH);
     return (
       <DragCard key="city-detail" cardKey="city-detail" initX={pos[0].x} initY={pos[0].y} containerRef={containerRef} {...dragProps}>
         <CityDetailCard cityIdx={selectedCityIdx} onClose={onCloseCity} />
@@ -1163,7 +1175,7 @@ export function GlobeInfoCards({
   const commodityCards = (() => {
     if (!selectedCommodityId) return null;
     const col = "#1ae8a0";
-    const pos = spreadPositions(1, 100, containerW, containerH, 288, 260, containerW * 0.5, containerH * 0.35);
+    const pos = rightColumnPositions(1, containerW, containerH);
     return (
       <DragCard key="commodity-detail" cardKey="commodity-detail" initX={pos[0].x} initY={pos[0].y} containerRef={containerRef} {...dragProps}>
         <CommodityCard commodityId={selectedCommodityId} onClose={onCloseCommodity} />
@@ -1174,7 +1186,7 @@ export function GlobeInfoCards({
   // ── News ───────────────────────────────────────────────────────────────────
   const newsCards = (() => {
     if (!selectedNewsId) return null;
-    const pos = spreadPositions(1, 100, containerW, containerH, 288, 260, containerW * 0.5, containerH * 0.35);
+    const pos = rightColumnPositions(1, containerW, containerH);
     return (
       <DragCard key="news-detail" cardKey="news-detail" initX={pos[0].x} initY={pos[0].y} containerRef={containerRef} {...dragProps}>
         <NewsFeedCard newsId={selectedNewsId} onClose={onCloseNews} pins={newsFeedPins} />
