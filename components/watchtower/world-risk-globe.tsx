@@ -248,7 +248,7 @@ interface GeoFeature {
 
 interface GlobePath {
   coords:   [number, number][];
-  pathType: "country" | "admin1" | "graticule";
+  pathType: "country" | "admin1";
 }
 
 // ─── Psychology zones ─────────────────────────────────────────────────────────
@@ -974,18 +974,6 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
   useEffect(() => {
     const paths: GlobePath[] = [];
 
-    // Graticule lines — 30° lat/lng grid
-    for (let lat = -60; lat <= 60; lat += 30) {
-      const coords: [number, number][] = [];
-      for (let lng = -180; lng <= 180; lng += 4) coords.push([lat, lng]);
-      paths.push({ coords, pathType: "graticule" });
-    }
-    for (let lng = -180; lng < 180; lng += 30) {
-      const coords: [number, number][] = [];
-      for (let lat = -85; lat <= 85; lat += 4) coords.push([lat, lng]);
-      paths.push({ coords, pathType: "graticule" });
-    }
-
     Promise.all([
       fetch("/world-50m.json").then(r => r.json()),
       fetch("/admin1-lines.geojson").then(r => r.json()).catch(() => null),
@@ -1278,14 +1266,12 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
           pathPointAlt={0.018}
           pathColor={(d: object) => {
             const p = d as GlobePath;
-            if (p.pathType === "graticule") return "rgba(201,168,76,0.07)";
-            if (p.pathType === "admin1")    return "rgba(255,255,255,0.12)";
+            if (p.pathType === "admin1") return "rgba(255,255,255,0.12)";
             return "rgba(255,255,255,0.25)";
           }}
           pathStroke={(d: object) => {
             const p = d as GlobePath;
-            if (p.pathType === "graticule") return 0.3;
-            if (p.pathType === "admin1")    return 0.25;
+            if (p.pathType === "admin1") return 0.25;
             return 0.5;
           }}
           pathDashLength={1}
