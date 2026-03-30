@@ -184,6 +184,32 @@ function spreadPositions(
   return pos;
 }
 
+function domainCardPositions(
+  n: number,
+  containerW: number,
+  _containerH: number,
+): Array<{ x: number; y: number }> {
+  const cardW = 288;
+  const rightX = Math.max(6, containerW - cardW - 20);
+  const leftX = 20;
+  const gatesCardH = 320;
+  const gap = 12;
+
+  if (n === 2) {
+    // No gates: both cards on the right, stacked
+    return [
+      { x: rightX, y: 56 },
+      { x: rightX, y: 56 + 360 + gap },
+    ];
+  }
+  // n === 3: Info right, Gates left-top, Live Feed left-below-gates
+  return [
+    { x: rightX, y: 56 },
+    { x: leftX,  y: 56 },
+    { x: leftX,  y: 56 + gatesCardH + gap },
+  ];
+}
+
 function rightColumnPositions(
   n: number,
   containerW: number,
@@ -386,7 +412,7 @@ function DomainInfoCard({
 
   return (
     <Frame col={col}>
-      <div className="overflow-y-auto" style={{ maxHeight: "72vh" }}>
+      <div className="overflow-y-auto" style={{ maxHeight: "340px" }}>
       <div className="px-4 py-3.5">
         {/* Header */}
         <div className="flex items-start justify-between gap-2 mb-3">
@@ -1043,7 +1069,7 @@ export function GlobeInfoCards({
   const domainPos = useMemo(() => {
     if (!domainId || !!scenarioId) return null;   // scenario takes over
     const n = (DOMAIN_GATES[domainId] ?? []).length > 0 ? 3 : 2;
-    return { pos: rightColumnPositions(n, containerW, containerH), n };
+    return { pos: domainCardPositions(n, containerW, containerH), n };
   }, [domainId, scenarioId, containerW, containerH]);
 
   const scenarioPos = useMemo(() => {
