@@ -1213,8 +1213,8 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
 
           polygonsData={countries}
           polygonCapColor={capColor}
-          polygonSideColor={capColor}
-          polygonStrokeColor={() => "rgba(255,255,255,0.04)"}
+          polygonSideColor={() => "rgba(0,0,0,0)"}
+          polygonStrokeColor={() => "rgba(255,255,255,0.08)"}
           polygonAltitude={altitude}
           polygonCapCurvatureResolution={5}
           onPolygonHover={handleHover as (f: object | null, p: object | null) => void}
