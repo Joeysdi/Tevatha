@@ -451,42 +451,6 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
               </div>
             </div>
 
-            {/* Divider */}
-            <div style={{ height: 1, background: "rgba(255,255,255,0.04)" }} />
-
-            {/* ── Scenarios ────────────────────────────────────────── */}
-            <nav aria-label="Scenario navigation" className="pt-2 pb-1">
-              <div className="flex items-center gap-1.5 px-2.5 mb-1">
-                <div className="w-[2px] h-2.5 rounded-full bg-red-protocol/60 flex-shrink-0" />
-                <p className="font-mono text-[6.5px] tracking-[.2em] uppercase text-text-mute2/50">{t("nav_scenarios")}</p>
-              </div>
-              <div className="flex flex-col">
-                {SCENARIO_IMPACTS.filter(s => !pairedScenarioIds.has(s.id)).map((s) => {
-                  const active = scenarioId === s.id;
-                  return (
-                    <Link
-                      key={s.id}
-                      href={buildUrl(searchParams, { scenario: active ? null : s.id })}
-                      replace
-                      onClick={(e) => { e.stopPropagation(); setScenarioId(active ? null : s.id); }}
-                      aria-pressed={active}
-                      aria-label={`${active ? "Deactivate" : "Activate"} scenario: ${s.title}`}
-                      className={`flex items-center gap-1.5 pl-3 pr-2.5 py-1 min-h-[44px] text-left
-                                  transition-all duration-150 font-mono text-[8px] border-l-2
-                                  ${active ? "text-red-bright" : "text-text-mute2 hover:text-text-base"}`}
-                      style={{ borderLeftColor: active ? "#e84040" : "transparent" }}
-                    >
-                      <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${active ? "bg-red-bright animate-pulse" : "bg-text-mute2/25"}`} />
-                      {s.title}
-                    </Link>
-                  );
-                })}
-              </div>
-            </nav>
-
-            {/* Divider */}
-            <div style={{ height: 1, background: "rgba(255,255,255,0.04)" }} />
-
           </div>
         </div>
 
@@ -671,28 +635,6 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
             </button>
           );
         })}
-
-        <div className="w-px h-4 bg-border-protocol/60 flex-shrink-0" />
-
-        <nav aria-label="Scenario navigation" className="flex items-center gap-1.5">
-          {SCENARIO_IMPACTS.map((s) => {
-            const active = scenarioId === s.id;
-            return (
-              <button key={s.id}
-                onClick={() => {
-                  const next = active ? null : s.id;
-                  setScenarioId(next);
-                  updateUrl({ scenario: next });
-                }}
-                aria-pressed={active}
-                aria-label={`${active ? "Deactivate" : "Activate"} scenario ${s.id}`}
-                className={`flex-shrink-0 px-2.5 py-2.5 rounded-lg border font-mono text-[9px] transition-all min-h-[44px]
-                            ${active ? "bg-red-protocol/20 border-red-protocol/40 text-red-bright" : "bg-void-3 border-border-protocol text-text-mute2"}`}>
-                {s.id}
-              </button>
-            );
-          })}
-        </nav>
 
 
       </div>
