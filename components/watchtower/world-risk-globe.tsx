@@ -210,6 +210,16 @@ const SIGNAL_PIN_COLORS = {
   info: "#38bdf8",
 } as const;
 
+// ─── Domain → pin color map ───────────────────────────────────────────────────
+const DOMAIN_ID_COLORS: Record<string, string> = {
+  nuclear:  "#e84040",
+  cyber:    "#00d4ff",
+  civil:    "#f0a500",
+  economic: "#c9a84c",
+  bio:      "#1ae8a0",
+  climate:  "#38bdf8",
+};
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface HeatPoint {
   lat:    number;
@@ -247,7 +257,6 @@ const PSYCH_ZONES: PsychZone[] = [
 interface Props {
   eraPhase:              string;
   scenarioId:            string | null;
-  showSignals:           boolean;
   psychologyMode:        boolean;
   domainId:              string | null;
   gatePhase:             string;
@@ -269,7 +278,7 @@ const GATE_TIER: Record<string, string> = {
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
-export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMode, domainId, gatePhase, scrubVelocity, showCommodities, showInstability, showNewsFeed, onCityPinClick, onSignalPinClick, onPsychZoneClick, onGatePinClick, onCommodityPinClick, onNewsFeedPinClick }: Props) {
+export function WorldRiskGlobe({ eraPhase, scenarioId, psychologyMode, domainId, gatePhase, scrubVelocity, showCommodities, showInstability, showNewsFeed, onCityPinClick, onSignalPinClick, onPsychZoneClick, onGatePinClick, onCommodityPinClick, onNewsFeedPinClick }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const globeRef     = useRef<GlobeMethods | undefined>(undefined);
   const [dims,         setDims]         = useState({ w: 0, h: 0 });
@@ -411,6 +420,7 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
     sigIndex?:   number;
     label?:      string;
     colKey?:     "red" | "warn" | "info";
+    domainId?:   string;
     // scenario label fields
     role?:       "primary" | "cascade";
     note?:       string;
@@ -460,9 +470,9 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
       });
     });
 
-    // Signal pins
-    if (showSignals) {
-      for (const pin of SIGNAL_PINS) {
+    // Signal pins — auto-show for active domain
+    if (domainId) {
+      for (const pin of SIGNAL_PINS.filter(p => p.domainId === domainId)) {
         items.push({
           type:     "signal",
           lat:      pin.lat,
@@ -470,6 +480,7 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
           sigIndex: pin.sigIndex,
           label:    pin.label,
           colKey:   pin.colKey,
+          domainId,
         });
       }
     }
@@ -574,7 +585,7 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
     }
 
     return items;
-  }, [showSignals, scenarioId, psychologyMode, domainId, domainColor, gatePhase, showCommodities, showNewsFeed]);
+  }, [scenarioId, psychologyMode, domainId, domainColor, gatePhase, showCommodities, showNewsFeed]);
 
   const htmlElement = useCallback((d: object) => {
     const el = document.createElement("div");
@@ -618,7 +629,8 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
       });
 
     } else if (item.type === "signal") {
-      const colHex = SIGNAL_PIN_COLORS[item.colKey ?? "info"];
+      const colHex = (item.domainId ? DOMAIN_ID_COLORS[item.domainId] : null)
+                    ?? SIGNAL_PIN_COLORS[item.colKey ?? "info"];
       el.style.cssText = `
         width: 9px; height: 9px; border-radius: 50%;
         background: ${colHex};

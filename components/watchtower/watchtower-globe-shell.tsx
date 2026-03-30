@@ -193,7 +193,6 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
   const [scrubVelocity,     setScrubVelocity]     = useState(0);
 
   const [scenarioId,        setScenarioId]        = useState<string | null>(() => searchParams.get("scenario"));
-  const [showSignals,       setShowSignals]       = useState(() => searchParams.get("signals") === "1");
   const [psychologyMode,    setPsychologyMode]    = useState(() => searchParams.get("psych") === "1");
   const [selectedSignalIdx, setSelectedSignalIdx] = useState<number | null>(null);
   const [domainId,          setDomainId]          = useState<string | null>(() => searchParams.get("domain"));
@@ -267,7 +266,6 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
         <WorldRiskGlobe
           eraPhase={eraPhase}
           scenarioId={scenarioId}
-          showSignals={showSignals}
           psychologyMode={psychologyMode}
           domainId={domainId}
           gatePhase={eraPhase}
@@ -476,20 +474,6 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
               >
                 <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${psychologyMode ? "bg-purple-400 animate-pulse" : "bg-text-mute2/25"}`} />
                 🧠 {t("nav_psychology")}
-              </Link>
-              <Link
-                href={buildUrl(searchParams, { signals: showSignals ? null : "1" })}
-                replace
-                onClick={(e) => { e.stopPropagation(); setShowSignals(!showSignals); }}
-                aria-pressed={showSignals}
-                aria-label={`${showSignals ? "Hide" : "Show"} signal pins`}
-                className={`flex items-center gap-2 pl-3 pr-2.5 py-1.5 min-h-[44px]
-                            font-mono text-[8px] transition-all duration-150 border-l-2
-                            ${showSignals ? "text-red-bright" : "text-text-mute2 hover:text-text-base"}`}
-                style={{ borderLeftColor: showSignals ? "#e84040" : "transparent" }}
-              >
-                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${showSignals ? "bg-red-bright animate-pulse" : "bg-text-mute2/25"}`} />
-                📡 {t("nav_signals")}
               </Link>
             </div>
 
@@ -757,20 +741,6 @@ const [eraPhase,          setEraPhase]          = useState(() => searchParams.ge
                       ${psychologyMode ? "border-purple-500/50 text-purple-300" : "bg-void-3 border-border-protocol text-text-mute2"}`}
           style={{ background: psychologyMode ? "rgba(138,43,226,0.15)" : undefined }}>
           🧠 {t("nav_psychology")}
-        </button>
-
-        <button
-          onClick={() => {
-            const next = !showSignals;
-            setShowSignals(next);
-            updateUrl({ signals: next ? "1" : null });
-          }}
-          aria-pressed={showSignals}
-          aria-label={`${showSignals ? "Hide" : "Show"} signal pins`}
-          className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-2.5 rounded-lg border font-mono text-[9px] transition-all min-h-[44px]
-                      ${showSignals ? "border-red-protocol/50 text-red-bright" : "bg-void-3 border-border-protocol text-text-mute2"}`}
-          style={{ background: showSignals ? "rgba(232,64,64,0.12)" : undefined }}>
-          📡 {t("nav_signals")}
         </button>
 
         <div className="w-px h-4 bg-border-protocol/60 flex-shrink-0" />
