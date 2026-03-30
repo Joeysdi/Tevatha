@@ -189,14 +189,16 @@ function rightColumnPositions(
   containerW: number,
   containerH: number,
   cardW = 288,
-  cardH = 420,
+  cardH = 320,
 ) {
   const x = Math.max(6, containerW - cardW - 20);
-  const gap = 16;
+  const gap = 12;
   const totalH = n * cardH + (n - 1) * gap;
-  // Pin stack to top when it's taller than the container; center otherwise.
+  // Center only when the full stack fits; otherwise pin to top.
   // No per-card bottom clamp — cards can extend off-screen and be dragged.
-  const startY = Math.max(56, Math.round((containerH - totalH) / 2));
+  const startY = totalH < containerH - 60
+    ? Math.max(56, Math.round((containerH - totalH) / 2))
+    : 56;
   return Array.from({ length: n }, (_, i) => ({
     x,
     y: startY + i * (cardH + gap),
