@@ -473,17 +473,55 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
   const htmlGlobeData = useMemo<HtmlGlobeItem[]>(() => {
     const items: HtmlGlobeItem[] = [];
 
-    // City pins — always visible
-    CITY_PINS_DATA.forEach((city, idx) => {
-      items.push({
-        type:      "city",
-        lat:       city.lat,
-        lng:       city.lng,
-        cityIdx:   idx,
-        cityName:  city.name,
-        cityScore: city.threatScore,
-      });
-    });
+    // City pins — visible only when a country or domain is active
+    const selectedIso = selectedFeat
+      ? String(parseInt(String(selectedFeat.id ?? "0"), 10))
+      : null;
+    const cityIso = (city: { country: string }) =>
+      riskByName[city.country.toLowerCase()]?.iso ?? null;
+
+    if (selectedFeat || domainId) {
+      if (selectedFeat && !domainId) {
+        // Country only → top 5 by population
+        CITY_PINS_DATA
+          .filter(c => cityIso(c) === selectedIso)
+          .sort((a, b) => b.pop - a.pop)
+          .slice(0, 5)
+          .forEach(city => {
+            items.push({ type: "city", lat: city.lat, lng: city.lng,
+              cityIdx: CITY_PINS_DATA.indexOf(city), cityName: city.name, cityScore: city.threatScore });
+          });
+      } else if (domainId && !selectedFeat) {
+        // Domain only → top 3 per primary country, top 2 per secondary
+        const ROLE_LIMIT: Record<string, number> = { primary: 3, secondary: 2, watch: 0 };
+        const byIso: Record<string, typeof CITY_PINS_DATA> = {};
+        for (const city of CITY_PINS_DATA) {
+          const iso = cityIso(city);
+          if (!iso) continue;
+          if (!byIso[iso]) byIso[iso] = [];
+          byIso[iso].push(city);
+        }
+        for (const [iso, cities] of Object.entries(byIso)) {
+          const role = domainMap?.[iso];
+          const limit = role ? (ROLE_LIMIT[role] ?? 0) : 0;
+          if (limit === 0) continue;
+          cities.sort((a, b) => b.pop - a.pop).slice(0, limit).forEach(city => {
+            items.push({ type: "city", lat: city.lat, lng: city.lng,
+              cityIdx: CITY_PINS_DATA.indexOf(city), cityName: city.name, cityScore: city.threatScore });
+          });
+        }
+      } else if (domainId && selectedFeat && selectedIso && domainMap?.[selectedIso]) {
+        // Both → top 5 in selected country, only if country is in domain
+        CITY_PINS_DATA
+          .filter(c => cityIso(c) === selectedIso)
+          .sort((a, b) => b.pop - a.pop)
+          .slice(0, 5)
+          .forEach(city => {
+            items.push({ type: "city", lat: city.lat, lng: city.lng,
+              cityIdx: CITY_PINS_DATA.indexOf(city), cityName: city.name, cityScore: city.threatScore });
+          });
+      }
+    }
 
     // Signal pins — show only signal types belonging to active domain
     if (domainId) {
@@ -601,7 +639,7 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
     }
 
     return items;
-  }, [scenarioId, domainId, domainColor, gatePhase, showCommodities, showNewsFeed, newsFeedPins]);
+  }, [scenarioId, domainId, domainColor, domainMap, gatePhase, showCommodities, showNewsFeed, newsFeedPins, selectedFeat]);
 
   const htmlElement = useCallback((d: object) => {
     const el = document.createElement("div");
@@ -611,29 +649,38 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
 
     if (item.type === "city") {
       const col = cityThreatColor(item.cityScore ?? 0);
-      const high = (item.cityScore ?? 0) >= 80;
       el.style.cssText = `
-        width: 8px; height: 8px;
-        border: 1.5px solid ${col};
-        background: ${col}44;
-        box-shadow: 0 0 8px ${col}99, 0 0 2px ${col};
-        cursor: pointer;
-        pointer-events: auto;
-        color: ${col};
-        border-radius: 50%;
-        transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
-        ${high ? `animation: city-pulse 2s ease-in-out infinite;` : ""}
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 2px 8px 2px 5px;
+        background: rgba(5,8,10,0.80);
+        border: 1px solid ${col}50;
+        border-radius: 999px;
+        backdrop-filter: blur(4px);
+        cursor: pointer; pointer-events: auto;
+        white-space: nowrap;
+        transition: background 0.15s, border-color 0.15s;
+        user-select: none;
       `;
-      el.title = `${item.cityName ?? ""} — Click for intel`;
+      const dot = document.createElement("span");
+      dot.style.cssText = `
+        width:5px; height:5px; border-radius:50%;
+        background:${col}; box-shadow:0 0 5px ${col}bb; flex-shrink:0;
+      `;
+      const label = document.createElement("span");
+      label.textContent = item.cityName ?? "";
+      label.style.cssText = `
+        font-family:monospace; font-size:9px; font-weight:600;
+        letter-spacing:.05em; color:rgba(215,220,230,0.88); line-height:1;
+      `;
+      el.appendChild(dot);
+      el.appendChild(label);
       el.addEventListener("mouseenter", () => {
-        el.style.transform = "scale(2.2)";
-        el.style.boxShadow = `0 0 16px ${col}cc, 0 0 5px ${col}`;
-        el.style.background = `${col}88`;
+        el.style.background = "rgba(5,8,10,0.95)";
+        el.style.borderColor = `${col}99`;
       });
       el.addEventListener("mouseleave", () => {
-        el.style.transform = "scale(1)";
-        el.style.boxShadow = `0 0 8px ${col}99, 0 0 2px ${col}`;
-        el.style.background = `${col}44`;
+        el.style.background = "rgba(5,8,10,0.80)";
+        el.style.borderColor = `${col}50`;
       });
       el.addEventListener("click", (e) => {
         e.stopPropagation();
