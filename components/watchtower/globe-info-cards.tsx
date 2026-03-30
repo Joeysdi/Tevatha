@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence, useMotionValue } from "framer-motion";
 import type { MotionValue } from "framer-motion";
 import type { RefObject } from "react";
@@ -183,6 +184,13 @@ function spreadPositions(
   return pos;
 }
 
+// Watchtower domain → provisioner gear page domain
+const DOMAIN_PROV_MAP: Record<string, string> = {
+  geopolitical:  "nuclear",
+  economic:      "economic",
+  environmental: "bio",
+};
+
 // ── Gear lookup ───────────────────────────────────────────────────────────────
 function getDomainGear(domainId: string, limit = 4) {
   const cats = DOMAIN_GEAR_CATS[domainId] ?? [];
@@ -190,6 +198,13 @@ function getDomainGear(domainId: string, limit = 4) {
     .filter((c) => cats.includes(c.cat))
     .flatMap((c) => c.items.filter((i) => i.critical))
     .slice(0, limit);
+}
+
+function getDomainGearTotal(domainId: string): number {
+  const cats = DOMAIN_GEAR_CATS[domainId] ?? [];
+  return GEAR
+    .filter((c) => cats.includes(c.cat))
+    .reduce((sum, c) => sum + c.items.length, 0);
 }
 
 function getGateDomain(gateId: string): string {
@@ -454,8 +469,10 @@ function DomainGatesCard({ domainId, col }: { domainId: string; col: string }) {
 }
 
 // ── Gear strip (inline, embedded at the bottom of info cards) ─────────────────
-function GearStrip({ domainId, col, onOpenShop }: { domainId: string; col: string; onOpenShop: () => void }) {
+function GearStrip({ domainId, col }: { domainId: string; col: string; onOpenShop: () => void }) {
   const items = getDomainGear(domainId, 3);
+  const total = getDomainGearTotal(domainId);
+  const provDomain = DOMAIN_PROV_MAP[domainId] ?? "nuclear";
   if (items.length === 0) return null;
   return (
     <div className="border-t mt-3 pt-3" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
@@ -471,14 +488,15 @@ function GearStrip({ domainId, col, onOpenShop }: { domainId: string; col: strin
           </div>
         ))}
       </div>
-      <button
-        onClick={(e) => { e.stopPropagation(); onOpenShop(); }}
-        className="w-full font-mono text-[9px] font-bold py-2 rounded-lg border border-gold-dim
-                   bg-gold-glow text-gold-bright hover:-translate-y-px
+      <Link
+        href={`/provisioner/gear?domain=${provDomain}`}
+        onClick={(e) => e.stopPropagation()}
+        className="block w-full text-center font-mono text-[9px] font-bold py-2 rounded-lg
+                   border border-gold-dim bg-gold-glow text-gold-bright hover:-translate-y-px
                    hover:shadow-[0_4px_16px_rgba(201,168,76,0.25)] transition-all duration-150"
       >
-        Browse in Shop →
-      </button>
+        {total} items ready for this threat →
+      </Link>
     </div>
   );
 }

@@ -5,6 +5,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { useTranslation } from "@/lib/i18n/use-translation";
 import { FadeUp, StaggerParent, StaggerChild } from "@/components/ui/motion";
+import { CATALOG } from "@/lib/provisioner/catalog";
+import { useCart } from "@/lib/cart/store";
 
 // ── Tier definitions ─────────────────────────────────────────────────────────
 
@@ -128,6 +130,7 @@ const QUESTIONS = [
 
 export default function TiersPage() {
   const { t } = useTranslation();
+  const { addItem, setOpen } = useCart();
   const [answers, setAnswers]       = useState<Record<string, boolean | null>>(
     Object.fromEntries(QUESTIONS.map((q) => [q.id, null]))
   );
@@ -271,22 +274,47 @@ export default function TiersPage() {
 
               {nextTier ? (
                 <>
-                  <p className="font-mono text-[10.5px] text-text-dim leading-relaxed mb-4">
+                  <p className="font-mono text-[10.5px] text-text-dim leading-relaxed mb-3">
                     You are at <strong className={resultTier.color}>{resultTier.id}</strong>. To reach{" "}
-                    <strong className={nextTier.color}>{nextTier.id} ({nextTier.label})</strong>, focus on these gaps:
+                    <strong className={nextTier.color}>{nextTier.id} ({nextTier.label})</strong>, close these gaps:
                   </p>
                   <div className="space-y-2 mb-4">
-                    {nextTier.skuLinks.map((s) => (
-                      <div key={s.sku} className="flex items-center gap-2">
-                        <span className="font-mono text-[10px]" style={{ color: nextTier.bar }}>→</span>
-                        <Link
-                          href="/provisioner"
-                          className="font-mono text-[10px] text-text-dim hover:text-text-base transition-colors"
-                        >
-                          {s.label} <span className="text-text-mute2">({s.sku})</span>
-                        </Link>
-                      </div>
-                    ))}
+                    {nextTier.skuLinks.map((s) => {
+                      const product = CATALOG.find((p) => p.sku === s.sku);
+                      return (
+                        <div key={s.sku} className="flex items-center gap-2 bg-void-2 border border-border-protocol rounded-lg px-3 py-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-mono text-[10px] text-text-base leading-tight truncate">{s.label}</p>
+                            <p className="font-mono text-[8.5px] text-text-mute2">{s.sku}</p>
+                          </div>
+                          {product ? (
+                            <button
+                              onClick={() => {
+                                addItem({
+                                  id: product.id, sku: product.sku, name: product.name, brand: product.brand,
+                                  priceUsd: product.priceUsd, priceUsdc: product.priceUsdc,
+                                  highTicket: product.highTicket, imageSlug: product.imageSlug,
+                                  stripePriceId: product.stripePriceId,
+                                });
+                                setOpen(true);
+                              }}
+                              className="font-mono text-[9px] font-bold text-void-0 bg-gold-protocol
+                                         px-3 py-1.5 rounded-lg hover:bg-gold-bright transition-colors
+                                         flex-shrink-0 whitespace-nowrap"
+                            >
+                              Add →
+                            </button>
+                          ) : (
+                            <Link
+                              href="/provisioner/gear"
+                              className="font-mono text-[9px] text-gold-protocol hover:text-gold-bright transition-colors flex-shrink-0"
+                            >
+                              View →
+                            </Link>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                   <Link
                     href="/provisioner"
