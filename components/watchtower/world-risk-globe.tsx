@@ -248,7 +248,7 @@ interface GeoFeature {
 
 interface GlobePath {
   coords:   [number, number][];
-  pathType: "country" | "admin1";
+  pathType: "admin1";
 }
 
 // ─── Psychology zones ─────────────────────────────────────────────────────────
@@ -978,7 +978,7 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
       fetch("/world-50m.json").then(r => r.json()),
       fetch("/admin1-lines.geojson").then(r => r.json()).catch(() => null),
     ]).then(async ([world, admin1]) => {
-      const { feature, mesh } = await import("topojson-client");
+      const { feature } = await import("topojson-client");
 
       // Country polygons
       const geo = feature(world, world.objects.countries) as unknown as {
@@ -986,18 +986,7 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
       };
       setCountries(geo.features ?? []);
 
-      // Country border lines (borders between different countries only)
-      const countryMesh = mesh(world, world.objects.countries, (a: object, b: object) => a !== b) as {
-        type: string; coordinates: number[][][];
-      };
-      for (const line of countryMesh.coordinates) {
-        paths.push({
-          coords:   line.map(([lng, lat]) => [lat, lng] as [number, number]),
-          pathType: "country",
-        });
-      }
-
-      // Sub-national border lines (states, provinces, etc.)
+      // Sub-national border lines (states, provinces, etc.) — country borders handled by polygonStrokeColor
       if (admin1?.features) {
         for (const f of admin1.features) {
           if (f.geometry?.type === "LineString") {
@@ -1264,16 +1253,8 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
           pathPointLat={(pt: unknown) => (pt as number[])[0]}
           pathPointLng={(pt: unknown) => (pt as number[])[1]}
           pathPointAlt={0.018}
-          pathColor={(d: object) => {
-            const p = d as GlobePath;
-            if (p.pathType === "admin1") return "rgba(255,255,255,0.12)";
-            return "rgba(255,255,255,0.25)";
-          }}
-          pathStroke={(d: object) => {
-            const p = d as GlobePath;
-            if (p.pathType === "admin1") return 0.25;
-            return 0.5;
-          }}
+          pathColor={() => "rgba(255,255,255,0.14)"}
+          pathStroke={0.3}
           pathDashLength={1}
           pathDashGap={0}
           pathTransitionDuration={0}
