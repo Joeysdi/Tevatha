@@ -246,6 +246,11 @@ interface GeoFeature {
   geometry?:   unknown;
 }
 
+interface GlobePath {
+  coords:   [number, number][];
+  pathType: "country" | "admin1" | "graticule";
+}
+
 // ─── Psychology zones ─────────────────────────────────────────────────────────
 interface PsychZone {
   lat:     number;
@@ -297,6 +302,7 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
   const globeRef     = useRef<GlobeMethods | undefined>(undefined);
   const [dims,         setDims]         = useState({ w: 0, h: 0 });
   const [countries,    setCountries]    = useState<GeoFeature[]>([]);
+  const [globePaths,   setGlobePaths]   = useState<GlobePath[]>([]);
   const [hovered,      setHovered]      = useState<GeoFeature | null>(null);
   const [selectedFeat, setSelectedFeat] = useState<GeoFeature | null>(null);
   const [globeReady,      setGlobeReady]      = useState(false);
@@ -964,19 +970,66 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
     return () => container.removeEventListener("news-pin-click", handler);
   }, [onNewsFeedPinClick]);
 
-  // ── Load + parse TopoJSON ─────────────────────────────────────────────────
+  // ── Load + parse TopoJSON + border paths ─────────────────────────────────
   useEffect(() => {
-    fetch("/world-50m.json")
-      .then((r) => r.json())
-      .then(async (world) => {
-        const { feature } = await import("topojson-client");
-        const geo = feature(world, world.objects.countries) as unknown as {
-          type:     string;
-          features: GeoFeature[];
-        };
-        setCountries(geo.features ?? []);
-      })
-      .catch((err) => console.error("[Globe] Failed to load world-50m.json:", err));
+    const paths: GlobePath[] = [];
+
+    // Graticule lines — 30° lat/lng grid
+    for (let lat = -60; lat <= 60; lat += 30) {
+      const coords: [number, number][] = [];
+      for (let lng = -180; lng <= 180; lng += 4) coords.push([lat, lng]);
+      paths.push({ coords, pathType: "graticule" });
+    }
+    for (let lng = -180; lng < 180; lng += 30) {
+      const coords: [number, number][] = [];
+      for (let lat = -85; lat <= 85; lat += 4) coords.push([lat, lng]);
+      paths.push({ coords, pathType: "graticule" });
+    }
+
+    Promise.all([
+      fetch("/world-50m.json").then(r => r.json()),
+      fetch("/admin1-lines.geojson").then(r => r.json()).catch(() => null),
+    ]).then(async ([world, admin1]) => {
+      const { feature, mesh } = await import("topojson-client");
+
+      // Country polygons
+      const geo = feature(world, world.objects.countries) as unknown as {
+        type: string; features: GeoFeature[];
+      };
+      setCountries(geo.features ?? []);
+
+      // Country border lines (borders between different countries only)
+      const countryMesh = mesh(world, world.objects.countries, (a: object, b: object) => a !== b) as {
+        type: string; coordinates: number[][][];
+      };
+      for (const line of countryMesh.coordinates) {
+        paths.push({
+          coords:   line.map(([lng, lat]) => [lat, lng] as [number, number]),
+          pathType: "country",
+        });
+      }
+
+      // Sub-national border lines (states, provinces, etc.)
+      if (admin1?.features) {
+        for (const f of admin1.features) {
+          if (f.geometry?.type === "LineString") {
+            paths.push({
+              coords:   f.geometry.coordinates.map(([lng, lat]: number[]) => [lat, lng] as [number, number]),
+              pathType: "admin1",
+            });
+          } else if (f.geometry?.type === "MultiLineString") {
+            for (const line of f.geometry.coordinates) {
+              paths.push({
+                coords:   line.map(([lng, lat]: number[]) => [lat, lng] as [number, number]),
+                pathType: "admin1",
+              });
+            }
+          }
+        }
+      }
+
+      setGlobePaths(paths);
+    }).catch((err) => console.error("[Globe] Failed to load geo data:", err));
   }, []);
 
   // ── Globe ready ───────────────────────────────────────────────────────────
@@ -1178,14 +1231,30 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
     return lookupRisk(selectedFeat);
   }, [selectedFeat, eraByIso, scenarioMap]);
 
-  // Build a solid-color PNG data URL for the ocean surface
+  // Ocean depth texture — equirectangular gradient (deeper = darker, poles = lighter)
   const oceanTextureUrl = useMemo(() => {
     if (typeof document === "undefined") return "";
+    const W = 512, H = 256;
     const canvas = document.createElement("canvas");
-    canvas.width = 2; canvas.height = 2;
+    canvas.width = W; canvas.height = H;
     const ctx = canvas.getContext("2d")!;
-    ctx.fillStyle = "#060f1e";
-    ctx.fillRect(0, 0, 2, 2);
+    // Base: very dark blue-black
+    ctx.fillStyle = "#040a14";
+    ctx.fillRect(0, 0, W, H);
+    // Equatorial deep ocean — slightly darker band in the middle
+    const depthGrad = ctx.createLinearGradient(0, 0, 0, H);
+    depthGrad.addColorStop(0,    "rgba(10,22,45,0.70)");  // north pole — lighter
+    depthGrad.addColorStop(0.25, "rgba(4,10,22,0.80)");   // mid north
+    depthGrad.addColorStop(0.5,  "rgba(2,6,14,0.90)");    // equator — deepest
+    depthGrad.addColorStop(0.75, "rgba(4,10,22,0.80)");   // mid south
+    depthGrad.addColorStop(1,    "rgba(10,22,45,0.70)");  // south pole — lighter
+    ctx.fillStyle = depthGrad;
+    ctx.fillRect(0, 0, W, H);
+    // Subtle horizontal shimmer for ocean surface scattering
+    for (let i = 0; i < H; i += 8) {
+      ctx.fillStyle = `rgba(0,40,80,${0.018 + Math.sin(i * 0.4) * 0.010})`;
+      ctx.fillRect(0, i, W, 1);
+    }
     return canvas.toDataURL("image/png");
   }, []);
 
@@ -1207,16 +1276,34 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
 
           globeImageUrl={oceanTextureUrl}
           backgroundColor="rgba(0,0,0,0)"
-          atmosphereColor="rgba(0,212,255,0.22)"
-          atmosphereAltitude={0.24}
+          atmosphereColor="rgba(0,212,255,0.28)"
+          atmosphereAltitude={0.28}
 
           polygonsData={countries}
           polygonCapColor={capColor}
           polygonSideColor={capColor}
-          polygonStrokeColor={() => "rgba(255,255,255,0.06)"}
+          polygonStrokeColor={() => "rgba(255,255,255,0.04)"}
           polygonAltitude={altitude}
           polygonCapCurvatureResolution={5}
           onPolygonHover={handleHover as (f: object | null, p: object | null) => void}
+
+          pathsData={globePaths}
+          pathPoints="coords"
+          pathColor={(d: object) => {
+            const p = d as GlobePath;
+            if (p.pathType === "graticule") return "rgba(201,168,76,0.022)";
+            if (p.pathType === "admin1")    return "rgba(255,255,255,0.045)";
+            return "rgba(255,255,255,0.10)";
+          }}
+          pathStroke={(d: object) => {
+            const p = d as GlobePath;
+            if (p.pathType === "graticule") return 0.25;
+            if (p.pathType === "admin1")    return 0.2;
+            return 0.45;
+          }}
+          pathDashLength={1}
+          pathDashGap={0}
+          pathTransitionDuration={0}
           onPolygonClick={(feat: object) => {
             const f = feat as GeoFeature;
             setSelectedFeat((prev) => (prev?.id === f.id ? null : f));
