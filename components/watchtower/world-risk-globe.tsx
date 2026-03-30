@@ -507,6 +507,27 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
     newsCategory?: string;
   };
 
+  // ── Geographic deduplication ──────────────────────────────────────────────
+  // Items must be pre-sorted by priority (best first) before calling.
+  // Drops any item whose centre falls within thresholdDeg of an already-kept item.
+  function geoDedup<T extends { lat: number; lng: number }>(
+    sorted: T[],
+    thresholdDeg: number,
+    limit = 999,
+  ): T[] {
+    const kept: T[] = [];
+    for (const item of sorted) {
+      if (kept.length >= limit) break;
+      const clash = kept.some((k) => {
+        const dLat = item.lat - k.lat;
+        const dLng = item.lng - k.lng;
+        return Math.sqrt(dLat * dLat + dLng * dLng) < thresholdDeg;
+      });
+      if (!clash) kept.push(item);
+    }
+    return kept;
+  }
+
   const htmlGlobeData = useMemo<HtmlGlobeItem[]>(() => {
     const items: HtmlGlobeItem[] = [];
 
@@ -560,71 +581,69 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
       }
     }
 
-    // Signal pins — show only signal types belonging to active domain
-    if (domainId) {
+    // Signal pins — skip when news feed is active (they serve the same role)
+    if (domainId && !showNewsFeed) {
       const signalTypes = DOMAIN_SIGNAL_TYPES[domainId] ?? [];
-      for (const pin of SIGNAL_PINS.filter(p => signalTypes.includes(p.domainId))) {
-        items.push({
-          type:     "signal",
-          lat:      pin.lat,
-          lng:      pin.lng,
-          sigIndex: pin.sigIndex,
-          label:    pin.label,
-          colKey:   pin.colKey,
-          domainId,
-        });
-      }
+      const sigItems = SIGNAL_PINS
+        .filter(p => signalTypes.includes(p.domainId))
+        .map(pin => ({
+          type: "signal" as const,
+          lat: pin.lat, lng: pin.lng,
+          sigIndex: pin.sigIndex, label: pin.label, colKey: pin.colKey, domainId,
+        }));
+      for (const item of geoDedup(sigItems, 8, 8)) items.push(item);
     }
 
-    // Scenario overlay labels
+    // Scenario overlay labels — sort primary-first, dedup at 14°
     if (scenarioId) {
       const scenario = SCENARIO_IMPACTS.find(s => s.id === scenarioId);
       if (scenario) {
-        for (const c of scenario.countries) {
-          const risk = riskByIso[c.iso];
-          if (!risk) continue;
-          items.push({
-            type:     "scenario-label",
-            lat:      risk.lat,
-            lng:      risk.lon,
-            role:     c.role,
-            note:     c.note,
-            isoLabel: risk.name,
-          });
-        }
+        const sorted = [...scenario.countries].sort((a, b) =>
+          a.role === "primary" ? -1 : b.role === "primary" ? 1 : 0,
+        );
+        const scItems = sorted
+          .map(c => ({ c, risk: riskByIso[c.iso] }))
+          .filter(({ risk }) => !!risk)
+          .map(({ c, risk }) => ({
+            type: "scenario-label" as const,
+            lat: risk!.lat, lng: risk!.lon,
+            role: c.role as "primary" | "cascade",
+            note: c.note, isoLabel: risk!.name,
+          }));
+        for (const item of geoDedup(scItems, 14)) items.push(item);
       }
     }
 
-    // Psychology zone overlays — auto-show for active domain
-    if (domainId) {
-      for (const z of PSYCH_ZONES.filter(z => z.domains.includes(domainId))) {
-        items.push({
-          type:      "psych-zone",
-          lat:       z.lat,
-          lng:       z.lng,
-          region:    z.region,
-          threat:    z.threat,
-          psychNote: z.note,
-        });
-      }
+    // Psychology zone overlays — skip when scenario is active, dedup at 18°, cap 3
+    if (domainId && !scenarioId) {
+      const psychItems = PSYCH_ZONES
+        .filter(z => z.domains.includes(domainId))
+        .map(z => ({
+          type: "psych-zone" as const,
+          lat: z.lat, lng: z.lng,
+          region: z.region, threat: z.threat, psychNote: z.note,
+        }));
+      for (const item of geoDedup(psychItems, 18, 3)) items.push(item);
     }
 
-    // Domain country labels
-    if (domainId) {
+    // Domain country labels — skip when scenario active, primary+secondary only, dedup at 12°, cap 8
+    if (domainId && !scenarioId) {
       const impact = DOMAIN_IMPACTS.find(d => d.id === domainId);
       if (impact) {
-        for (const c of impact.countries) {
-          const risk = riskByIso[c.iso];
-          if (!risk) continue;
-          items.push({
-            type:        "domain-label",
-            lat:         risk.lat,
-            lng:         risk.lon,
-            domainRole:  c.role,
+        const sorted = [...impact.countries]
+          .filter(c => c.role === "primary" || c.role === "secondary")
+          .sort((a, b) => (a.role === "primary" ? -1 : 1));
+        const domItems = sorted
+          .map(c => ({ c, risk: riskByIso[c.iso] }))
+          .filter(({ risk }) => !!risk)
+          .map(({ c, risk }) => ({
+            type: "domain-label" as const,
+            lat: risk!.lat, lng: risk!.lon,
+            domainRole: c.role as "primary" | "secondary" | "watch",
             domainLabel: c.label,
-            domainHex:   domainColor,
-          });
-        }
+            domainHex: domainColor,
+          }));
+        for (const item of geoDedup(domItems, 12, 8)) items.push(item);
       }
     }
 
@@ -660,19 +679,19 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
       }
     }
 
-    // World news feed pins — only show when a domain is active
+    // World news feed pins — sort highest tier first, dedup at 10°, cap 8
     if (showNewsFeed && domainId) {
-      for (const pin of newsFeedPins) {
-        items.push({
-          type:         "news",
-          lat:          pin.lat,
-          lng:          pin.lng,
-          newsId:       pin.id,
-          newsTier:     pin.tier,
-          newsHeadline: pin.headline,
-          newsCategory: pin.category,
-        });
-      }
+      const tierOrder: Record<string, number> = { t4: 0, t3: 1, t2: 2, t1: 3 };
+      const sortedNews = [...newsFeedPins].sort(
+        (a, b) => (tierOrder[a.tier] ?? 9) - (tierOrder[b.tier] ?? 9),
+      );
+      const newsItems = sortedNews.map(pin => ({
+        type: "news" as const,
+        lat: pin.lat, lng: pin.lng,
+        newsId: pin.id, newsTier: pin.tier,
+        newsHeadline: pin.headline, newsCategory: pin.category,
+      }));
+      for (const item of geoDedup(newsItems, 10, 8)) items.push(item);
     }
 
     return items;
