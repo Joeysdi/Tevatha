@@ -28,7 +28,7 @@ export const RISK_COLORS: Record<RiskLevel, { fill: string; hover: string; glow:
 
 export const NO_DATA_FILL  = "#141e2b";
 export const BORDER_COLOR  = "#0a1520";
-export const SEA_COLOR     = "#05080a";
+export const SEA_COLOR     = "#060f1e";
 
 // ─── COUNTRY RISK DATASET — ALL SOVEREIGN STATES ─────────────────────────────
 

@@ -27,56 +27,12 @@ import { GATE_PINS } from "@/lib/watchtower/gate-pins";
 import { COMMODITY_PINS } from "@/lib/watchtower/commodity-pins";
 import { NEWS_FEED_PINS } from "@/lib/watchtower/news-feed-pins";
 import { INSTABILITY_SCORES, INSTABILITY_DEFAULT, instabilityFill } from "@/lib/watchtower/instability-data";
+import { CITY_PINS_DATA } from "@/lib/watchtower/city-pins";
 
 // ─── Dynamic import — WebGL requires browser environment ──────────────────────
 const Globe = dynamic(() => import("react-globe.gl"), {
   ssr: false,
 });
-
-// ─── City pins data ───────────────────────────────────────────────────────────
-interface CityPin {
-  name:        string;
-  country:     string;
-  flag:        string;
-  lat:         number;
-  lng:         number;
-  pop:         number;
-  threatScore: number;
-  note:        string;
-}
-
-const CITY_PINS_DATA: CityPin[] = [
-  { name: "New York",      country: "USA",          flag: "🇺🇸", lat:  40.71, lng:  -74.01, pop:  8.3, threatScore: 42, note: "Financial hub; persistent cyber targeting by state actors" },
-  { name: "London",        country: "UK",           flag: "🇬🇧", lat:  51.51, lng:   -0.13, pop:  9.0, threatScore: 38, note: "Intelligence hub; ongoing espionage operations" },
-  { name: "Moscow",        country: "Russia",       flag: "🇷🇺", lat:  55.75, lng:   37.62, pop: 12.4, threatScore: 78, note: "Nuclear command center; hybrid warfare doctrine active" },
-  { name: "Beijing",       country: "China",        flag: "🇨🇳", lat:  39.91, lng:  116.39, pop: 21.5, threatScore: 72, note: "PLAN expansion; Taiwan Strait tension elevated" },
-  { name: "Washington DC", country: "USA",          flag: "🇺🇸", lat:  38.91, lng:  -77.04, pop:  0.7, threatScore: 65, note: "Primary federal target; critical infrastructure at risk" },
-  { name: "Paris",         country: "France",       flag: "🇫🇷", lat:  48.86, lng:    2.35, pop: 11.1, threatScore: 44, note: "Jihadist cell activity; intelligence services on alert" },
-  { name: "Tokyo",         country: "Japan",        flag: "🇯🇵", lat:  35.69, lng:  139.69, pop: 13.9, threatScore: 35, note: "NK missile overflight corridor; seismic zone" },
-  { name: "Kyiv",          country: "Ukraine",      flag: "🇺🇦", lat:  50.45, lng:   30.52, pop:  2.9, threatScore: 94, note: "Active warzone; drone and missile strikes ongoing" },
-  { name: "Tehran",        country: "Iran",         flag: "🇮🇷", lat:  35.69, lng:   51.39, pop:  9.3, threatScore: 88, note: "Proxy network active; nuclear program accelerating" },
-  { name: "Pyongyang",     country: "N. Korea",     flag: "🇰🇵", lat:  39.03, lng:  125.75, pop:  3.0, threatScore: 91, note: "ICBM tests continuous; total information blackout" },
-  { name: "Tel Aviv",      country: "Israel",       flag: "🇮🇱", lat:  32.08, lng:   34.78, pop:  4.2, threatScore: 82, note: "Multi-front conflict active; Iron Dome engaged" },
-  { name: "Delhi",         country: "India",        flag: "🇮🇳", lat:  28.61, lng:   77.21, pop: 32.9, threatScore: 55, note: "Border tensions with China/Pakistan; nuclear doctrine revision" },
-  { name: "Islamabad",     country: "Pakistan",     flag: "🇵🇰", lat:  33.72, lng:   73.06, pop:  2.2, threatScore: 74, note: "Nuclear arsenal; Taliban border activity elevated" },
-  { name: "Riyadh",        country: "Saudi Arabia", flag: "🇸🇦", lat:  24.69, lng:   46.72, pop:  7.7, threatScore: 60, note: "Houthi missile threat; royal succession risk" },
-  { name: "Kabul",         country: "Afghanistan",  flag: "🇦🇫", lat:  34.53, lng:   69.17, pop:  4.6, threatScore: 89, note: "Taliban control; ISKP operations ongoing" },
-  { name: "Singapore",     country: "Singapore",    flag: "🇸🇬", lat:   1.35, lng:  103.82, pop:  5.9, threatScore: 22, note: "Malacca chokepoint; stable but geopolitically watched" },
-  { name: "Dubai",         country: "UAE",          flag: "🇦🇪", lat:  25.20, lng:   55.27, pop:  3.6, threatScore: 33, note: "Sanctions evasion hub; financial surveillance focal point" },
-  { name: "Lagos",         country: "Nigeria",      flag: "🇳🇬", lat:   6.52, lng:    3.38, pop: 15.9, threatScore: 67, note: "ISWAP/Boko Haram; oil facility sabotage risk" },
-  { name: "Cairo",         country: "Egypt",        flag: "🇪🇬", lat:  30.06, lng:   31.25, pop: 21.7, threatScore: 58, note: "Sinai insurgency; Nile dam standoff ongoing" },
-  { name: "Caracas",       country: "Venezuela",    flag: "🇻🇪", lat:  10.48, lng:  -66.88, pop:  2.8, threatScore: 73, note: "Hybrid authoritarian state; narco-terror networks" },
-  { name: "Mogadishu",     country: "Somalia",      flag: "🇸🇴", lat:   2.05, lng:   45.34, pop:  2.6, threatScore: 92, note: "Al-Shabaab active; piracy in Gulf of Aden" },
-  { name: "Khartoum",      country: "Sudan",        flag: "🇸🇩", lat:  15.55, lng:   32.53, pop:  6.2, threatScore: 90, note: "SAF vs RSF civil war; humanitarian catastrophe" },
-  { name: "Yangon",        country: "Myanmar",      flag: "🇲🇲", lat:  16.87, lng:   96.19, pop:  7.3, threatScore: 77, note: "Military junta; resistance forces advancing" },
-  { name: "Sao Paulo",     country: "Brazil",       flag: "🇧🇷", lat: -23.55, lng:  -46.63, pop: 22.4, threatScore: 52, note: "Organized crime; deforestation-linked instability" },
-  { name: "Mexico City",   country: "Mexico",       flag: "🇲🇽", lat:  19.43, lng:  -99.13, pop: 21.5, threatScore: 63, note: "Cartel state capture; fentanyl corridor active" },
-  { name: "Berlin",        country: "Germany",      flag: "🇩🇪", lat:  52.52, lng:   13.41, pop:  3.7, threatScore: 36, note: "NATO eastern flank lead; Russian sabotage operations" },
-  { name: "Sydney",        country: "Australia",    flag: "🇦🇺", lat: -33.87, lng:  151.21, pop:  5.3, threatScore: 25, note: "AUKUS submarine program; South China Sea tension" },
-  { name: "Seoul",         country: "S. Korea",     flag: "🇰🇷", lat:  37.57, lng:  126.98, pop:  9.7, threatScore: 71, note: "NK artillery range; chemical weapon threat" },
-  { name: "Taipei",        country: "Taiwan",       flag: "🇹🇼", lat:  25.03, lng:  121.56, pop:  2.7, threatScore: 85, note: "PRC military pressure; strait crossing rehearsals" },
-  { name: "Istanbul",      country: "Türkiye",      flag: "🇹🇷", lat:  41.01, lng:   28.97, pop: 15.5, threatScore: 62, note: "Bosphorus chokepoint; Kurdish-Turkish conflict" },
-];
 
 // ─── Instability badge — "looks live" animated score ─────────────────────────
 function InstabilityBadge() {
@@ -299,6 +255,7 @@ interface Props {
   showCommodities:       boolean;
   showInstability:       boolean;
   showNewsFeed:          boolean;
+  onCityPinClick:        (cityIdx: number) => void;
   onSignalPinClick:      (sigIndex: number) => void;
   onPsychZoneClick:      (zone: { region: string; threat: string; note: string }) => void;
   onGatePinClick:        (gateId: string) => void;
@@ -312,7 +269,7 @@ const GATE_TIER: Record<string, string> = {
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
-export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMode, domainId, gatePhase, scrubVelocity, showCommodities, showInstability, showNewsFeed, onSignalPinClick, onPsychZoneClick, onGatePinClick, onCommodityPinClick, onNewsFeedPinClick }: Props) {
+export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMode, domainId, gatePhase, scrubVelocity, showCommodities, showInstability, showNewsFeed, onCityPinClick, onSignalPinClick, onPsychZoneClick, onGatePinClick, onCommodityPinClick, onNewsFeedPinClick }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const globeRef     = useRef<GlobeMethods | undefined>(undefined);
   const [dims,         setDims]         = useState({ w: 0, h: 0 });
@@ -320,7 +277,6 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
   const [hovered,      setHovered]      = useState<GeoFeature | null>(null);
   const [selectedFeat, setSelectedFeat] = useState<GeoFeature | null>(null);
   const [globeReady,      setGlobeReady]      = useState(false);
-  const [selectedCityIdx, setSelectedCityIdx] = useState<number | null>(null);
   const { t } = useTranslation();
   const isHistorical = eraPhase !== "P4";
 
@@ -920,13 +876,13 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
     const handler = (e: Event) => {
       const detail = (e as CustomEvent).detail;
       if (detail?.cityIndex !== undefined) {
-        setSelectedCityIdx(detail.cityIndex);
+        onCityPinClick(detail.cityIndex);
         setSelectedFeat(null);
       }
     };
     container.addEventListener("city-pin-click", handler);
     return () => container.removeEventListener("city-pin-click", handler);
-  }, []);
+  }, [onCityPinClick]);
 
   // ── Psych zone click listener ─────────────────────────────────────────────
   useEffect(() => {
@@ -1018,6 +974,18 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
     ctrl.enableDamping   = false;
     ctrl.minDistance     = 180;
     ctrl.maxDistance     = 600;
+
+    // Color the ocean surface — traverse scene for the globe sphere mesh
+    const scene = (globeRef.current as any).scene?.();
+    if (scene) {
+      scene.traverse((obj: any) => {
+        if (obj.name === "globe" && obj.isMesh) {
+          obj.material.color.setHex(0x060f1e);
+          obj.material.emissive.setHex(0x010508);
+          obj.material.needsUpdate = true;
+        }
+      });
+    }
 
     // Begin zoom — quick sharp 1.2s fly-in from space
     setTimeout(() => {
@@ -1194,9 +1162,6 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
     return lookupRisk(selectedFeat);
   }, [selectedFeat, eraByIso, scenarioMap]);
 
-  // ── Selected city data ────────────────────────────────────────────────────
-  const selectedCity = selectedCityIdx !== null ? CITY_PINS_DATA[selectedCityIdx] ?? null : null;
-
   return (
     <div ref={containerRef} className="w-full h-full relative overflow-hidden select-none"
          style={{ background: "#000005" }}>
@@ -1227,7 +1192,6 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
           onPolygonClick={(feat: object) => {
             const f = feat as GeoFeature;
             setSelectedFeat((prev) => (prev?.id === f.id ? null : f));
-            setSelectedCityIdx(null);
             if (globeRef.current) {
               (globeRef.current.controls() as { autoRotate: boolean }).autoRotate = false;
             }
@@ -1294,7 +1258,7 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
       )}
 
       {/* ── Hover info overlay ────────────────────────────────────────────── */}
-      {hoveredCard && !selectedFeat && selectedCityIdx === null && (
+      {hoveredCard && !selectedFeat && (
         <div className="absolute top-4 right-4 w-[288px] z-20 pointer-events-none hidden sm:block">
           <div
             className="rounded-xl overflow-hidden backdrop-blur-md"
@@ -1477,155 +1441,6 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, showSignals, psychologyMo
           </div>
         </div>
       )}
-
-      {/* ── City pin selected card ────────────────────────────────────────── */}
-      {selectedCity && (
-        <div className="absolute top-4 right-4 w-[288px] z-25 sm:block hidden">
-          <div
-            className="rounded-xl overflow-hidden backdrop-blur-md"
-            style={{
-              background: "rgba(8,10,18,0.97)",
-              border:     `1px solid ${cityThreatColor(selectedCity.threatScore)}55`,
-              boxShadow:  `0 12px 48px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.03) inset`,
-            }}
-          >
-            <div className="h-px w-full"
-                 style={{ background: `linear-gradient(90deg,${cityThreatColor(selectedCity.threatScore)},transparent)` }} />
-
-            <div className="p-4">
-              {/* Header */}
-              <div className="flex items-start justify-between gap-2 mb-3">
-                <div className="min-w-0 flex-1">
-                  <p className="font-mono text-[8px] tracking-[.2em] uppercase mb-0.5"
-                     style={{ color: cityThreatColor(selectedCity.threatScore) }}>
-                    {selectedCity.flag} {selectedCity.country} · {t("city_intel")}
-                  </p>
-                  <h3 className="font-syne font-bold text-[16px] text-text-base leading-snug">
-                    {selectedCity.name}
-                  </h3>
-                </div>
-                <div className="flex items-start gap-2 flex-shrink-0">
-                  <div className="text-right">
-                    <div className="font-syne font-extrabold text-[26px] leading-none tabular-nums"
-                         style={{ color: cityThreatColor(selectedCity.threatScore) }}>
-                      {selectedCity.threatScore}
-                    </div>
-                    <div className="font-mono text-[7px] text-text-mute2">threat</div>
-                  </div>
-                  <button
-                    onClick={() => setSelectedCityIdx(null)}
-                    className="w-6 h-6 mt-0.5 rounded-md border border-border-protocol/60
-                               text-text-mute2 hover:text-text-base hover:border-border-bright/40
-                               font-mono text-[10px] flex items-center justify-center transition-colors"
-                  >✕</button>
-                </div>
-              </div>
-
-              {/* Score bar */}
-              <div className="flex items-center gap-2 mb-3">
-                <div className="flex-1 h-1 rounded-full bg-void-3 overflow-hidden">
-                  <div className="h-full rounded-full transition-all duration-500"
-                       style={{ width: `${selectedCity.threatScore}%`,
-                                background: cityThreatColor(selectedCity.threatScore),
-                                boxShadow: `0 0 8px ${cityThreatColor(selectedCity.threatScore)}99` }} />
-                </div>
-                <span className="font-mono text-[9px] text-text-mute2 flex-shrink-0">
-                  /100
-                </span>
-              </div>
-
-              {/* Population */}
-              <div className="flex items-center gap-2 mb-3 pb-3 border-b border-border-protocol/30">
-                <span className="font-mono text-[8px] text-text-mute2 tracking-[.14em] uppercase">{t("city_population")}</span>
-                <span className="font-mono text-[11px] font-bold text-text-base ml-auto tabular-nums">
-                  {selectedCity.pop >= 10
-                    ? `${selectedCity.pop.toFixed(0)}M`
-                    : `${selectedCity.pop.toFixed(1)}M`}
-                </span>
-              </div>
-
-              {/* Intel note */}
-              <div className="mb-3">
-                <p className="font-mono text-[7.5px] tracking-[.18em] uppercase text-text-mute2 mb-2">
-                  {t("city_active_intel")}
-                </p>
-                <div className="flex items-start gap-1.5">
-                  <span className="font-mono text-[9px] mt-[2px] flex-shrink-0"
-                        style={{ color: cityThreatColor(selectedCity.threatScore) }}>▸</span>
-                  <p className="font-mono text-[9px] text-text-dim leading-relaxed">
-                    {selectedCity.note}
-                  </p>
-                </div>
-              </div>
-
-              {/* News links */}
-              <div className="border-t border-border-protocol/40 pt-3 space-y-1.5">
-                <p className="font-mono text-[7px] tracking-[.2em] uppercase text-text-mute2/60 mb-2">
-                  {t("card_news_header")}
-                </p>
-                <a href={`https://news.google.com/search?q=${encodeURIComponent(selectedCity.name + " security threat attack")}`}
-                   target="_blank" rel="noopener noreferrer"
-                   className="flex items-center justify-between w-full px-3 py-2 rounded-lg
-                              border border-red-protocol/30 bg-red-protocol/8
-                              text-red-bright font-mono text-[9px] font-bold
-                              hover:border-red-protocol/55 hover:bg-red-protocol/14
-                              transition-all duration-150">
-                  <span>☢ {t("card_news_threat")}</span>
-                  <span className="text-[10px] opacity-70">↗</span>
-                </a>
-                <a href={`https://news.google.com/search?q=${encodeURIComponent(selectedCity.name + " " + selectedCity.country)}`}
-                   target="_blank" rel="noopener noreferrer"
-                   className="flex items-center justify-between w-full px-3 py-2 rounded-lg
-                              border border-border-protocol bg-void-3/60
-                              text-text-mute2 font-mono text-[9px]
-                              hover:border-border-bright/40 hover:text-text-base
-                              transition-all duration-150">
-                  <span>🌐 {t("city_all_news")}</span>
-                  <span className="text-[10px] opacity-60">↗</span>
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Mobile city card */}
-      {selectedCity && (
-        <div className="absolute bottom-4 left-3 right-3 z-25 sm:hidden">
-          <div
-            className="rounded-xl overflow-hidden backdrop-blur-md"
-            style={{
-              background: "rgba(8,10,18,0.97)",
-              border:     `1px solid ${cityThreatColor(selectedCity.threatScore)}55`,
-            }}
-          >
-            <div className="h-px w-full"
-                 style={{ background: `linear-gradient(90deg,${cityThreatColor(selectedCity.threatScore)},transparent)` }} />
-            <div className="p-3 flex items-center gap-3">
-              <div className="flex-1 min-w-0">
-                <p className="font-mono text-[8px] tracking-[.12em] uppercase mb-0.5"
-                   style={{ color: cityThreatColor(selectedCity.threatScore) }}>
-                  {selectedCity.flag} {selectedCity.country}
-                </p>
-                <p className="font-syne font-bold text-[14px] text-text-base leading-none">{selectedCity.name}</p>
-                <p className="font-mono text-[8.5px] text-text-dim mt-1 leading-relaxed line-clamp-2">
-                  {selectedCity.note}
-                </p>
-              </div>
-              <div className="flex-shrink-0 text-right">
-                <div className="font-syne font-extrabold text-[22px] leading-none tabular-nums"
-                     style={{ color: cityThreatColor(selectedCity.threatScore) }}>
-                  {selectedCity.threatScore}
-                </div>
-                <div className="font-mono text-[7px] text-text-mute2">threat</div>
-              </div>
-              <button onClick={() => setSelectedCityIdx(null)}
-                      className="font-mono text-[12px] text-text-mute2 hover:text-text-base flex-shrink-0">✕</button>
-            </div>
-          </div>
-        </div>
-      )}
-
 
       {/* ── Loading veil — unified loading experience, exits when globe ready ── */}
       <AnimatePresence>
