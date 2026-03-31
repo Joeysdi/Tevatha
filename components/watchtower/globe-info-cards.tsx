@@ -313,11 +313,14 @@ const STATUS_DOT: Record<string, string> = {
   triggered:  "#e84040",
 };
 
-function DomainGatesCard({ domainId, col, gateStatuses }: { domainId: string; col: string; gateStatuses?: GateStatus[] }) {
+function DomainGatesCard({ domainId, col, gateStatuses, showShop, onOpenShop }: { domainId: string; col: string; gateStatuses?: GateStatus[]; showShop?: boolean; onOpenShop?: () => void }) {
   const gateIds = DOMAIN_GATES[domainId] ?? [];
   const gates = GATES.filter((g) => gateIds.includes(g.id));
   if (gates.length === 0) return null;
   const statusMap = Object.fromEntries((gateStatuses ?? []).map(s => [s.id, s]));
+  const shopItems = showShop ? getDomainGear(domainId, 4) : [];
+  const shopTotal = showShop ? getDomainGearTotal(domainId) : 0;
+  const provDomain = DOMAIN_PROV_MAP[domainId] ?? "nuclear";
   return (
     <div className="px-4 py-3.5">
       <SectionLabel text="🔑 Decision Gates" col={col} />
@@ -395,6 +398,30 @@ function DomainGatesCard({ domainId, col, gateStatuses }: { domainId: string; co
           );
         })}
       </div>
+      {showShop && shopItems.length > 0 && (
+        <div className="-mx-4 mt-3.5 px-4 pt-3.5 pb-0.5"
+             style={{ background: "rgba(201,168,76,0.04)", borderTop: "1px solid rgba(201,168,76,0.10)" }}>
+          <SectionLabel text="⚡ Fix the Risk" col="#c9a84c" />
+          <div className="space-y-2 mb-3.5">
+            {shopItems.map((item, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <span className="font-mono text-[9px] px-1 py-0.5 rounded border border-border-protocol bg-void-3 text-text-mute2 flex-shrink-0">
+                  {item.tier}
+                </span>
+                <p className="font-mono text-[11px] text-text-base flex-1 truncate">{item.name}</p>
+                <span className="font-mono text-[10px] text-gold-protocol flex-shrink-0 tabular-nums">{item.price}</span>
+              </div>
+            ))}
+          </div>
+          <Link
+            href={`/provisioner/gear?domain=${provDomain}`}
+            onClick={(e) => e.stopPropagation()}
+            className="block w-full text-center font-mono text-[10px] font-bold py-2.5 rounded-lg border border-gold-dim bg-gold-glow text-gold-bright hover:-translate-y-px hover:shadow-[0_4px_20px_rgba(201,168,76,0.35)] transition-all duration-150 mb-3.5"
+          >
+            {shopTotal} items ready for this threat →
+          </Link>
+        </div>
+      )}
     </div>
   );
 }
@@ -1033,9 +1060,10 @@ export function GlobeRightPanel({
                     <DomainInfoCard domainId={domainId} col={col} />
                     <Divider />
                     <DomainLiveFeedCard domainId={domainId} newsFeedPins={newsFeedPins} onNewsClick={onNewsClick} col={col} compact={true} />
-                    {gateIds.length > 0 && <><Divider /><DomainGatesCard domainId={domainId} col={col} gateStatuses={gateStatuses} /></>}
-                    <Divider />
-                    <PanelShopFooter domainId={domainId} col={col} onOpenShop={onOpenShop} />
+                    {gateIds.length > 0
+                      ? <><Divider /><DomainGatesCard domainId={domainId} col={col} gateStatuses={gateStatuses} showShop onOpenShop={onOpenShop} /></>
+                      : <><Divider /><PanelShopFooter domainId={domainId} col={col} onOpenShop={onOpenShop} /></>
+                    }
                   </>
                 );
               })()}
