@@ -15,6 +15,8 @@ import { SCENARIO_IMPACTS }       from "@/lib/watchtower/scenario-impacts";
 import { NEWS_FEED_PINS }         from "@/lib/watchtower/news-feed-pins";
 import type { NewsFeedPin }       from "@/lib/watchtower/news-feed-pins";
 import { fetchGdeltPins }         from "@/lib/watchtower/gdelt-fetch";
+import { fetchLivePrices, type LivePrices } from "@/lib/watchtower/prices-fetch";
+import { calcDomainScores, type DomainScores } from "@/lib/watchtower/domain-score";
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -200,6 +202,7 @@ export function WatchtowerGlobeShell() {
 
   // ── New layer toggles ───────────────────────────────────────────────────────
   const [showCommodities,   setShowCommodities]   = useState(false);
+  const [livePrices,        setLivePrices]        = useState<LivePrices | null>(null);
   const [newsPins,          setNewsPins]          = useState<NewsFeedPin[]>(NEWS_FEED_PINS);
   const [newsFeedStatus,    setNewsFeedStatus]    = useState<"loading" | "ok" | "error">("loading");
   const [selectedCommodityId, setSelectedCommodityId] = useState<string | null>(null);
@@ -238,6 +241,18 @@ export function WatchtowerGlobeShell() {
         setNewsPins(NEWS_FEED_PINS);
         setNewsFeedStatus("error");
       });
+  }, []);
+
+  // ── Live prices fetch ─────────────────────────────────────────────────────
+  useEffect(() => {
+    let cancelled = false;
+    const load = () =>
+      fetchLivePrices()
+        .then(p => { if (!cancelled) setLivePrices(p); })
+        .catch(() => {});
+    load();
+    const id = setInterval(load, 60_000);
+    return () => { cancelled = true; clearInterval(id); };
   }, []);
 
   // ── Zoom-neutral panel scale ──────────────────────────────────────────────
@@ -284,6 +299,11 @@ export function WatchtowerGlobeShell() {
     () => new Set(DOMAINS.flatMap(d => d.scenarioIds ?? [])),
     []
   );
+
+  const domainScores: DomainScores | null = useMemo(() => {
+    if (!livePrices) return null;
+    return calcDomainScores(newsPins, livePrices);
+  }, [newsPins, livePrices]);
 
   return (
     <div className="w-full h-full flex flex-col bg-void-0">
@@ -381,6 +401,12 @@ export function WatchtowerGlobeShell() {
               <div className="flex items-center gap-1.5 px-2.5 mb-1">
                 <div className="w-[2px] h-2.5 rounded-full bg-red-protocol/60 flex-shrink-0" />
                 <p className="font-mono text-[9px] tracking-[.2em] uppercase text-text-mute2/70">Threat Domains</p>
+                {livePrices && (
+                  <span className="ml-auto flex items-center gap-1 flex-shrink-0">
+                    <span className="w-1 h-1 rounded-full bg-[#1ae8a0] animate-pulse" />
+                    <span className="font-mono text-[7px] tracking-[.12em] text-[#1ae8a0]/60">LIVE</span>
+                  </span>
+                )}
               </div>
               <div style={{ height: 1, background: "rgba(255,255,255,0.05)" }} />
               <div className="flex flex-col">
@@ -405,13 +431,38 @@ export function WatchtowerGlobeShell() {
                         />
                         <span className="text-[12px] leading-none">{d.icon}</span>
                         <span className="truncate max-w-[110px]">{d.label}</span>
-                        <span
-                          className="ml-auto font-mono text-[9px] font-bold tabular-nums px-1.5 py-0.5 rounded flex-shrink-0"
-                          style={active
-                            ? { color: col, background: `${col}20`, border: `1px solid ${col}40` }
-                            : { color: "rgba(150,165,180,0.35)", background: "rgba(150,165,180,0.06)", border: "1px solid rgba(150,165,180,0.10)" }
-                          }
-                        >{d.score}</span>
+                        <span className="ml-auto flex items-center gap-1 flex-shrink-0">
+                          {/* Score badge — live value when available */}
+                          <span
+                            className="font-mono text-[9px] font-bold tabular-nums px-1.5 py-0.5 rounded"
+                            style={active
+                              ? { color: col, background: `${col}20`, border: `1px solid ${col}40` }
+                              : { color: "rgba(150,165,180,0.35)", background: "rgba(150,165,180,0.06)", border: "1px solid rgba(150,165,180,0.10)" }
+                            }
+                          >
+                            {domainScores
+                              ? domainScores[d.id as keyof DomainScores].live
+                              : d.score}
+                          </span>
+                          {/* Delta chip — only when non-zero */}
+                          {(() => {
+                            const ds = domainScores?.[d.id as keyof DomainScores];
+                            if (!ds || ds.delta === 0) return null;
+                            const up = ds.delta > 0;
+                            return (
+                              <span
+                                className="font-mono text-[7px] tabular-nums px-1 py-0.5 rounded flex-shrink-0"
+                                style={{
+                                  color:      up ? "#e84040" : "#1ae8a0",
+                                  background: up ? "rgba(232,64,64,0.12)" : "rgba(26,232,160,0.10)",
+                                  border:     `1px solid ${up ? "rgba(232,64,64,0.25)" : "rgba(26,232,160,0.20)"}`,
+                                }}
+                              >
+                                {up ? "+" : ""}{ds.delta}
+                              </span>
+                            );
+                          })()}
+                        </span>
                       </Link>
                       {(d.scenarioIds ?? []).map(sid => {
                         const sc     = SCENARIOS.find(s => s.id === sid);

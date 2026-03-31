@@ -34,14 +34,16 @@ async function fetchYahoo(symbol: string): Promise<{ price: number; change: numb
 }
 
 export async function GET() {
-  const [gold, oil] = await Promise.all([
+  const [gold, oil, vix] = await Promise.all([
     fetchYahoo("GC=F"),
     fetchYahoo("CL=F"),
+    fetchYahoo("^VIX"),
   ]);
 
   return Response.json({
     gold,
     oil,
+    vix,
     fetchedAt: new Date().toISOString(),
   });
 }

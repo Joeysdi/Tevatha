@@ -11,6 +11,7 @@ export interface LivePrices {
   wti:    AssetPrice;
   btc:    AssetPrice;
   usdRub: AssetPrice;
+  vix:    AssetPrice; // price = VIX level; change = day % (unused in scoring)
 }
 
 const FAIL: AssetPrice = { price: 0, change: 0, ok: false };
@@ -28,16 +29,19 @@ export async function fetchLivePrices(): Promise<LivePrices> {
     fetchWithTimeout("https://open.er-api.com/v6/latest/USD").then(r => r.json()),
   ]);
 
-  // ── Gold + Oil ────────────────────────────────────────────────────────────
+  // ── Gold + Oil + VIX ──────────────────────────────────────────────────────
   let xau: AssetPrice = FAIL;
   let wti: AssetPrice = FAIL;
+  let vix: AssetPrice = FAIL;
   if (serverResult.status === "fulfilled") {
     const data = serverResult.value as {
       gold: { price: number; change: number } | null;
       oil:  { price: number; change: number } | null;
+      vix:  { price: number; change: number } | null;
     };
     if (data.gold) xau = { price: data.gold.price, change: data.gold.change, ok: true };
     if (data.oil)  wti = { price: data.oil.price,  change: data.oil.change,  ok: true };
+    if (data.vix)  vix = { price: data.vix.price,  change: data.vix.change,  ok: true };
   }
 
   // ── BTC/USD ───────────────────────────────────────────────────────────────
@@ -62,5 +66,5 @@ export async function fetchLivePrices(): Promise<LivePrices> {
     }
   }
 
-  return { xau, wti, btc, usdRub };
+  return { xau, wti, btc, usdRub, vix };
 }
