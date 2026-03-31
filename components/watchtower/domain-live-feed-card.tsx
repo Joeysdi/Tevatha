@@ -105,6 +105,62 @@ export function DomainLiveFeedCard({
   const filtered    = compact ? allFiltered.slice(0, 3) : allFiltered;
   const assetKeys   = DOMAIN_ASSETS[domainId] ?? [];
 
+  const newsItems = (
+    <div className="space-y-0">
+      {filtered.length === 0 ? (
+        <p className="font-mono text-[8.5px] text-text-mute2/40 py-1">No feed yet</p>
+      ) : (
+        filtered.map((pin) => {
+          const tierCol = TIER_HEX[pin.tier] ?? "#c9a84c";
+          const time    = typeof pin.date === "string" && pin.date.includes("T")
+            ? relativeTime(pin.date)
+            : pin.date;
+          return (
+            <button
+              key={pin.id}
+              onClick={(e) => { e.stopPropagation(); onNewsClick(pin.id); }}
+              className="w-full flex items-start gap-1.5 py-1 text-left rounded transition-colors
+                         hover:bg-white/[0.04] group"
+            >
+              <span className="font-mono text-[8px] flex-shrink-0 mt-0.5" style={{ color: col }}>▸</span>
+              <span className="font-mono text-[8.5px] text-text-dim leading-snug flex-1 min-w-0 group-hover:text-text-base transition-colors line-clamp-2">
+                {pin.headline}
+              </span>
+              <div className="flex flex-col items-end gap-0.5 flex-shrink-0 ml-1">
+                <span className="font-mono text-[7px] text-text-mute2/50">{time}</span>
+                <span
+                  className="font-mono text-[6.5px] px-1 py-0.5 rounded border font-bold leading-none"
+                  style={{ color: tierCol, borderColor: `${tierCol}40`, background: `${tierCol}12` }}
+                >
+                  {pin.tier.toUpperCase()}
+                </span>
+              </div>
+            </button>
+          );
+        })
+      )}
+    </div>
+  );
+
+  // ── Compact mode: flat panel section (no card chrome) ──────────────────────
+  if (compact) {
+    return (
+      <div className="px-4 py-3">
+        <div className="flex items-center gap-2 mb-2">
+          <span
+            className="w-1.5 h-1.5 rounded-full flex-shrink-0 animate-pulse"
+            style={{ background: col, boxShadow: `0 0 5px ${col}` }}
+          />
+          <span className="font-mono text-[10px] tracking-[.18em] uppercase" style={{ color: `${col}99` }}>
+            LIVE FEED
+          </span>
+        </div>
+        {newsItems}
+      </div>
+    );
+  }
+
+  // ── Full mode: standalone card ─────────────────────────────────────────────
   return (
     <div
       className="rounded-xl overflow-hidden backdrop-blur-md"
@@ -121,71 +177,40 @@ export function DomainLiveFeedCard({
       <div className="h-px w-full" style={{ background: `linear-gradient(90deg,${col},transparent)` }} />
 
       <div className="overflow-y-auto" style={{ maxHeight: "72vh" }}>
-      {/* Header */}
-      <div className={`flex items-center gap-2 px-3.5 pb-1.5 ${compact ? "pt-2" : "pt-2.5"}`}>
-        <span
-          className="w-1.5 h-1.5 rounded-full flex-shrink-0 animate-pulse"
-          style={{ background: col, boxShadow: `0 0 5px ${col}` }}
-        />
-        <span className="font-mono text-[8px] tracking-[.2em] uppercase font-bold" style={{ color: col }}>
-          LIVE FEED
-        </span>
-      </div>
+        {/* Header */}
+        <div className="flex items-center gap-2 px-3.5 pt-2.5 pb-1.5">
+          <span
+            className="w-1.5 h-1.5 rounded-full flex-shrink-0 animate-pulse"
+            style={{ background: col, boxShadow: `0 0 5px ${col}` }}
+          />
+          <span className="font-mono text-[8px] tracking-[.2em] uppercase font-bold" style={{ color: col }}>
+            LIVE FEED
+          </span>
+        </div>
 
-      {/* Divider */}
-      <div className="mx-3.5" style={{ height: 1, background: "rgba(255,255,255,0.06)" }} />
+        {/* Divider */}
+        <div className="mx-3.5" style={{ height: 1, background: "rgba(255,255,255,0.06)" }} />
 
-      {/* News items */}
-      <div className="px-3.5 py-2 space-y-0">
-        {filtered.length === 0 ? (
-          <p className="font-mono text-[8.5px] text-text-mute2/40 py-1">No feed yet</p>
-        ) : (
-          filtered.map((pin) => {
-            const tierCol = TIER_HEX[pin.tier] ?? "#c9a84c";
-            const time    = typeof pin.date === "string" && pin.date.includes("T")
-              ? relativeTime(pin.date)
-              : pin.date;
-            return (
-              <button
-                key={pin.id}
-                onClick={(e) => { e.stopPropagation(); onNewsClick(pin.id); }}
-                className="w-full flex items-start gap-1.5 py-1 text-left rounded transition-colors
-                           hover:bg-white/[0.04] group"
-              >
-                <span className="font-mono text-[8px] flex-shrink-0 mt-0.5" style={{ color: col }}>▸</span>
-                <span className="font-mono text-[8.5px] text-text-dim leading-snug flex-1 min-w-0 group-hover:text-text-base transition-colors line-clamp-2">
-                  {pin.headline}
-                </span>
-                <div className="flex flex-col items-end gap-0.5 flex-shrink-0 ml-1">
-                  <span className="font-mono text-[7px] text-text-mute2/50">{time}</span>
-                  <span
-                    className="font-mono text-[6.5px] px-1 py-0.5 rounded border font-bold leading-none"
-                    style={{ color: tierCol, borderColor: `${tierCol}40`, background: `${tierCol}12` }}
-                  >
-                    {pin.tier.toUpperCase()}
-                  </span>
-                </div>
-              </button>
-            );
-          })
+        {/* News items */}
+        <div className="px-3.5 py-2">
+          {newsItems}
+        </div>
+
+        {/* Price strip */}
+        {assetKeys.length > 0 && (
+          <>
+            <div className="mx-3.5 mt-1" style={{ height: 1, background: "rgba(255,255,255,0.06)" }} />
+            <div className="px-3.5 py-2">
+              {assetKeys.map((key) => (
+                <PriceRow
+                  key={key}
+                  assetKey={key}
+                  price={prices ? (prices as unknown as Record<string, AssetPrice>)[key] : undefined}
+                />
+              ))}
+            </div>
+          </>
         )}
-      </div>
-
-      {/* Price strip */}
-      {!compact && assetKeys.length > 0 && (
-        <>
-          <div className="mx-3.5 mt-1" style={{ height: 1, background: "rgba(255,255,255,0.06)" }} />
-          <div className="px-3.5 py-2">
-            {assetKeys.map((key) => (
-              <PriceRow
-                key={key}
-                assetKey={key}
-                price={prices ? (prices as unknown as Record<string, AssetPrice>)[key] : undefined}
-              />
-            ))}
-          </div>
-        </>
-      )}
       </div>
     </div>
   );
