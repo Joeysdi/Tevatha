@@ -17,6 +17,7 @@ import type { NewsFeedPin }       from "@/lib/watchtower/news-feed-pins";
 import { fetchGdeltPins }         from "@/lib/watchtower/gdelt-fetch";
 import { fetchLivePrices, type LivePrices } from "@/lib/watchtower/prices-fetch";
 import { calcDomainScores, type DomainScores } from "@/lib/watchtower/domain-score";
+import { calcGateStatuses, type GateStatus }  from "@/lib/watchtower/gate-status";
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -305,6 +306,11 @@ export function WatchtowerGlobeShell() {
     return calcDomainScores(newsPins, livePrices);
   }, [newsPins, livePrices]);
 
+  const gateStatuses: GateStatus[] = useMemo(() => {
+    if (!livePrices) return [];
+    return calcGateStatuses(newsPins, livePrices);
+  }, [newsPins, livePrices]);
+
   return (
     <div className="w-full h-full flex flex-col bg-void-0">
 
@@ -562,6 +568,7 @@ export function WatchtowerGlobeShell() {
           onOpenShop={() => router.push("/provisioner")}
           newsFeedPins={newsPins}
           onNewsClick={setSelectedNewsId}
+          gateStatuses={gateStatuses}
         />
 
 
@@ -668,9 +675,16 @@ export function WatchtowerGlobeShell() {
                         </p>
                         <div className="space-y-1">
                           {gateDetails.slice(0, 4).map((gate) => {
-                            const col = gate.tier === "t4" ? "#e84040" : gate.tier === "t3" ? "#f0a500" : "#38bdf8";
+                            const col  = gate.tier === "t4" ? "#e84040" : gate.tier === "t3" ? "#f0a500" : "#38bdf8";
+                            const gs   = gateStatuses.find(s => s.id === gate.id);
+                            const dot  = gs?.status === "triggered" ? "#e84040" : gs?.status === "warning" ? "#f0a500" : "rgba(150,165,180,0.35)";
+                            const pulse = gs?.status === "triggered";
                             return (
                               <div key={gate.id} className="flex items-start gap-2">
+                                <span
+                                  className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1 ${pulse ? "animate-pulse" : ""}`}
+                                  style={{ background: dot }}
+                                />
                                 <span
                                   className="font-mono text-[7px] font-bold px-1.5 py-0.5 rounded border flex-shrink-0"
                                   style={{ color: col, borderColor: `${col}40`, background: `${col}15` }}
@@ -678,7 +692,13 @@ export function WatchtowerGlobeShell() {
                                   {gate.id}
                                 </span>
                                 <span className="font-mono text-[7.5px] text-text-mute2 leading-snug flex-1">{gate.trigger}</span>
-                                <span className="font-mono text-[7px] text-text-mute2/50 flex-shrink-0">{gate.window}</span>
+                                {gs && gs.confidence > 0 ? (
+                                  <span className="font-mono text-[7px] flex-shrink-0 tabular-nums" style={{ color: dot }}>
+                                    {Math.round(gs.confidence * 100)}%
+                                  </span>
+                                ) : (
+                                  <span className="font-mono text-[7px] text-text-mute2/50 flex-shrink-0">{gate.window}</span>
+                                )}
                               </div>
                             );
                           })}

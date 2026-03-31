@@ -9,14 +9,16 @@ import { GEAR } from "@/lib/watchtower/data-gear";
 import { PSYCH_PILLARS, PSYCH_THREATS } from "@/lib/watchtower/data-psych";
 import { useTranslation } from "@/lib/i18n/use-translation";
 import { SEV_STYLES, SEV_LABELS } from "@/lib/watchtower/severity-styles";
+import { type GateStatus } from "@/lib/watchtower/gate-status";
 
 export type IntelTab = "scenarios" | "signals" | "gear" | "psych" | "timeline";
 
 interface Props {
-  open:        boolean;
-  onClose:     () => void;
-  activeTab:   IntelTab;
-  onTabChange: (t: IntelTab) => void;
+  open:          boolean;
+  onClose:       () => void;
+  activeTab:     IntelTab;
+  onTabChange:   (t: IntelTab) => void;
+  gateStatuses?: GateStatus[];
 }
 
 const TABS: { id: IntelTab; label: string; href: string }[] = [
@@ -83,7 +85,7 @@ function parseEvtYear(y: string): number {
 
 // ── Main Panel ────────────────────────────────────────────────────────────────
 
-export function GlobeIntelPanel({ open, onClose, activeTab, onTabChange }: Props) {
+export function GlobeIntelPanel({ open, onClose, activeTab, onTabChange, gateStatuses }: Props) {
   const { t } = useTranslation();
 
   return (
@@ -159,7 +161,7 @@ export function GlobeIntelPanel({ open, onClose, activeTab, onTabChange }: Props
                 {activeTab === "signals"   && <SignalsTab />}
                 {activeTab === "gear"      && <GearTab />}
                 {activeTab === "psych"     && <PsychTab />}
-                {activeTab === "timeline"  && <TimelineTab />}
+                {activeTab === "timeline"  && <TimelineTab gateStatuses={gateStatuses} />}
               </motion.div>
             </AnimatePresence>
           </div>
@@ -509,7 +511,9 @@ function PsychTab() {
 
 // ── TIMELINE TAB ──────────────────────────────────────────────────────────────
 
-function TimelineTab() {
+function TimelineTab({ gateStatuses }: { gateStatuses?: GateStatus[] }) {
+  const statusMap = Object.fromEntries((gateStatuses ?? []).map(s => [s.id, s]));
+
   const phaseGroups = PHASES.map((phase) => {
     const events = TIMELINE_EVENTS.filter((evt) => {
       const yr = parseEvtYear(evt.year);
@@ -529,9 +533,17 @@ function TimelineTab() {
           </p>
           <div className="space-y-2">
             {GATES.map((gate) => {
-              const col = TIER_HEX[gate.tier] ?? "#c9a84c";
+              const col   = TIER_HEX[gate.tier] ?? "#c9a84c";
+              const gs    = statusMap[gate.id];
+              const dot   = gs?.status === "triggered" ? "#e84040" : gs?.status === "warning" ? "#f0a500" : "rgba(150,165,180,0.35)";
+              const pulse = gs?.status === "triggered";
               return (
                 <div key={gate.id} className="flex items-start gap-2">
+                  {/* Status dot */}
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1 ${pulse ? "animate-pulse" : ""}`}
+                    style={{ background: dot, boxShadow: pulse ? `0 0 5px ${dot}` : "none" }}
+                  />
                   <div className="flex-shrink-0 pt-0.5">
                     <span
                       className="font-mono text-[7px] font-bold px-1.5 py-0.5 rounded border"
@@ -544,13 +556,24 @@ function TimelineTab() {
                     <p className="font-syne font-bold text-[10px] text-text-base leading-snug">
                       {gate.trigger}
                     </p>
+                    {gs && gs.status !== "monitoring" && gs.reason && (
+                      <p className="font-mono text-[7px] mt-0.5 leading-snug italic" style={{ color: `${dot}cc` }}>
+                        {gs.reason}
+                      </p>
+                    )}
                     <p className="font-mono text-[7.5px] text-text-mute2 mt-0.5 leading-snug">
                       {gate.action}
                     </p>
                   </div>
-                  <span className="font-mono text-[6.5px] text-text-mute2/50 flex-shrink-0 mt-0.5">
-                    {gate.window}
-                  </span>
+                  <div className="flex-shrink-0 mt-0.5 text-right">
+                    {gs && gs.confidence > 0 ? (
+                      <span className="font-mono text-[7px] tabular-nums" style={{ color: dot }}>
+                        {Math.round(gs.confidence * 100)}%
+                      </span>
+                    ) : (
+                      <span className="font-mono text-[6.5px] text-text-mute2/50">{gate.window}</span>
+                    )}
+                  </div>
                 </div>
               );
             })}

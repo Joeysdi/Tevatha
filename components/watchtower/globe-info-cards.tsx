@@ -6,6 +6,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import type { ReactNode } from "react";
 import { DOMAINS, SIGNALS, SCENARIOS, PSYCH_PILLARS, GATES } from "@/lib/watchtower/data";
+import { type GateStatus } from "@/lib/watchtower/gate-status";
 import { GEAR } from "@/lib/watchtower/data-gear";
 import { DOMAIN_COLORS } from "@/lib/watchtower/domain-colors";
 import { DomainLiveFeedCard } from "./domain-live-feed-card";
@@ -285,19 +286,34 @@ function DomainInfoCard({
 }
 
 // ── Domain gates card ─────────────────────────────────────────────────────────
-function DomainGatesCard({ domainId, col }: { domainId: string; col: string }) {
+const STATUS_DOT: Record<string, string> = {
+  monitoring: "rgba(150,165,180,0.4)",
+  warning:    "#f0a500",
+  triggered:  "#e84040",
+};
+
+function DomainGatesCard({ domainId, col, gateStatuses }: { domainId: string; col: string; gateStatuses?: GateStatus[] }) {
   const gateIds = DOMAIN_GATES[domainId] ?? [];
   const gates = GATES.filter((g) => gateIds.includes(g.id));
   if (gates.length === 0) return null;
+  const statusMap = Object.fromEntries((gateStatuses ?? []).map(s => [s.id, s]));
   return (
     <div className="px-4 py-3.5">
       <SectionLabel text="🔑 Decision Gates" col={col} />
       <div className="space-y-2.5">
         {gates.map((gate) => {
-          const gc = TIER_HEX[gate.tier] ?? "#c9a84c";
+          const gc  = TIER_HEX[gate.tier] ?? "#c9a84c";
+          const gs  = statusMap[gate.id];
+          const dot = STATUS_DOT[gs?.status ?? "monitoring"];
+          const pulse = gs?.status === "triggered";
           return (
             <div key={gate.id} className="border-b last:border-b-0 pb-2.5 last:pb-0" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
               <div className="flex items-center gap-2 mb-1">
+                {/* Status dot */}
+                <span
+                  className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${pulse ? "animate-pulse" : ""}`}
+                  style={{ background: dot, boxShadow: pulse ? `0 0 6px ${dot}` : "none" }}
+                />
                 <span
                   className="font-mono text-[9px] font-bold px-1.5 py-0.5 rounded border flex-shrink-0"
                   style={{ color: gc, borderColor: `${gc}40`, background: `${gc}15` }}
@@ -305,8 +321,21 @@ function DomainGatesCard({ domainId, col }: { domainId: string; col: string }) {
                   {gate.id} · {gate.tier.toUpperCase()}
                 </span>
                 <span className="font-mono text-[10px] text-text-mute2/60">{gate.window}</span>
+                {gs && gs.confidence > 0 && (
+                  <span
+                    className="ml-auto font-mono text-[8px] tabular-nums flex-shrink-0"
+                    style={{ color: dot }}
+                  >
+                    {Math.round(gs.confidence * 100)}%
+                  </span>
+                )}
               </div>
               <p className="font-mono text-[11px] text-text-base leading-snug mb-1">{gate.trigger}</p>
+              {gs && gs.status !== "monitoring" && gs.reason && (
+                <p className="font-mono text-[9px] leading-snug mb-1 italic" style={{ color: `${dot}cc` }}>
+                  {gs.reason}
+                </p>
+              )}
               <p className="font-mono text-[11px] font-bold leading-snug" style={{ color: gc }}>{gate.action}</p>
             </div>
           );
@@ -822,6 +851,7 @@ interface GlobeRightPanelProps {
   onOpenShop:          () => void;
   newsFeedPins:        NewsFeedPin[];
   onNewsClick:         (newsId: string) => void;
+  gateStatuses?:       GateStatus[];
 }
 
 export function GlobeRightPanel({
@@ -831,6 +861,7 @@ export function GlobeRightPanel({
   onClose,
   onCloseCommodity, onCloseNews, onCloseCity,
   onOpenShop, newsFeedPins, onNewsClick,
+  gateStatuses,
 }: GlobeRightPanelProps) {
   const hasAny = !!(domainId || scenarioId || selectedSignalIdx !== null
     || selectedPsychZone || selectedGateId || selectedCommodityId
@@ -948,7 +979,7 @@ export function GlobeRightPanel({
                     <DomainInfoCard domainId={domainId} col={col} />
                     <Divider />
                     <DomainLiveFeedCard domainId={domainId} newsFeedPins={newsFeedPins} onNewsClick={onNewsClick} col={col} compact={true} />
-                    {gateIds.length > 0 && <><Divider /><DomainGatesCard domainId={domainId} col={col} /></>}
+                    {gateIds.length > 0 && <><Divider /><DomainGatesCard domainId={domainId} col={col} gateStatuses={gateStatuses} /></>}
                     <Divider />
                     <PanelShopFooter domainId={domainId} col={col} onOpenShop={onOpenShop} />
                   </>
