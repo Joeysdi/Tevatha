@@ -318,12 +318,24 @@ function DomainGatesCard({ domainId, col, gateStatuses, showShop, onOpenShop }: 
   const gates = GATES.filter((g) => gateIds.includes(g.id));
   if (gates.length === 0) return null;
   const statusMap = Object.fromEntries((gateStatuses ?? []).map(s => [s.id, s]));
-  const shopItems = showShop ? getDomainGear(domainId, 4) : [];
+
+  // Pre-compute item names already surfaced in per-gate strips so we can deduplicate the domain list
+  const shownInStrips = new Set<string>();
+  for (const gate of gates) {
+    const gs = statusMap[gate.id];
+    if (gs?.status === "warning" || gs?.status === "triggered") {
+      getGateGear(gate.id).forEach(item => shownInStrips.add(item.name));
+    }
+  }
+
+  const allDomainItems = showShop ? getDomainGear(domainId, 8) : [];
+  const shopItems = allDomainItems.filter(item => !shownInStrips.has(item.name)).slice(0, 4);
   const shopTotal = showShop ? getDomainGearTotal(domainId) : 0;
   const provDomain = DOMAIN_PROV_MAP[domainId] ?? "nuclear";
+
   return (
     <div className="px-4 py-3.5">
-      <SectionLabel text="🔑 Decision Gates" col={col} />
+      <SectionLabel text="⚡ Response Protocol" col={col} />
       <div className="space-y-2.5">
         {gates.map((gate) => {
           const gc  = TIER_HEX[gate.tier] ?? "#c9a84c";
@@ -333,7 +345,6 @@ function DomainGatesCard({ domainId, col, gateStatuses, showShop, onOpenShop }: 
           return (
             <div key={gate.id} className="border-b last:border-b-0 pb-2.5 last:pb-0" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
               <div className="flex items-center gap-2 mb-1">
-                {/* Status dot */}
                 <span
                   className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${pulse ? "animate-pulse" : ""}`}
                   style={{ background: dot, boxShadow: pulse ? `0 0 6px ${dot}` : "none" }}
@@ -367,30 +378,20 @@ function DomainGatesCard({ domainId, col, gateStatuses, showShop, onOpenShop }: 
                 if (!items.length || !config) return null;
                 return (
                   <div className="mt-2 pt-2 border-t" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-                    <p className="font-mono text-[7px] tracking-[.14em] uppercase mb-1.5"
-                       style={{ color: `${dot}80` }}>
+                    <p className="font-mono text-[7px] tracking-[.14em] uppercase mb-1.5" style={{ color: `${dot}80` }}>
                       {config.label}
                     </p>
-                    <div className="space-y-1 mb-2">
+                    <div className="space-y-1">
                       {items.map((item, i) => (
                         <div key={i} className="flex items-center gap-2">
                           <span className="font-mono text-[7px] px-1 py-0.5 rounded border border-border-protocol bg-void-3 text-text-mute2 flex-shrink-0">
                             {item.tier}
                           </span>
                           <p className="font-mono text-[9px] text-text-base flex-1 truncate">{item.name}</p>
-                          <span className="font-mono text-[8px] text-gold-protocol flex-shrink-0 tabular-nums">
-                            {item.price}
-                          </span>
+                          <span className="font-mono text-[8px] text-gold-protocol flex-shrink-0 tabular-nums">{item.price}</span>
                         </div>
                       ))}
                     </div>
-                    <Link
-                      href={`/provisioner/gear?domain=${config.provDomain}`}
-                      onClick={e => e.stopPropagation()}
-                      className="block w-full text-center font-mono text-[8px] font-bold py-1.5 rounded border border-gold-dim bg-gold-glow text-gold-bright hover:-translate-y-px hover:shadow-[0_4px_16px_rgba(201,168,76,0.25)] transition-all duration-150"
-                    >
-                      Prepare now →
-                    </Link>
                   </div>
                 );
               })()}
@@ -398,21 +399,22 @@ function DomainGatesCard({ domainId, col, gateStatuses, showShop, onOpenShop }: 
           );
         })}
       </div>
-      {showShop && shopItems.length > 0 && (
+      {showShop && (shopItems.length > 0 || shopTotal > 0) && (
         <div className="-mx-4 mt-3.5 px-4 pt-3.5 pb-0.5"
              style={{ background: "rgba(201,168,76,0.04)", borderTop: "1px solid rgba(201,168,76,0.10)" }}>
-          <SectionLabel text="⚡ Fix the Risk" col="#c9a84c" />
-          <div className="space-y-2 mb-3.5">
-            {shopItems.map((item, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <span className="font-mono text-[9px] px-1 py-0.5 rounded border border-border-protocol bg-void-3 text-text-mute2 flex-shrink-0">
-                  {item.tier}
-                </span>
-                <p className="font-mono text-[11px] text-text-base flex-1 truncate">{item.name}</p>
-                <span className="font-mono text-[10px] text-gold-protocol flex-shrink-0 tabular-nums">{item.price}</span>
-              </div>
-            ))}
-          </div>
+          {shopItems.length > 0 && (
+            <div className="space-y-2 mb-3.5">
+              {shopItems.map((item, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <span className="font-mono text-[9px] px-1 py-0.5 rounded border border-border-protocol bg-void-3 text-text-mute2 flex-shrink-0">
+                    {item.tier}
+                  </span>
+                  <p className="font-mono text-[11px] text-text-base flex-1 truncate">{item.name}</p>
+                  <span className="font-mono text-[10px] text-gold-protocol flex-shrink-0 tabular-nums">{item.price}</span>
+                </div>
+              ))}
+            </div>
+          )}
           <Link
             href={`/provisioner/gear?domain=${provDomain}`}
             onClick={(e) => e.stopPropagation()}
