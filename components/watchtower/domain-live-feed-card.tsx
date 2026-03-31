@@ -72,6 +72,7 @@ interface DomainLiveFeedCardProps {
   newsFeedPins: NewsFeedPin[];
   onNewsClick:  (newsId: string) => void;
   col:          string;
+  compact?:     boolean;
 }
 
 export function DomainLiveFeedCard({
@@ -79,6 +80,7 @@ export function DomainLiveFeedCard({
   newsFeedPins,
   onNewsClick,
   col,
+  compact = false,
 }: DomainLiveFeedCardProps) {
   const [prices, setPrices] = useState<LivePrices | null>(null);
 
@@ -99,8 +101,9 @@ export function DomainLiveFeedCard({
     return () => { cancelled = true; clearInterval(id); };
   }, []);
 
-  const filtered  = filterNewsByDomain(newsFeedPins, domainId);
-  const assetKeys = DOMAIN_ASSETS[domainId] ?? [];
+  const allFiltered = filterNewsByDomain(newsFeedPins, domainId);
+  const filtered    = compact ? allFiltered.slice(0, 3) : allFiltered;
+  const assetKeys   = DOMAIN_ASSETS[domainId] ?? [];
 
   return (
     <div
@@ -119,7 +122,7 @@ export function DomainLiveFeedCard({
 
       <div className="overflow-y-auto" style={{ maxHeight: "72vh" }}>
       {/* Header */}
-      <div className="flex items-center gap-2 px-3.5 pt-2.5 pb-1.5">
+      <div className={`flex items-center gap-2 px-3.5 pb-1.5 ${compact ? "pt-2" : "pt-2.5"}`}>
         <span
           className="w-1.5 h-1.5 rounded-full flex-shrink-0 animate-pulse"
           style={{ background: col, boxShadow: `0 0 5px ${col}` }}
@@ -169,7 +172,7 @@ export function DomainLiveFeedCard({
       </div>
 
       {/* Price strip */}
-      {assetKeys.length > 0 && (
+      {!compact && assetKeys.length > 0 && (
         <>
           <div className="mx-3.5 mt-1" style={{ height: 1, background: "rgba(255,255,255,0.06)" }} />
           <div className="px-3.5 py-2">

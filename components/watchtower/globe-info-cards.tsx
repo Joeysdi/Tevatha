@@ -168,11 +168,10 @@ function SectionLabel({ text, col }: { text: string; col: string }) {
 
 // ── Domain info card ──────────────────────────────────────────────────────────
 function DomainInfoCard({
-  domainId, col, onOpenShop,
+  domainId, col,
 }: {
   domainId: string;
   col: string;
-  onOpenShop: () => void;
 }) {
   const domain = DOMAINS.find((d) => d.id === domainId);
   const [speaking, setSpeaking] = useState(false);
@@ -281,7 +280,6 @@ function DomainInfoCard({
           ))}
         </div>
       </div>
-      <GearStrip domainId={domainId} col={col} onOpenShop={onOpenShop} />
     </div>
   );
 }
@@ -353,12 +351,11 @@ function GearStrip({ domainId, col }: { domainId: string; col: string; onOpenSho
 
 // ── Scenario cards ────────────────────────────────────────────────────────────
 function ScenarioOverviewCard({
-  scenarioId, col, domainId, onOpenShop,
+  scenarioId, col, domainId,
 }: {
   scenarioId: string;
   col: string;
   domainId: string;
-  onOpenShop: () => void;
 }) {
   const sc = SCENARIOS.find((s) => s.id === scenarioId);
   if (!sc) return null;
@@ -385,7 +382,6 @@ function ScenarioOverviewCard({
           ))}
         </div>
       </div>
-      <GearStrip domainId={domainId} col={col} onOpenShop={onOpenShop} />
     </div>
   );
 }
@@ -425,12 +421,11 @@ function ScenarioMitigationCard({ scenarioId, col }: { scenarioId: string; col: 
 
 // ── Signal cards ──────────────────────────────────────────────────────────────
 function SignalDetailCard({
-  signalIdx, col, domainId, onOpenShop,
+  signalIdx, col, domainId,
 }: {
   signalIdx: number;
   col: string;
   domainId: string;
-  onOpenShop: () => void;
 }) {
   const sig = SIGNALS[signalIdx];
   if (!sig) return null;
@@ -459,7 +454,6 @@ function SignalDetailCard({
       >
         {sig.source} ↗
       </a>
-      <GearStrip domainId={domainId} col={col} onOpenShop={onOpenShop} />
     </div>
   );
 }
@@ -769,8 +763,43 @@ function Divider() {
   return <div style={{ height: 1, background: "rgba(255,255,255,0.05)" }} />;
 }
 
-function GearCard({ domainId, col, onOpenShop }: { domainId: string; col: string; onOpenShop: () => void }) {
-  return <GearStrip domainId={domainId} col={col} onOpenShop={onOpenShop} />;
+function PanelShopFooter({ domainId, col, onOpenShop }: { domainId: string; col: string; onOpenShop: () => void }) {
+  const items = getDomainGear(domainId, 4);
+  const total = getDomainGearTotal(domainId);
+  const provDomain = DOMAIN_PROV_MAP[domainId] ?? "nuclear";
+  if (items.length === 0) return null;
+  return (
+    <div
+      className="px-4 py-3.5"
+      style={{
+        background: "rgba(201,168,76,0.04)",
+        borderTop: "1px solid rgba(201,168,76,0.10)",
+      }}
+    >
+      <SectionLabel text="⚡ Fix the Risk" col="#c9a84c" />
+      <div className="space-y-2 mb-3.5">
+        {items.map((item, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <span className="font-mono text-[9px] px-1 py-0.5 rounded border border-border-protocol bg-void-3 text-text-mute2 flex-shrink-0">
+              {item.tier}
+            </span>
+            <p className="font-mono text-[11px] text-text-base flex-1 truncate">{item.name}</p>
+            <span className="font-mono text-[10px] text-gold-protocol flex-shrink-0 tabular-nums">{item.price}</span>
+          </div>
+        ))}
+      </div>
+      <Link
+        href={`/provisioner/gear?domain=${provDomain}`}
+        onClick={(e) => e.stopPropagation()}
+        className="block w-full text-center font-mono text-[10px] font-bold py-2.5 rounded-lg
+                   border border-gold-dim bg-gold-glow text-gold-bright
+                   hover:-translate-y-px hover:shadow-[0_4px_20px_rgba(201,168,76,0.35)]
+                   transition-all duration-150"
+      >
+        {total} items ready for this threat →
+      </Link>
+    </div>
+  );
 }
 
 // ── Main export ───────────────────────────────────────────────────────────────
@@ -821,7 +850,7 @@ export function GlobeRightPanel({
           className="absolute right-4 z-20 [&::-webkit-scrollbar]:hidden"
           style={{
             top: "48px",
-            width: "320px",
+            width: "360px",
             transform: `scale(${panelScale})`,
             transformOrigin: "top right",
           }}
@@ -873,7 +902,7 @@ export function GlobeRightPanel({
                   <>
                     <GateDetailCard gateId={selectedGateId} onClose={() => {}} />
                     <Divider />
-                    <GearCard domainId={gearDomain} col={col} onOpenShop={onOpenShop} />
+                    <PanelShopFooter domainId={gearDomain} col={col} onOpenShop={onOpenShop} />
                   </>
                 );
               })()}
@@ -881,7 +910,7 @@ export function GlobeRightPanel({
                 <>
                   <PsychDetailCard psychZone={selectedPsychZone} onClose={() => {}} />
                   <Divider />
-                  <GearCard domainId="bio" col="#8b2be2" onOpenShop={onOpenShop} />
+                  <PanelShopFooter domainId="bio" col="#8b2be2" onOpenShop={onOpenShop} />
                 </>
               )}
               {selectedSignalIdx !== null && !selectedGateId && !selectedPsychZone && !selectedCityIdx && !selectedCommodityId && !selectedNewsId && (() => {
@@ -890,9 +919,11 @@ export function GlobeRightPanel({
                 const col = DOMAIN_COLORS[domId] ?? '#c9a84c';
                 return (
                   <>
-                    <SignalDetailCard signalIdx={selectedSignalIdx} col={col} domainId={domId} onOpenShop={onOpenShop} />
+                    <SignalDetailCard signalIdx={selectedSignalIdx} col={col} domainId={domId} />
                     <Divider />
                     <SignalGateCard signalIdx={selectedSignalIdx} col={col} />
+                    <Divider />
+                    <PanelShopFooter domainId={domId} col={col} onOpenShop={onOpenShop} />
                   </>
                 );
               })()}
@@ -901,9 +932,11 @@ export function GlobeRightPanel({
                 const col = "#e84040";
                 return (
                   <>
-                    <ScenarioOverviewCard scenarioId={scenarioId} col={col} domainId={gearDomain} onOpenShop={onOpenShop} />
+                    <ScenarioOverviewCard scenarioId={scenarioId} col={col} domainId={gearDomain} />
                     <Divider />
                     <ScenarioMitigationCard scenarioId={scenarioId} col={col} />
+                    <Divider />
+                    <PanelShopFooter domainId={gearDomain} col={col} onOpenShop={onOpenShop} />
                   </>
                 );
               })()}
@@ -912,10 +945,12 @@ export function GlobeRightPanel({
                 const gateIds = DOMAIN_GATES[domainId] ?? [];
                 return (
                   <>
-                    <DomainInfoCard domainId={domainId} col={col} onOpenShop={onOpenShop} />
+                    <DomainInfoCard domainId={domainId} col={col} />
+                    <Divider />
+                    <DomainLiveFeedCard domainId={domainId} newsFeedPins={newsFeedPins} onNewsClick={onNewsClick} col={col} compact={true} />
                     {gateIds.length > 0 && <><Divider /><DomainGatesCard domainId={domainId} col={col} /></>}
                     <Divider />
-                    <DomainLiveFeedCard domainId={domainId} newsFeedPins={newsFeedPins} onNewsClick={onNewsClick} col={col} />
+                    <PanelShopFooter domainId={domainId} col={col} onOpenShop={onOpenShop} />
                   </>
                 );
               })()}
