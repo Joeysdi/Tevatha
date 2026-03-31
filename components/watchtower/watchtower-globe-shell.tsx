@@ -366,19 +366,23 @@ export function WatchtowerGlobeShell() {
           {/* Unified Palantir-style module */}
           <div
             style={{
-              background: "rgba(6,7,14,0.42)",
-              border: "1px solid rgba(255,255,255,0.05)",
-              borderRadius: 4,
-              backdropFilter: "blur(4px)",
-              minWidth: "164px",
+              background: "rgba(6,7,14,0.96)",
+              border: "1px solid rgba(255,255,255,0.06)",
+              borderRadius: 6,
+              backdropFilter: "blur(8px)",
+              boxShadow: "0 8px 40px rgba(0,0,0,0.75)",
+              width: "196px",
+              overflow: "hidden",
             }}
           >
+            <div className="h-px w-full" style={{ background: "linear-gradient(90deg,#e84040,rgba(232,64,64,0.15),transparent)" }} />
             {/* ── Threat Domains ───────────────────────────────────── */}
             <div className="pt-2.5 pb-1">
               <div className="flex items-center gap-1.5 px-2.5 mb-1">
                 <div className="w-[2px] h-2.5 rounded-full bg-red-protocol/60 flex-shrink-0" />
-                <p className="font-mono text-[9px] tracking-[.2em] uppercase text-text-mute2/50">Threat Domains</p>
+                <p className="font-mono text-[9px] tracking-[.2em] uppercase text-text-mute2/70">Threat Domains</p>
               </div>
+              <div style={{ height: 1, background: "rgba(255,255,255,0.05)" }} />
               <div className="flex flex-col">
                 {DOMAINS.map((d) => {
                   const active = domainId === d.id;
@@ -393,7 +397,7 @@ export function WatchtowerGlobeShell() {
                         className={`flex items-center gap-1.5 pl-3 pr-2.5 py-1 min-h-[44px] text-left
                                     transition-all duration-150 font-mono text-[10px] border-l-2
                                     ${active ? "" : "text-text-mute2 hover:text-text-base"}`}
-                        style={active ? { color: col, borderLeftColor: col } : { borderLeftColor: "transparent" }}
+                        style={active ? { color: col, borderLeftColor: col, background: `${col}08` } : { borderLeftColor: "transparent" }}
                       >
                         <span
                           className="w-1.5 h-1.5 rounded-full flex-shrink-0"
@@ -401,7 +405,13 @@ export function WatchtowerGlobeShell() {
                         />
                         <span className="text-[12px] leading-none">{d.icon}</span>
                         <span className="truncate max-w-[110px]">{d.label}</span>
-                        <span className="ml-auto font-bold tabular-nums text-[10px]" style={{ color: active ? col : "rgba(150,165,180,0.35)" }}>{d.score}</span>
+                        <span
+                          className="ml-auto font-mono text-[9px] font-bold tabular-nums px-1.5 py-0.5 rounded flex-shrink-0"
+                          style={active
+                            ? { color: col, background: `${col}20`, border: `1px solid ${col}40` }
+                            : { color: "rgba(150,165,180,0.35)", background: "rgba(150,165,180,0.06)", border: "1px solid rgba(150,165,180,0.10)" }
+                          }
+                        >{d.score}</span>
                       </Link>
                       {(d.scenarioIds ?? []).map(sid => {
                         const sc     = SCENARIOS.find(s => s.id === sid);
@@ -424,6 +434,14 @@ export function WatchtowerGlobeShell() {
                                   style={{ background: scActive ? col : "rgba(150,165,180,0.2)" }} />
                             <span className="text-[11px] leading-none">{sc.icon}</span>
                             <span className="truncate">{sc.title}</span>
+                            {sc.prob !== undefined && (
+                              <span
+                                className="ml-auto font-mono text-[8px] tabular-nums flex-shrink-0"
+                                style={{ color: scActive ? `${col}cc` : "rgba(150,165,180,0.25)" }}
+                              >
+                                {sc.prob}%
+                              </span>
+                            )}
                           </Link>
                         );
                       })}
@@ -437,7 +455,7 @@ export function WatchtowerGlobeShell() {
             {/* ── Idle CTA — tier quiz prompt ───────────────────────── */}
             {!domainId && !scenarioId && selectedSignalIdx === null && !idleCtaDismissed && (
               <>
-                <div style={{ height: 1, background: "rgba(255,255,255,0.04)" }} />
+                <div style={{ height: 1, background: "rgba(255,255,255,0.06)" }} />
                 <div
                   className="px-2.5 py-2.5"
                   style={{ background: "rgba(201,168,76,0.05)" }}
