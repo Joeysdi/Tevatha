@@ -30,6 +30,18 @@ const DOMAIN_GATES: Record<string, string[]> = {
   environmental: ["G6"],
 };
 
+// ── Gate-specific gear mapping ───────────────────────────────────────────────
+const GATE_GEAR: Record<string, { cats: string[]; provDomain: string; label: string }> = {
+  G1: { cats: ["Communications", "Energy", "Mobility"], provDomain: "nuclear",  label: "Bug-out protocol"     },
+  G2: { cats: ["Communications", "Energy", "Mobility"], provDomain: "nuclear",  label: "Bug-out protocol"     },
+  G3: { cats: ["Communications", "Mobility"],           provDomain: "civil",    label: "Evacuation protocol"  },
+  G4: { cats: ["Energy", "Communications"],             provDomain: "economic", label: "Financial protocol"   },
+  G5: { cats: ["Communications", "Energy", "Medical"],  provDomain: "nuclear",  label: "Ark escalation"       },
+  G6: { cats: ["Medical"],                              provDomain: "bio",      label: "Isolation protocol"   },
+  G7: { cats: ["Energy", "Communications"],             provDomain: "economic", label: "Financial protocol"   },
+  G8: { cats: ["Communications", "Energy"],             provDomain: "economic", label: "Sovereignty protocol" },
+};
+
 // ── Scenario domain mapping ──────────────────────────────────────────────────
 const SCENARIO_DOMAIN: Record<string, string> = {
   S01: "economic",      S03: "economic",      S05: "geopolitical",
@@ -137,6 +149,15 @@ function getDomainGearTotal(domainId: string): number {
   return GEAR
     .filter((c) => cats.includes(c.cat))
     .reduce((sum, c) => sum + c.items.length, 0);
+}
+
+function getGateGear(gateId: string, limit = 2) {
+  const config = GATE_GEAR[gateId];
+  if (!config) return [];
+  return GEAR
+    .filter(c => config.cats.includes(c.cat))
+    .flatMap(c => c.items.filter(i => i.critical))
+    .slice(0, limit);
 }
 
 function getGateDomain(gateId: string): string {
@@ -337,6 +358,39 @@ function DomainGatesCard({ domainId, col, gateStatuses }: { domainId: string; co
                 </p>
               )}
               <p className="font-mono text-[11px] font-bold leading-snug" style={{ color: gc }}>{gate.action}</p>
+              {(gs?.status === "warning" || gs?.status === "triggered") && (() => {
+                const items = getGateGear(gate.id);
+                const config = GATE_GEAR[gate.id];
+                if (!items.length || !config) return null;
+                return (
+                  <div className="mt-2 pt-2 border-t" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+                    <p className="font-mono text-[7px] tracking-[.14em] uppercase mb-1.5"
+                       style={{ color: `${dot}80` }}>
+                      {config.label}
+                    </p>
+                    <div className="space-y-1 mb-2">
+                      {items.map((item, i) => (
+                        <div key={i} className="flex items-center gap-2">
+                          <span className="font-mono text-[7px] px-1 py-0.5 rounded border border-border-protocol bg-void-3 text-text-mute2 flex-shrink-0">
+                            {item.tier}
+                          </span>
+                          <p className="font-mono text-[9px] text-text-base flex-1 truncate">{item.name}</p>
+                          <span className="font-mono text-[8px] text-gold-protocol flex-shrink-0 tabular-nums">
+                            {item.price}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    <Link
+                      href={`/provisioner/gear?domain=${config.provDomain}`}
+                      onClick={e => e.stopPropagation()}
+                      className="block w-full text-center font-mono text-[8px] font-bold py-1.5 rounded border border-gold-dim bg-gold-glow text-gold-bright hover:-translate-y-px hover:shadow-[0_4px_16px_rgba(201,168,76,0.25)] transition-all duration-150"
+                    >
+                      Prepare now →
+                    </Link>
+                  </div>
+                );
+              })()}
             </div>
           );
         })}
