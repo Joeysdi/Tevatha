@@ -7,7 +7,7 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "@/lib/i18n/use-translation";
 import { WorldRiskGlobe }         from "./world-risk-globe";
-import { GlobeInfoCards }         from "./globe-info-cards";
+import { GlobeRightPanel }        from "./globe-info-cards";
 
 import { DOMAINS, SCENARIOS, TIMELINE_EVENTS, GATES } from "@/lib/watchtower/data";
 import { DOMAIN_COLORS } from "@/lib/watchtower/domain-colors";
@@ -266,6 +266,15 @@ export function WatchtowerGlobeShell() {
     return () => unwatch?.();
   }, []);
 
+  const handleClosePanel = useCallback(() => {
+    setDomainId(null);
+    setScenarioId(null);
+    setSelectedSignalIdx(null);
+    setSelectedPsychZone(null);
+    setSelectedGateId(null);
+    updateUrl({ domain: null, scenario: null });
+  }, [updateUrl]);
+
   const eraPhase  = domainId ? (domainEras[domainId]     ?? "P4") : "P4";
   const livePhase = domainId ? (domainLiveEras[domainId] ?? eraPhase) : "P4";
 
@@ -486,28 +495,23 @@ export function WatchtowerGlobeShell() {
           </div>
         </div>
 
-        {/* ── Globe info cards (draggable multi-card system) ────────────────── */}
-        <GlobeInfoCards
-          containerRef={globeContainerRef as React.RefObject<HTMLElement>}
-          containerW={containerW}
+        {/* ── Globe right panel (fixed single panel) ───────────────────────── */}
+        <GlobeRightPanel
           containerH={containerH}
+          panelScale={panelScale}
           domainId={domainId}
           scenarioId={scenarioId}
           selectedSignalIdx={selectedSignalIdx}
           selectedPsychZone={selectedPsychZone}
           selectedGateId={selectedGateId}
-          onCloseDomain={() => { setDomainId(null); updateUrl({ domain: null }); }}
-          onCloseScenario={() => { setScenarioId(null); updateUrl({ scenario: null }); }}
-          onCloseSignal={() => setSelectedSignalIdx(null)}
-          onClosePsych={() => setSelectedPsychZone(null)}
-          onCloseGate={() => setSelectedGateId(null)}
-          onOpenShop={() => router.push("/provisioner")}
           selectedCommodityId={selectedCommodityId}
           selectedNewsId={selectedNewsId}
+          selectedCityIdx={selectedCityIdx}
+          onClose={handleClosePanel}
           onCloseCommodity={() => setSelectedCommodityId(null)}
           onCloseNews={() => setSelectedNewsId(null)}
-          selectedCityIdx={selectedCityIdx}
           onCloseCity={() => setSelectedCityIdx(null)}
+          onOpenShop={() => router.push("/provisioner")}
           newsFeedPins={newsPins}
           onNewsClick={setSelectedNewsId}
         />
