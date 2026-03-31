@@ -331,7 +331,7 @@ function DomainGatesCard({ domainId, col, gateStatuses }: { domainId: string; co
                 )}
               </div>
               <p className="font-mono text-[11px] text-text-base leading-snug mb-1">{gate.trigger}</p>
-              {gs && gs.status !== "monitoring" && gs.reason && (
+              {gs && (gs.status !== "monitoring" || gs.id === "G5") && gs.reason && (
                 <p className="font-mono text-[9px] leading-snug mb-1 italic" style={{ color: `${dot}cc` }}>
                   {gs.reason}
                 </p>

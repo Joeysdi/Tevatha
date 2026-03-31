@@ -556,7 +556,7 @@ function TimelineTab({ gateStatuses }: { gateStatuses?: GateStatus[] }) {
                     <p className="font-syne font-bold text-[10px] text-text-base leading-snug">
                       {gate.trigger}
                     </p>
-                    {gs && gs.status !== "monitoring" && gs.reason && (
+                    {gs && (gs.status !== "monitoring" || gs.id === "G5") && gs.reason && (
                       <p className="font-mono text-[7px] mt-0.5 leading-snug italic" style={{ color: `${dot}cc` }}>
                         {gs.reason}
                       </p>
