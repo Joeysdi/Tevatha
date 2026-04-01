@@ -1,7 +1,7 @@
 // components/provisioner/product-grid.tsx
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { StaggerParent, StaggerChild } from "@/components/ui/motion";
@@ -10,6 +10,8 @@ import { useCart }     from "@/lib/cart/store";
 import type { Product, ProductCategory } from "@/lib/provisioner/catalog";
 import type { GradeLevel } from "@/types/treasury";
 import { useTranslation } from "@/lib/i18n/use-translation";
+import { StoreProductCard } from "@/components/store/StoreProductCard";
+import type { StoreProduct } from "@/lib/store/types";
 
 // Maps imageSlug → local /public path for each product that has an image
 const PRODUCT_IMAGES: Record<string, string> = {
@@ -95,9 +97,10 @@ const TIER_COLORS: Record<Tier, string> = {
   T3: "text-purple-DEFAULT",
 };
 
-const CATEGORY_LABELS: Record<ProductCategory | "all", string> = {
+const CATEGORY_LABELS: Record<ProductCategory | "food" | "all", string> = {
   all:            "All Items",
   communications: "Communications",
+  food:           "Food Storage",
   medical:        "Medical",
   energy:         "Energy",
   mobility:       "Mobility",
@@ -233,6 +236,50 @@ function FilterControls({
           />
         </button>
       </div>
+    </div>
+  );
+}
+
+// ── DB product section ────────────────────────────────────────────────────────
+function DbProductSection({ activeCategory }: { activeCategory: ProductCategory | "food" | "all" }) {
+  const [dbProducts, setDbProducts] = useState<StoreProduct[]>([]);
+  const [loading, setLoading]       = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    const cat = activeCategory === "all" ? "" : `&category=${activeCategory}`;
+    fetch(`/api/store/products?limit=24${cat}`)
+      .then((r) => r.json())
+      .then((d) => { setDbProducts(d.products ?? []); })
+      .catch(() => { setDbProducts([]); })
+      .finally(() => setLoading(false));
+  }, [activeCategory]);
+
+  if (!loading && dbProducts.length === 0) return null;
+
+  return (
+    <div className="mt-8">
+      {/* Section header */}
+      <div className="flex items-center gap-3 mb-4">
+        <span className="font-syne font-bold text-[17px] text-text-base">Tevatha Store</span>
+        <span className="font-mono text-[9px] text-text-mute2 border border-border-protocol
+                         rounded px-1.5 py-0.5">DB</span>
+        <div className="flex-1 h-px bg-border-protocol" />
+      </div>
+
+      {loading ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="bg-void-2 animate-pulse rounded-xl h-48" />
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
+          {dbProducts.map((p) => (
+            <StoreProductCard key={p.id} product={p} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -424,6 +471,9 @@ export function ProductGrid({ products }: ProductGridProps) {
               </button>
             </div>
           )}
+
+          {/* DB product section — rendered below static grid, never interleaved */}
+          <DbProductSection activeCategory={activeCategory} />
         </div>
       </div>
 

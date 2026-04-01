@@ -20,7 +20,8 @@ export interface CheckoutLineItem {
 // boundary even when the caller has a try/catch. Returning error objects keeps
 // all error handling client-side.
 export async function createEmbeddedCheckoutSession(
-  items: CheckoutLineItem[]
+  items: CheckoutLineItem[],
+  metadataOverride?: Record<string, string>
 ): Promise<{ clientSecret: string; orderId: string } | { error: string }> {
   try {
     const { userId } = await auth();
@@ -47,6 +48,7 @@ export async function createEmbeddedCheckoutSession(
         order_id:   orderId,
         user_id:    userId,
         item_count: String(items.length),
+        ...metadataOverride,
       },
     });
 

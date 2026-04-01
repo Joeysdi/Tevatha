@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth }                       from "@clerk/nextjs/server";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createServerSupabaseClient, createServiceSupabaseClient } from "@/lib/supabase/server";
 import { generateEphemeralReference } from "@/lib/solana/treasury";
 import { buildSolanaPayInvoice }       from "@/lib/solana/pay";
 import { getProductById }              from "@/lib/provisioner/catalog";
@@ -17,6 +17,7 @@ export const runtime = undefined; // explicitly use default Node.js runtime
 interface InvoiceRequestBody {
   productId: string;
   qty:       number;
+  variantId?: string;  // DB variant UUID — present for store_products items
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -34,7 +35,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { productId, qty } = body;
+  const { productId, qty, variantId } = body;
   if (!productId || typeof qty !== "number" || qty < 1 || qty > 10) {
     return NextResponse.json(
       { error: "productId and qty (1–10) are required" },
@@ -42,23 +43,67 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     );
   }
 
-  // ── Lookup product ───────────────────────────────────────────────────
-  const product = getProductById(productId);
-  if (!product) {
-    return NextResponse.json({ error: "Product not found" }, { status: 404 });
-  }
-  if (!product.highTicket) {
-    return NextResponse.json(
-      { error: "Product is not eligible for Solana payment rail" },
-      { status: 400 }
-    );
-  }
-  if (!product.inStock) {
-    return NextResponse.json({ error: "Product out of stock" }, { status: 409 });
+  // ── Lookup product — static catalog first, then DB store ─────────────
+  let resolvedName: string;
+  let resolvedSku: string;
+  let resolvedPriceUsdc: number;
+  let resolvedInStock: boolean;
+
+  const staticProduct = getProductById(productId);
+
+  if (staticProduct) {
+    if (!staticProduct.highTicket) {
+      return NextResponse.json(
+        { error: "Product is not eligible for Solana payment rail" },
+        { status: 400 }
+      );
+    }
+    if (!staticProduct.inStock) {
+      return NextResponse.json({ error: "Product out of stock" }, { status: 409 });
+    }
+    resolvedName      = staticProduct.name;
+    resolvedSku       = staticProduct.sku;
+    resolvedPriceUsdc = staticProduct.priceUsdc;
+    resolvedInStock   = staticProduct.inStock;
+  } else {
+    // Secondary lookup: store_products JOIN store_variants
+    const svc = createServiceSupabaseClient();
+    let variantQuery = svc
+      .from("store_variants")
+      .select("*, store_products!inner(title, deleted_at, status)")
+      .eq("product_id", productId);
+
+    if (variantId) {
+      variantQuery = variantQuery.eq("id", variantId);
+    } else {
+      variantQuery = variantQuery.eq("in_stock", true).order("price_usd", { ascending: true }).limit(1);
+    }
+
+    const { data: variantRows } = await variantQuery;
+    const variant = variantRows?.[0];
+
+    if (!variant) {
+      return NextResponse.json({ error: "Product not found" }, { status: 404 });
+    }
+
+    const storeProduct = variant.store_products as { title: string; deleted_at: string | null; status: string };
+    if (storeProduct.deleted_at || storeProduct.status === "archived") {
+      return NextResponse.json({ error: "Product not available" }, { status: 404 });
+    }
+    if (!variant.in_stock) {
+      return NextResponse.json({ error: "Product out of stock" }, { status: 409 });
+    }
+
+    resolvedName      = storeProduct.title;
+    resolvedSku       = variant.sku;
+    resolvedPriceUsdc = variant.price_usdc;
+    resolvedInStock   = variant.in_stock;
   }
 
+  void resolvedInStock; // used above for guard only
+
   // ── Compute total ────────────────────────────────────────────────────
-  const totalUsdc = parseFloat((product.priceUsdc * qty).toFixed(2));
+  const totalUsdc = parseFloat((resolvedPriceUsdc * qty).toFixed(2));
 
   // ── Generate ephemeral reference keypair (OPOS) ───────────────────────
   const { publicKey: referenceKey } = generateEphemeralReference();
@@ -66,8 +111,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   // ── Build Solana Pay invoice ──────────────────────────────────────────
   const invoice: SolanaInvoice = buildSolanaPayInvoice({
     amountUsdc: totalUsdc,
-    label:      `Tevatha Provisioner — ${product.name}`,
-    message:    `${qty}× ${product.name} (${product.sku})`,
+    label:      `Tevatha Provisioner — ${resolvedName}`,
+    message:    `${qty}× ${resolvedName} (${resolvedSku})`,
     referenceKey,
   });
 

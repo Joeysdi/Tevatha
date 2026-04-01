@@ -3,6 +3,10 @@
     {
       "path": "/api/properties/sync",
       "schedule": "0 6 */2 * *"
+    },
+    {
+      "path": "/api/store/sync",
+      "schedule": "0 7 */2 * *"
     }
   ]
 }

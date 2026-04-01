@@ -15,6 +15,11 @@ export interface CartItem {
   imageSlug:    string;
   qty:          number;
   stripePriceId?: string;
+  // DB product extension fields (additive — absence = static/direct, backward compat)
+  variant_id?:       string;                // DB variant UUID; absent for static items
+  source?:           "static" | "db";      // absent treated as 'static'
+  fulfillment_type?: "direct" | "dropship"; // absent treated as 'direct'
+  vendor_name?:      string;               // dropship vendor name
 }
 
 interface CartStore {
