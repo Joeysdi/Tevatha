@@ -393,6 +393,20 @@ export default function GearPage() {
                   </button>
                 )}
               </div>
+
+              {/* Manufacturer link — shown for items needing external activation */}
+              {p.externalUrl && (
+                <a
+                  href={p.externalUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 flex items-center gap-1 font-mono text-[9px] text-text-mute2
+                             hover:text-cyan-DEFAULT transition-colors"
+                >
+                  <span>↗</span>
+                  <span>Also available at {p.brand} — activate subscription here</span>
+                </a>
+              )}
               </div>{/* /p-4 content wrapper */}
             </div>
           </StaggerChild>

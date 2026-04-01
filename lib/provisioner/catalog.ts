@@ -40,6 +40,7 @@ export interface Product {
   safetyScore?:    SafetyScore;      // present for real_estate category
   listingNote?:    string;           // replaces buildNote label copy for real estate
   priceDisplay?:   string;           // override price string e.g. "$350,000"
+  externalUrl?:    string;           // official brand/manufacturer page — shown as helper link
 }
 
 // ── Catalog ─────────────────────────────────────────────────────────────
@@ -54,9 +55,10 @@ export const CATALOG: Product[] = [
     tier:"T1", priceUsd:34999, priceUsdc:349.99, highTicket:false, inStock:true,
     criticalFlag:true,
     spec:"Two-way satellite messaging. Global SOS. No cell required. Rechargeable.",
-    buildNote:"1 per adult. Monthly satellite plan required.",
+    buildNote:"1 per adult. Activate a Garmin satellite plan separately — plans start at $14.95/mo.",
     stripePriceId:"price_1TE8ROAQV21Gk5Rw5Vk2i6r5",
     imageSlug:"garmin-inreach-mini2",
+    externalUrl:"https://www.garmin.com/en-US/p/775983",
   },
   {
     id:"baofeng-uv5r-5pk", sku:"COM-002", name:"Baofeng UV-5R ×5 Pack",
@@ -74,9 +76,10 @@ export const CATALOG: Product[] = [
     tier:"T2", priceUsd:59900, priceUsdc:599.00, highTicket:true, inStock:true,
     criticalFlag:false,
     spec:"100Mbps+. 1kg portable dish. Powers Ark coordination from anywhere.",
-    buildNote:"Tier 2 community backbone. Requires active Starlink subscription.",
+    buildNote:"Tier 2 community backbone. Activate a Starlink subscription at starlink.com — plans from $50/mo.",
     stripePriceId:"price_1TETh3AQV21Gk5RwbSTJCVzr",
     imageSlug:"starlink-mini",
+    externalUrl:"https://www.starlink.com/hardware",
   },
 
   // ── MEDICAL ────────────────────────────────────────────────────────
