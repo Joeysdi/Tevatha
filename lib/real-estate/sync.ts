@@ -7,6 +7,7 @@ import { fetchSimplyRets }           from "./sources/simplyrets";
 import { fetchRentcast }             from "./sources/rentcast";
 import { normalizeMLSListing, normalizeAggregatorListing } from "./normalize";
 import { createServiceSupabaseClient } from "@/lib/supabase/server";
+import { encryptCoords, approxCoord } from "@/lib/crypto/field-encrypt";
 import type { Property, SyncResult, PropertySyncLog } from "./types";
 
 // 2-second pause to avoid slamming rate limits on paginated calls
@@ -56,8 +57,42 @@ async function upsertProperties(properties: Property[]): Promise<number> {
   if (!properties.length) return 0;
   const supabase = createServiceSupabaseClient();
 
-  // Strip the auto-generated id so Supabase assigns it on insert
-  const rows = properties.map(({ id: _id, ...rest }) => rest);
+  // Strip the auto-generated id so Supabase assigns it on insert.
+  // Encrypt exact coords and store approx values for public display.
+  const rows = await Promise.all(
+    properties.map(async ({ id: _id, ...rest }) => {
+      const lat = (rest as Record<string, unknown>).lat as number | undefined;
+      const lng = (rest as Record<string, unknown>).lng as number | undefined;
+
+      if (lat != null && lng != null) {
+        try {
+          const { latEnc, latIv, lngEnc, lngIv } = await encryptCoords(lat, lng);
+          return {
+            ...rest,
+            lat:           approxCoord(lat, 2),
+            lng:           approxCoord(lng, 2),
+            lat_approx:    approxCoord(lat, 2),
+            lng_approx:    approxCoord(lng, 2),
+            lat_encrypted: latEnc,
+            lat_iv:        latIv,
+            lng_encrypted: lngEnc,
+            lng_iv:        lngIv,
+          };
+        } catch (e) {
+          // If encryption fails (e.g. missing key), still upsert with approx only
+          console.error("[sync] coord encryption error:", e);
+          return {
+            ...rest,
+            lat:        approxCoord(lat, 2),
+            lng:        approxCoord(lng, 2),
+            lat_approx: approxCoord(lat, 2),
+            lng_approx: approxCoord(lng, 2),
+          };
+        }
+      }
+      return rest;
+    })
+  );
 
   const { data, error } = await supabase
     .from("properties")

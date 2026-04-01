@@ -1,14 +1,8 @@
 export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
-import { auth }                      from "@clerk/nextjs/server";
 import { createServiceSupabaseClient } from "@/lib/supabase/server";
 import { slugify }                   from "@/lib/store/normalize/shared";
-
-async function requireAdmin() {
-  const { userId } = await auth();
-  if (!userId) throw new Error("unauthenticated");
-  return userId;
-}
+import { requireAdmin, authErrorStatus } from "@/lib/auth/roles";
 
 // GET /api/admin/store — all products including review/draft
 // ?includeDeleted=true → includes soft-deleted
@@ -35,7 +29,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ products: data ?? [] });
   } catch (err) {
     const msg = String(err);
-    return NextResponse.json({ error: msg }, { status: msg === "unauthenticated" ? 401 : 500 });
+    return NextResponse.json({ error: msg }, { status: authErrorStatus(msg) });
   }
 }
 
@@ -74,6 +68,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(data, { status: 201 });
   } catch (err) {
     const msg = String(err);
-    return NextResponse.json({ error: msg }, { status: msg === "unauthenticated" ? 401 : 500 });
+    return NextResponse.json({ error: msg }, { status: authErrorStatus(msg) });
   }
 }

@@ -5,21 +5,22 @@ import { requireAdmin, authErrorStatus } from "@/lib/auth/roles";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
-// PUT /api/admin/properties/[id] — update
+// PUT /api/admin/envoys/[id] — toggle is_active
+// Body: { is_active: boolean }
 export async function PUT(req: NextRequest, { params }: RouteContext) {
   try {
     await requireAdmin();
     const { id } = await params;
-    const body   = await req.json();
+    const { is_active } = await req.json();
 
-    // Prevent source from being changed away from tevatha on certified listings
-    delete body.id;
-    delete body.created_at;
+    if (typeof is_active !== "boolean") {
+      return NextResponse.json({ error: "is_active must be a boolean" }, { status: 422 });
+    }
 
     const supabase = createServiceSupabaseClient();
     const { data, error } = await supabase
-      .from("properties")
-      .update(body)
+      .from("envoy_codes")
+      .update({ is_active, updated_at: new Date().toISOString() })
       .eq("id", id)
       .select()
       .single();
@@ -32,7 +33,7 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
   }
 }
 
-// DELETE /api/admin/properties/[id] — soft-delete
+// DELETE /api/admin/envoys/[id] — soft-disable (is_active=false, history preserved)
 export async function DELETE(_req: NextRequest, { params }: RouteContext) {
   try {
     await requireAdmin();
@@ -40,8 +41,8 @@ export async function DELETE(_req: NextRequest, { params }: RouteContext) {
 
     const supabase = createServiceSupabaseClient();
     const { error } = await supabase
-      .from("properties")
-      .update({ deleted_at: new Date().toISOString() })
+      .from("envoy_codes")
+      .update({ is_active: false, updated_at: new Date().toISOString() })
       .eq("id", id);
 
     if (error) throw error;

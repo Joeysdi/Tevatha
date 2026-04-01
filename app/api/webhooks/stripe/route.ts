@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe                         from "stripe";
 import { getStripe, getStripeWebhookSecret } from "@/lib/stripe/client";
 import { createServiceSupabaseClient }        from "@/lib/supabase/server";
+import { attributeOrder }                     from "@/lib/envoy/attribution";
 
 // ── Explicitly Node.js runtime — Stripe SDK requires Node crypto APIs ──
 export const runtime = 'nodejs';
@@ -159,6 +160,9 @@ async function handleCheckoutSessionCompleted(
     }, { onConflict: "id" });
 
   if (error) throw new Error(`Order upsert failed: ${error.message}`);
+
+  // Attribution — must never break payment confirmation
+  await attributeOrder(orderId, userId, supabase).catch(console.error);
 
   // Provision access (extend as needed — e.g. unlock gated content, send email)
   await provisionOrderAccess(orderId, userId, supabase);

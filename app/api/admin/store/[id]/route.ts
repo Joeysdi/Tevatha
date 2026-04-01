@@ -1,13 +1,7 @@
 export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
-import { auth }                      from "@clerk/nextjs/server";
 import { createServiceSupabaseClient } from "@/lib/supabase/server";
-
-async function requireAdmin() {
-  const { userId } = await auth();
-  if (!userId) throw new Error("unauthenticated");
-  return userId;
-}
+import { requireAdmin, authErrorStatus } from "@/lib/auth/roles";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -33,7 +27,7 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
     return NextResponse.json(data);
   } catch (err) {
     const msg = String(err);
-    return NextResponse.json({ error: msg }, { status: msg === "unauthenticated" ? 401 : 500 });
+    return NextResponse.json({ error: msg }, { status: authErrorStatus(msg) });
   }
 }
 
@@ -53,6 +47,6 @@ export async function DELETE(_req: NextRequest, { params }: RouteContext) {
     return NextResponse.json({ ok: true });
   } catch (err) {
     const msg = String(err);
-    return NextResponse.json({ error: msg }, { status: msg === "unauthenticated" ? 401 : 500 });
+    return NextResponse.json({ error: msg }, { status: authErrorStatus(msg) });
   }
 }

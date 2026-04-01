@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse }   from "next/server";
 import { createServiceSupabaseClient } from "@/lib/supabase/server";
 import { verifyUsdcTransfer }           from "@/lib/solana/treasury";
+import { attributeOrder }               from "@/lib/envoy/attribution";
 import type {
   HeliusWebhookPayload,
   HeliusTokenTransfer,
@@ -200,6 +201,9 @@ async function processTransaction(
     console.error("[helius-webhook] Order upsert error:", orderError);
     return "order_upsert_error";
   }
+
+  // Attribution — must never break payment confirmation
+  await attributeOrder(invoice.invoice_id, invoice.user_id, supabase).catch(console.error);
 
   // Update processed_events with matched order ID
   await supabase

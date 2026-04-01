@@ -38,7 +38,23 @@ export async function GET(req: NextRequest) {
     const { data, count, error } = await query;
     if (error) throw error;
 
-    return NextResponse.json({ properties: data ?? [], total: count ?? 0, page });
+    // Strip encrypted fields and exact coords from public response.
+    // Expose only lat_approx/lng_approx (~1km precision).
+    const properties = (data ?? []).map((p) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { lat_encrypted, lat_iv, lng_encrypted, lng_iv, lat, lng, ...rest } = p as typeof p & {
+        lat_encrypted?: string; lat_iv?: string;
+        lng_encrypted?: string; lng_iv?: string;
+        lat?: number; lng?: number;
+      };
+      return {
+        ...rest,
+        lat: rest.lat_approx ?? null,
+        lng: rest.lng_approx ?? null,
+      };
+    });
+
+    return NextResponse.json({ properties, total: count ?? 0, page });
   } catch (err) {
     console.error("[GET /api/properties]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

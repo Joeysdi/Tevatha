@@ -1,20 +1,14 @@
 export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
-import { auth }                      from "@clerk/nextjs/server";
 import { createServiceSupabaseClient } from "@/lib/supabase/server";
 import { parseCSV }                  from "@/lib/store/sources/csv-parser";
 import { normalizeCSVFood }          from "@/lib/store/normalize/food";
 import { normalizeCSVWater }         from "@/lib/store/normalize/water";
 import { normalizeCSVEnergy }        from "@/lib/store/normalize/energy";
 import type { StoreProduct, RawCSVProduct } from "@/lib/store/types";
+import { requireAdmin, authErrorStatus } from "@/lib/auth/roles";
 
 const MAX_FILE_BYTES = 2 * 1024 * 1024; // 2 MB
-
-async function requireAdmin() {
-  const { userId } = await auth();
-  if (!userId) throw new Error("unauthenticated");
-  return userId;
-}
 
 type ProductRow = Omit<StoreProduct, "id" | "created_at" | "updated_at" | "store_variants">;
 
@@ -93,6 +87,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (err) {
     const msg = String(err);
-    return NextResponse.json({ error: msg }, { status: msg === "unauthenticated" ? 401 : 500 });
+    return NextResponse.json({ error: msg }, { status: authErrorStatus(msg) });
   }
 }

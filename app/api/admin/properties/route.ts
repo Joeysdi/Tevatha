@@ -1,15 +1,7 @@
 export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
-import { auth }                      from "@clerk/nextjs/server";
 import { createServiceSupabaseClient } from "@/lib/supabase/server";
-
-async function requireAdmin() {
-  const { userId } = await auth();
-  if (!userId) throw new Error("unauthenticated");
-  // Additional tier check can be added via Clerk publicMetadata.tier === 3
-  // For now: any authenticated session can access admin — tighten via Clerk metadata in prod
-  return userId;
-}
+import { requireAdmin, authErrorStatus } from "@/lib/auth/roles";
 
 // GET /api/admin/properties — list all (including drafts/deleted)
 export async function GET() {
@@ -28,7 +20,7 @@ export async function GET() {
     return NextResponse.json({ properties: data ?? [], total: count ?? 0 });
   } catch (err) {
     const msg = String(err);
-    return NextResponse.json({ error: msg }, { status: msg === "unauthenticated" ? 401 : 500 });
+    return NextResponse.json({ error: msg }, { status: authErrorStatus(msg) });
   }
 }
 
@@ -63,6 +55,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(data, { status: 201 });
   } catch (err) {
     const msg = String(err);
-    return NextResponse.json({ error: msg }, { status: msg === "unauthenticated" ? 401 : 500 });
+    return NextResponse.json({ error: msg }, { status: authErrorStatus(msg) });
   }
 }
