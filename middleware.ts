@@ -9,6 +9,7 @@ import { NextResponse, NextRequest } from "next/server";
 const isProtected = createRouteMatcher([
   "/(protocol)(.*)",
   "/api/protected(.*)",
+  "/admin(.*)",
 ]);
 
 // ── Public API routes (webhooks, health checks) ───────────────────────────
