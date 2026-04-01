@@ -775,7 +775,7 @@ function ProductCard({ product: p, onInquire }: { product: Product; onInquire: (
           {p.spec}
         </p>
 
-        {/* Safety bars (real estate only) */}
+        {/* Safety bars — real estate */}
         {p.safetyScore && (
           <div className="space-y-1.5 mb-2.5 p-2.5 bg-void-2 rounded-lg border border-border-protocol/50">
             <p className="font-mono text-[8px] text-text-mute2 tracking-[.1em] uppercase mb-1.5">Safety Index</p>
@@ -783,6 +783,18 @@ function ProductCard({ product: p, onInquire }: { product: Product; onInquire: (
             <SafetyBar label="Disaster"     value={p.safetyScore.disasterRisk} />
             <SafetyBar label="Density"      value={p.safetyScore.populationDensity} />
             <SafetyBar label="Stability"    value={p.safetyScore.politicalStability} />
+          </div>
+        )}
+
+        {/* Safety bars — gear items */}
+        {p.gearLayers && (
+          <div className="space-y-1.5 mb-2.5 p-2.5 bg-void-2 rounded-lg border border-border-protocol/50">
+            <p className="font-mono text-[8px] text-text-mute2 tracking-[.1em] uppercase mb-1.5">Safety Index</p>
+            <SafetyBar label="Durability"  value={p.gearLayers.durability} />
+            <SafetyBar label="Grid Indep"  value={p.gearLayers.grid_independence} />
+            <SafetyBar label="Repair"      value={p.gearLayers.field_repairability} />
+            <SafetyBar label="Value"       value={p.gearLayers.value_density} />
+            <SafetyBar label="Supply"      value={p.gearLayers.supply_chain} />
           </div>
         )}
 

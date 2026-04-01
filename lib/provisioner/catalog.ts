@@ -41,6 +41,13 @@ export interface Product {
   listingNote?:    string;           // replaces buildNote label copy for real estate
   priceDisplay?:   string;           // override price string e.g. "$350,000"
   externalUrl?:    string;           // official brand/manufacturer page — shown as helper link
+  gearLayers?: {
+    durability:           number;   // 0-100: physical resilience + lifespan
+    grid_independence:    number;   // 0-100: functions without grid power
+    field_repairability:  number;   // 0-100: fixable without specialized tools
+    value_density:        number;   // 0-100: utility per dollar
+    supply_chain:         number;   // 0-100: ease of sourcing / replacement
+  };
 }
 
 // ── Catalog ─────────────────────────────────────────────────────────────
@@ -59,6 +66,7 @@ export const CATALOG: Product[] = [
     stripePriceId:"price_1TE8ROAQV21Gk5Rw5Vk2i6r5",
     imageSlug:"garmin-inreach-mini2",
     externalUrl:"https://www.garmin.com/en-US/p/775983",
+    gearLayers:{ durability:98, grid_independence:100, field_repairability:85, value_density:92, supply_chain:96 },
   },
   {
     id:"baofeng-uv5r-5pk", sku:"COM-002", name:"Baofeng UV-5R ×5 Pack",
@@ -69,6 +77,7 @@ export const CATALOG: Product[] = [
     buildNote:"Pre-program channels before crisis. HAM licence recommended.",
     stripePriceId:"price_1TE8RPAQV21Gk5Rw5f9LZOZh",
     imageSlug:"baofeng-uv5r",
+    gearLayers:{ durability:70, grid_independence:95, field_repairability:80, value_density:95, supply_chain:82 },
   },
   {
     id:"starlink-mini", sku:"COM-005", name:"Starlink Mini Portable",
@@ -80,6 +89,7 @@ export const CATALOG: Product[] = [
     stripePriceId:"price_1TETh3AQV21Gk5RwbSTJCVzr",
     imageSlug:"starlink-mini",
     externalUrl:"https://www.starlink.com/hardware",
+    gearLayers:{ durability:95, grid_independence:98, field_repairability:88, value_density:96, supply_chain:96 },
   },
 
   // ── MEDICAL ────────────────────────────────────────────────────────
@@ -92,6 +102,7 @@ export const CATALOG: Product[] = [
     buildNote:"1 per adult go-bag. Non-negotiable.",
     stripePriceId:"price_1TE8RQAQV21Gk5RwD4EMtRVJ",
     imageSlug:"nar-ifak",
+    gearLayers:{ durability:100, grid_independence:100, field_repairability:98, value_density:98, supply_chain:98 },
   },
   {
     id:"myfak-advanced", sku:"MED-002", name:"MyMedic MYFAK Advanced Kit",
@@ -102,6 +113,7 @@ export const CATALOG: Product[] = [
     buildNote:"1 per household minimum.",
     stripePriceId:"price_1TE8RSAQV21Gk5Rwpn4aFKf2",
     imageSlug:"myfak-advanced",
+    gearLayers:{ durability:95, grid_independence:100, field_repairability:95, value_density:96, supply_chain:94 },
   },
   {
     id:"quikclot-3pk", sku:"MED-003", name:"QuikClot Combat Gauze ×3",
@@ -112,6 +124,7 @@ export const CATALOG: Product[] = [
     buildNote:"Keep 6+ units total. Replace at 80% of shelf life.",
     stripePriceId:"price_1TE8RTAQV21Gk5RwjHqpR9kF",
     imageSlug:"quikclot",
+    gearLayers:{ durability:100, grid_independence:100, field_repairability:98, value_density:99, supply_chain:98 },
   },
 
   // ── ENERGY ─────────────────────────────────────────────────────────
@@ -124,6 +137,7 @@ export const CATALOG: Product[] = [
     buildNote:"Tier 1 go-bag power station. Add Nomad 100 for solar input.",
     stripePriceId:"price_1TEUHCAQV21Gk5RwrTg0OO0i",
     imageSlug:"jackery-1000plus",
+    gearLayers:{ durability:88, grid_independence:96, field_repairability:72, value_density:90, supply_chain:85 },
   },
   {
     id:"ecoflow-delta-pro", sku:"ENE-002", name:"EcoFlow DELTA Pro",
@@ -134,6 +148,7 @@ export const CATALOG: Product[] = [
     buildNote:"Tier 2 sanctuary essential. Pair with Renogy 400W array.",
     stripePriceId:"price_1TEUHEAQV21Gk5RwQ7lnNsGR",
     imageSlug:"ecoflow-delta-pro",
+    gearLayers:{ durability:95, grid_independence:99, field_repairability:88, value_density:96, supply_chain:90 },
   },
   {
     id:"renogy-400w-kit", sku:"ENE-003", name:"Renogy 400W Solar Kit",
@@ -144,6 +159,7 @@ export const CATALOG: Product[] = [
     buildNote:"Starting point for off-grid solar. Scales to 2kW array.",
     stripePriceId:"price_1TEUHGAQV21Gk5RwU6Kj9KXD",
     imageSlug:"renogy-400w",
+    gearLayers:{ durability:84, grid_independence:98, field_repairability:76, value_density:88, supply_chain:80 },
   },
 
   // ── MOBILITY ────────────────────────────────────────────────────────
@@ -156,6 +172,7 @@ export const CATALOG: Product[] = [
     buildNote:"Always kept full. Rotate fuel quarterly with PRI-G stabiliser.",
     stripePriceId:"price_1TE8RUAQV21Gk5RwwZCWF6PZ",
     imageSlug:"wavian-jerry",
+    gearLayers:{ durability:100, grid_independence:100, field_repairability:95, value_density:98, supply_chain:92 },
   },
   {
     id:"noco-gb40-2pk", sku:"MOB-002", name:"NOCO Boost Plus GB40 ×2",
@@ -166,6 +183,7 @@ export const CATALOG: Product[] = [
     buildNote:"Keep in every vehicle. Charge quarterly.",
     stripePriceId:"price_1TE8RWAQV21Gk5RwXsoQMDtM",
     imageSlug:"noco-gb40",
+    gearLayers:{ durability:95, grid_independence:98, field_repairability:88, value_density:96, supply_chain:95 },
   },
 
   // ── WATER ───────────────────────────────────────────────────────────
@@ -178,6 +196,7 @@ export const CATALOG: Product[] = [
     buildNote:"Primary household filter. Replace elements per manufacturer spec.",
     stripePriceId:"price_1TE8RXAQV21Gk5RwO8LlZhQi",
     imageSlug:"berkey-big",
+    gearLayers:{ durability:98, grid_independence:100, field_repairability:95, value_density:94, supply_chain:90 },
   },
   {
     id:"sawyer-squeeze", sku:"WAT-002", name:"Sawyer Squeeze Filter",
@@ -188,6 +207,7 @@ export const CATALOG: Product[] = [
     buildNote:"1 per go-bag. Does not remove viruses — pair with Steripen in bio zones.",
     stripePriceId:"price_1TE8RZAQV21Gk5RwkOTw1WTa",
     imageSlug:"sawyer-squeeze",
+    gearLayers:{ durability:70, grid_independence:100, field_repairability:80, value_density:92, supply_chain:78 },
   },
 
   // ── COMMUNICATIONS (continued) ─────────────────────────────────────
@@ -200,6 +220,7 @@ export const CATALOG: Product[] = [
     buildNote:"One per location. No subscription. Crank powers radio in full comms blackout.",
     stripePriceId:"price_placeholder_COM003",
     imageSlug:"midland-er310",
+    gearLayers:{ durability:80, grid_independence:98, field_repairability:72, value_density:88, supply_chain:80 },
   },
   {
     id:"motorola-t800-6pk", sku:"COM-004", name:"Motorola T800 FRS Radio ×6",
@@ -210,6 +231,7 @@ export const CATALOG: Product[] = [
     buildNote:"License-free FRS. Pre-program household node channels before crisis.",
     stripePriceId:"price_placeholder_COM004",
     imageSlug:"motorola-t800",
+    gearLayers:{ durability:75, grid_independence:88, field_repairability:62, value_density:88, supply_chain:82 },
   },
 
   // ── MEDICAL (continued) ─────────────────────────────────────────────
@@ -222,6 +244,7 @@ export const CATALOG: Product[] = [
     buildNote:"2 per go-bag minimum. Standard TCCC dressing for penetrating wounds.",
     stripePriceId:"price_placeholder_MED004",
     imageSlug:"israeli-bandage",
+    gearLayers:{ durability:100, grid_independence:100, field_repairability:96, value_density:98, supply_chain:96 },
   },
   {
     id:"celox-granules-5pk", sku:"MED-005", name:"Celox Hemostatic Granules ×5",
@@ -232,6 +255,7 @@ export const CATALOG: Product[] = [
     buildNote:"Complements QuikClot gauze. Use for wounds where packing is not feasible.",
     stripePriceId:"price_placeholder_MED005",
     imageSlug:"celox-granules",
+    gearLayers:{ durability:98, grid_independence:100, field_repairability:94, value_density:96, supply_chain:94 },
   },
 
   // ── ENERGY (continued) ──────────────────────────────────────────────
@@ -244,6 +268,7 @@ export const CATALOG: Product[] = [
     buildNote:"Go-bag power station for phones, radios, and CPAP. Pairs with Nomad 20 panel.",
     stripePriceId:"price_placeholder_ENE004",
     imageSlug:"goal-zero-yeti-200x",
+    gearLayers:{ durability:90, grid_independence:96, field_repairability:82, value_density:92, supply_chain:90 },
   },
 
   // ── MOBILITY (continued) ────────────────────────────────────────────
@@ -256,6 +281,7 @@ export const CATALOG: Product[] = [
     buildNote:"Primary nav when cell infrastructure is down. Pre-load offline topo maps.",
     stripePriceId:"price_placeholder_MOB003",
     imageSlug:"garmin-gpsmap-67",
+    gearLayers:{ durability:96, grid_independence:98, field_repairability:85, value_density:90, supply_chain:95 },
   },
 
   // ── WATER (continued) ───────────────────────────────────────────────
@@ -268,6 +294,7 @@ export const CATALOG: Product[] = [
     buildNote:"Fill at first sign of disruption. 100gal = 50-day supply per adult.",
     stripePriceId:"price_placeholder_WAT003",
     imageSlug:"waterbob",
+    gearLayers:{ durability:72, grid_independence:100, field_repairability:68, value_density:88, supply_chain:80 },
   },
   {
     id:"potable-aqua-6pk", sku:"WAT-004", name:"Potable Aqua Iodine Tabs ×6",
@@ -278,6 +305,7 @@ export const CATALOG: Product[] = [
     buildNote:"Backup to primary filter. Effective vs bacteria and viruses. Not heavy metals.",
     stripePriceId:"price_placeholder_WAT004",
     imageSlug:"potable-aqua",
+    gearLayers:{ durability:52, grid_independence:95, field_repairability:60, value_density:78, supply_chain:72 },
   },
 
   // ── SECURITY ────────────────────────────────────────────────────────
@@ -290,6 +318,7 @@ export const CATALOG: Product[] = [
     buildNote:"4-camera perimeter minimum. Pair with local NVR (no cloud).",
     stripePriceId:"price_1TE8RaAQV21Gk5RwuYAccWXC",
     imageSlug:"reolink-810a",
+    gearLayers:{ durability:86, grid_independence:84, field_repairability:82, value_density:92, supply_chain:88 },
   },
   {
     id:"faraday-bag-xl", sku:"SEC-003", name:"Mission Darkness Faraday Bag XL",
@@ -300,6 +329,7 @@ export const CATALOG: Product[] = [
     buildNote:"Grade C: effective for shielding only. Not a long-term storage solution.",
     stripePriceId:"price_1TE8RbAQV21Gk5RwcQUclk8w",
     imageSlug:"faraday-xl",
+    gearLayers:{ durability:60, grid_independence:100, field_repairability:48, value_density:72, supply_chain:65 },
   },
   {
     id:"surefire-g2x-3pk", sku:"SEC-002", name:"SureFire G2X Tactical LED ×3",
@@ -310,6 +340,7 @@ export const CATALOG: Product[] = [
     buildNote:"1 per household member. Stored with go-bag. Spare batteries in Faraday bag.",
     stripePriceId:"price_placeholder_SEC002",
     imageSlug:"surefire-g2x",
+    gearLayers:{ durability:92, grid_independence:88, field_repairability:82, value_density:86, supply_chain:84 },
   },
 
   // ── SHELTER ─────────────────────────────────────────────────────────
@@ -322,6 +353,7 @@ export const CATALOG: Product[] = [
     buildNote:"1 per go-bag. Packs to fist-size. Viable below freezing without sleeping bag.",
     stripePriceId:"price_placeholder_SHE001",
     imageSlug:"sol-bivvy",
+    gearLayers:{ durability:90, grid_independence:100, field_repairability:84, value_density:98, supply_chain:90 },
   },
   {
     id:"kelty-cosmic-20", sku:"SHE-002", name:"Kelty Cosmic 20° Down Sleeping Bag",
@@ -332,6 +364,7 @@ export const CATALOG: Product[] = [
     buildNote:"One per adult for cold-weather grid-down shelter. Pair with SOL bivvy as vapor barrier.",
     stripePriceId:"price_placeholder_SHE002",
     imageSlug:"kelty-cosmic-20",
+    gearLayers:{ durability:88, grid_independence:100, field_repairability:80, value_density:90, supply_chain:86 },
   },
   {
     id:"titan-survival-tarp", sku:"SHE-003", name:"Titan Multi-Use Survival Tarp",
@@ -342,6 +375,7 @@ export const CATALOG: Product[] = [
     buildNote:"Pack 2 per group. Reflective silver side doubles as signaling panel.",
     stripePriceId:"price_placeholder_SHE003",
     imageSlug:"titan-tarp",
+    gearLayers:{ durability:68, grid_independence:100, field_repairability:72, value_density:80, supply_chain:68 },
   },
 
   // ── REAL ESTATE ──────────────────────────────────────────────────────
