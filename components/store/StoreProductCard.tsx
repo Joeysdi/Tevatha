@@ -3,8 +3,29 @@
 
 import { useState } from "react";
 import { TevathaBadge } from "@/components/properties/TevathaBadge";
+import { GradeBadge }   from "@/components/provisioner/grade-badge";
 import { useCart }      from "@/lib/cart/store";
 import type { StoreProduct, StoreVariant } from "@/lib/store/types";
+import type { GradeLevel } from "@/types/treasury";
+
+const VALID_GRADES = new Set<string>(["A", "B", "C", "D", "F"]);
+
+function resolveGrade(grade: string | null, score: number | null): { grade: GradeLevel; composite: number } | null {
+  // If both absent — unrated, hide badge
+  if (!grade && score === null) return null;
+
+  // Derive letter from score if grade string is absent or invalid
+  let letter: GradeLevel;
+  if (grade && VALID_GRADES.has(grade)) {
+    letter = grade as GradeLevel;
+  } else if (score !== null) {
+    letter = score >= 90 ? "A" : score >= 75 ? "B" : score >= 60 ? "C" : score >= 45 ? "D" : "F";
+  } else {
+    return null;
+  }
+
+  return { grade: letter, composite: score ?? 0 };
+}
 
 const CATEGORY_EMOJI: Record<string, string> = {
   food:   "🥫",
@@ -44,6 +65,7 @@ export function StoreProductCard({ product }: StoreProductCardProps) {
   const firstImg  = product.images?.[0] ?? null;
   const isReview  = product.status === "review";
   const isDrop    = product.fulfillment_type === "dropship";
+  const safetyBadge = resolveGrade(product.grade, product.safety_score);
 
   // Pick cheapest in-stock variant for cart
   const variants      = product.store_variants ?? [];
@@ -143,6 +165,9 @@ export function StoreProductCard({ product }: StoreProductCardProps) {
         {/* Badges row */}
         <div className="flex items-center gap-1.5 mb-1.5 flex-wrap min-h-[20px]">
           {product.tevatha_certified && <TevathaBadge />}
+          {safetyBadge && (
+            <GradeBadge grade={safetyBadge.grade} composite={safetyBadge.composite} size="sm" />
+          )}
           {isDrop && (
             <span className="font-mono text-[8px] text-text-mute2 border border-border-protocol
                              px-1.5 py-0.5 rounded">
