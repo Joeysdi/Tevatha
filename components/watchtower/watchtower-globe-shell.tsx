@@ -397,7 +397,7 @@ export function WatchtowerGlobeShell() {
               borderRadius: 6,
               backdropFilter: "blur(8px)",
               boxShadow: "0 8px 40px rgba(0,0,0,0.75)",
-              width: "196px",
+              width: "220px",
               overflow: "hidden",
             }}
           >
@@ -436,7 +436,7 @@ export function WatchtowerGlobeShell() {
                           style={{ background: active ? col : "rgba(150,165,180,0.25)", boxShadow: active ? `0 0 5px ${col}` : "none" }}
                         />
                         <span className="text-[12px] leading-none">{d.icon}</span>
-                        <span className="truncate max-w-[110px]">{d.label}</span>
+                        <span className="truncate min-w-0">{d.label}</span>
                         <span className="ml-auto flex items-center gap-1 flex-shrink-0">
                           {/* Score badge — live value when available */}
                           <span
