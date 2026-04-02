@@ -12,23 +12,23 @@ export const metadata: Metadata = {
     default: "Tevatha — Prepare. Operate. Endure.",
   },
   description:
-    "Tevatha is a three-pillar resilience operating system: Watchtower threat intelligence, Provisioner supply chain, and Protocol offline continuity.",
+    "Tevatha is a free nonprofit emergency preparedness guide: real-time threat intelligence, curated survival gear catalog with buy links, and offline continuity tools. No paywalls. No subscriptions.",
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_APP_URL ?? "https://tevatha.com"
   ),
   openGraph: {
     type:        "website",
     siteName:    "Tevatha",
-    title:       "Tevatha — Prepare. Operate. Endure.",
-    description: "Three-pillar resilience OS: threat intelligence, supply chain, and offline continuity.",
+    title:       "Tevatha — Free Emergency Preparedness Guide",
+    description: "Free nonprofit: real-time threat intelligence, curated survival gear with buy links, and offline continuity tools. No paywalls.",
     url:         "/",
   },
   twitter: {
     card:        "summary_large_image",
     site:        "@tevatha",
     creator:     "@tevatha",
-    title:       "Tevatha — Prepare. Operate. Endure.",
-    description: "Three-pillar resilience OS: threat intelligence, supply chain, and offline continuity.",
+    title:       "Tevatha — Free Emergency Preparedness Guide",
+    description: "Free nonprofit threat intelligence + survival gear catalog. 85 seconds to midnight. Are you ready?",
   },
   robots: {
     index:     true,

@@ -8,6 +8,7 @@ import { ProvisionerCta } from "@/components/watchtower/provisioner-cta";
 import { FadeUp, FadeIn, StaggerParent, StaggerChild } from "@/components/ui/motion";
 import { CATALOG, CATALOG_STATS } from "@/lib/provisioner/catalog";
 import { useTranslation } from "@/lib/i18n/use-translation";
+import { EmailCapture }   from "@/components/email-capture";
 import type { GradeLevel } from "@/types/treasury";
 
 export default function ShopPage() {
@@ -66,9 +67,34 @@ export default function ShopPage() {
             </h1>
           </StaggerChild>
           <StaggerChild>
-            <p className="text-text-dim text-[13px] leading-relaxed mb-5">
+            <p className="text-text-dim text-[13px] leading-relaxed mb-3">
               {t("shop_hero_sub")}
             </p>
+          </StaggerChild>
+          <StaggerChild>
+            {/* Nonprofit mission + quick links */}
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-4">
+              <span className="font-mono text-[10px] text-green-bright border border-green-bright/30
+                               bg-green-bright/5 px-2 py-0.5 rounded tracking-[.08em] uppercase">
+                Free · Nonprofit
+              </span>
+              <Link href="/provisioner/zero"
+                className="font-mono text-[10px] text-text-mute2 hover:text-gold-protocol transition-colors">
+                Start Here — No Money Needed →
+              </Link>
+              <Link href="/provisioner/checklist"
+                className="font-mono text-[10px] text-text-mute2 hover:text-gold-protocol transition-colors">
+                Print Checklist →
+              </Link>
+            </div>
+          </StaggerChild>
+          <StaggerChild>
+            <div className="mb-5">
+              <p className="font-mono text-[9.5px] text-text-mute2 tracking-[.1em] uppercase mb-2">
+                Get threat level updates — free
+              </p>
+              <EmailCapture />
+            </div>
           </StaggerChild>
         </StaggerParent>
 

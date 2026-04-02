@@ -13,8 +13,10 @@ interface WatchtowerNavProps {
 }
 
 const PILLAR_LINKS = [
-  { href: "/provisioner", label: "Provisioner" },
-  { href: "/protocol",    label: "Protocol"    },
+  { href: "/provisioner",          label: "Provisioner"  },
+  { href: "/provisioner/zero",     label: "Start Free"   },
+  { href: "/provisioner/checklist", label: "Checklist"   },
+  { href: "/protocol",             label: "Protocol"     },
 ] as const;
 
 export function WatchtowerNav({ links }: WatchtowerNavProps) {

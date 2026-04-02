@@ -41,6 +41,10 @@ export default function WatchtowerLayout({ children }: { children: ReactNode }) 
           <span className="font-mono text-[8.5px] text-text-mute2/60 tracking-[.22em] uppercase">
             Global Threat Matrix
           </span>
+          <span className="hidden sm:inline font-mono text-[8px] text-green-bright border border-green-bright/30
+                           bg-green-bright/5 px-2 py-0.5 rounded tracking-[.1em] uppercase">
+            Free · Nonprofit
+          </span>
         </div>
         <div className="flex items-center gap-4">
           <HeaderLocale />

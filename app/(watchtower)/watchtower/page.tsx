@@ -14,10 +14,10 @@ const WatchtowerGlobeShell = dynamic(() =>
 export const metadata: Metadata = {
   title: "Watchtower",
   description:
-    "Real-time global threat intelligence: collapse probability matrix, scenario analysis, signal feeds, and doomsday clock monitoring.",
+    "Free real-time global threat intelligence: 73% financial collapse probability, 85 seconds to midnight, scenario analysis, and live signal feeds. No paywall. Nonprofit.",
   openGraph: {
-    title:       "Watchtower · Tevatha",
-    description: "Real-time global threat intelligence: collapse probability matrix, scenario analysis, signal feeds, and doomsday clock monitoring.",
+    title:       "Watchtower · Tevatha — Free Threat Intelligence",
+    description: "85 seconds to midnight. 73% financial collapse probability. Free real-time threat intelligence — no paywall, no subscription.",
     url:         "/watchtower",
   },
   twitter: {

@@ -113,31 +113,36 @@ export default function OgImage() {
           }}
         />
 
+        {/* Stats row */}
+        <div style={{ display: "flex", gap: 48, marginBottom: 32 }}>
+          {[
+            { val: "85 SEC",  label: "TO MIDNIGHT",          color: "#e84040" },
+            { val: "73%",     label: "COLLAPSE PROBABILITY",  color: "#f0a500" },
+            { val: "FREE",    label: "NONPROFIT",             color: "#1ae8a0" },
+          ].map(({ val, label, color }) => (
+            <div key={label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+              <div style={{ fontFamily: "monospace", fontSize: 28, fontWeight: 800, color, letterSpacing: "-0.01em" }}>
+                {val}
+              </div>
+              <div style={{ fontFamily: "monospace", fontSize: 10, letterSpacing: "0.18em", color: "rgba(122,138,150,0.7)" }}>
+                {label}
+              </div>
+            </div>
+          ))}
+        </div>
+
         {/* Three pillars */}
         <div style={{ display: "flex", gap: 40 }}>
           {[
             { label: "WATCHTOWER", color: "#e84040", desc: "Threat Intelligence" },
-            { label: "PROVISIONER", color: "#c9a84c", desc: "Supply Chain" },
+            { label: "PROVISIONER", color: "#c9a84c", desc: "Gear Catalog" },
             { label: "PROTOCOL", color: "#00d4ff", desc: "Continuity Ledger" },
           ].map(({ label, color, desc }) => (
             <div
               key={label}
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 6,
-              }}
+              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}
             >
-              <div
-                style={{
-                  fontFamily: "monospace",
-                  fontSize: 11,
-                  letterSpacing: "0.2em",
-                  color,
-                  fontWeight: 700,
-                }}
-              >
+              <div style={{ fontFamily: "monospace", fontSize: 11, letterSpacing: "0.2em", color, fontWeight: 700 }}>
                 {label}
               </div>
               <div style={{ fontSize: 11, color: "rgba(122,138,150,0.8)", fontFamily: "monospace" }}>

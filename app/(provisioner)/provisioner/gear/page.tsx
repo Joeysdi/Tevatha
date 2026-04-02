@@ -1,7 +1,7 @@
 "use client";
 // app/(provisioner)/provisioner/gear/page.tsx  →  URL: /provisioner/gear
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { GradeBadge } from "@/components/provisioner/grade-badge";
@@ -145,6 +145,15 @@ function fmtUsdc(p: Product): string { return `${p.priceUsdc.toFixed(2)} USDC`; 
 
 export default function GearPage() {
   const [activeDomain, setActiveDomain] = useState(THREAT_DOMAINS[0]);
+  const [copied, setCopied] = useState(false);
+
+  const shareLink = useCallback(() => {
+    const url = `${window.location.origin}/provisioner/gear?domain=${activeDomain.id}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }, [activeDomain.id]);
 
   const domainProducts: Product[] = activeDomain.skus
     .map((sku) => CATALOG.find((p) => p.sku === sku))
@@ -181,6 +190,14 @@ export default function GearPage() {
       <div className="flex items-center gap-3 mb-3">
         <span className="font-mono text-[9px] text-text-mute2 tracking-[.14em] uppercase">THREAT DOMAIN</span>
         <div className="flex-1 h-px bg-border-protocol" />
+        <button
+          onClick={shareLink}
+          className="font-mono text-[9px] text-text-mute2 hover:text-gold-protocol
+                     border border-border-protocol hover:border-gold-protocol/40
+                     rounded-lg px-2.5 py-1.5 transition-all duration-150 flex items-center gap-1.5"
+        >
+          {copied ? "✓ Copied" : "Share ↗"}
+        </button>
       </div>
       <div className="overflow-x-auto scrollbar-none [-webkit-overflow-scrolling:touch]">
         <div className="flex gap-2 min-w-max pb-1">
