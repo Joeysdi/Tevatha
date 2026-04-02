@@ -491,10 +491,10 @@ export function WatchtowerGlobeShell() {
                                   style={{ background: scActive ? col : "rgba(150,165,180,0.2)" }} />
                             <span className="text-[11px] leading-none">{sc.icon}</span>
                             <span className="truncate">{sc.title}</span>
-                            {sc.prob !== undefined && (
+                            {scActive && sc.prob !== undefined && (
                               <span
-                                className="ml-auto font-mono text-[8px] tabular-nums flex-shrink-0"
-                                style={{ color: scActive ? `${col}cc` : "rgba(150,165,180,0.25)" }}
+                                className="font-mono text-[8px] tabular-nums flex-shrink-0 ml-1"
+                                style={{ color: `${col}cc` }}
                               >
                                 {sc.prob}%
                               </span>
