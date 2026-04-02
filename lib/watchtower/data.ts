@@ -125,7 +125,7 @@ export interface AlarmCategory {
 
 export const DOMAINS: ThreatDomain[] = [
   {
-    id:"geopolitical", label:"Geopolitical", score:93, level:"CRITICAL", icon:"⚔️", trend:"↑", scenarioIds:["S05","S07","S09"],
+    id:"geopolitical", label:"Geopolitical", score:74, level:"HIGH", icon:"⚔️", trend:"↑", scenarioIds:["S05","S07","S09"],
     summary:"Doomsday Clock at 85s (all-time record) — New START expired Feb 2026, first time in 50+ years no treaty limits US-Russia arsenals. Salt Typhoon (China MSS) confirmed inside 9+ US telecoms; Volt Typhoon pre-positioned in US grids for wartime activation. China's most extensive Taiwan blockade drills ever (Dec 2025); CFR rates 2026 Taiwan Strait crisis at even-money.",
     drivers:[
       "Treaty collapse: New START lapse removes all legal limits on US-Russia arsenals — Doomsday Clock at 85 seconds, all-time record (BAS 2026)",
@@ -136,7 +136,7 @@ export const DOMAINS: ThreatDomain[] = [
     ],
   },
   {
-    id:"economic", label:"Economic", score:76, level:"HIGH", icon:"💸", trend:"↑", scenarioIds:["S01","S03"],
+    id:"economic", label:"Economic", score:67, level:"HIGH", icon:"💸", trend:"↑", scenarioIds:["S01","S03"],
     summary:"US debt reached $38.43T (~124% of GDP), growing $8B per day. Trump's 2025 tariff regime — 10% universal, 145% on China — represents the largest US tax increase as % of GDP since 1993. BRICS+ nations representing ~45% of global GDP are accelerating non-USD trade settlement.",
     drivers:[
       "Debt: $38.43T (~124% GDP, $8B/day) — interest consuming ~20% of federal revenue; CBO projects surpassing 1946 wartime peak by 2036",
@@ -147,7 +147,7 @@ export const DOMAINS: ThreatDomain[] = [
     ],
   },
   {
-    id:"environmental", label:"Environmental", score:74, level:"HIGH", icon:"🌍", trend:"↑", scenarioIds:["S10"],
+    id:"environmental", label:"Environmental", score:61, level:"ELEVATED", icon:"🌍", trend:"↑", scenarioIds:["S10"],
     summary:"Scientists describe H5N1 in animal reservoirs as 'completely out of control' (Jan 2026) — 70 US human cases, active in dairy herds. A novel recombinant MPXV strain (clade Ib+IIb, CFR 3–4%) detected in India, January 2026. 2024 confirmed as hottest year in recorded history (+1.55°C above pre-industrial); Arctic sea ice at record low Mar 2026.",
     drivers:[
       "H5N1: 'completely out of control' in animal reservoirs — 70+ US human cases, active dairy herd spread; historical CFR ~48%; no general-population vaccine stockpile",

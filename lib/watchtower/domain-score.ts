@@ -18,7 +18,7 @@ function pinWeight(pin: NewsFeedPin): number {
 export function calcDomainScores(pins: NewsFeedPin[], prices: LivePrices): DomainScores {
   const { xau, wti, btc, usdRub, vix } = prices;
 
-  // ── Geopolitical (base 93) ────────────────────────────────────────────────
+  // ── Geopolitical (base 74) ────────────────────────────────────────────────
   const geoCategories = new Set<NewsFeedPin["category"]>(["war", "nuclear", "cyber", "political"]);
   const geoSignal =
     pins
@@ -28,10 +28,10 @@ export function calcDomainScores(pins: NewsFeedPin[], prices: LivePrices): Domai
     + (wti.ok    ? wti.change                * 0.35 : 0)
     + (usdRub.ok ? (usdRub.price - 85)       * 0.08 : 0);
 
-  const geoBase = 93;
+  const geoBase = 74;
   const geoLive = clamp(Math.round(geoBase + geoSignal), 1, 99);
 
-  // ── Economic (base 76) ────────────────────────────────────────────────────
+  // ── Economic (base 67) ────────────────────────────────────────────────────
   const ecoSignal =
     pins
       .filter(p => p.category === "economic")
@@ -41,10 +41,10 @@ export function calcDomainScores(pins: NewsFeedPin[], prices: LivePrices): Domai
     + (btc.ok ? Math.abs(btc.change)      * 0.2  : 0)
     + (vix.ok ? (vix.price - 18)          * 0.35 : 0);
 
-  const ecoBase = 76;
+  const ecoBase = 67;
   const ecoLive = clamp(Math.round(ecoBase + ecoSignal), 1, 99);
 
-  // ── Environmental (base 74) ───────────────────────────────────────────────
+  // ── Environmental (base 61) ───────────────────────────────────────────────
   const envSignal =
     pins
       .filter(p => p.category === "health")
@@ -54,7 +54,7 @@ export function calcDomainScores(pins: NewsFeedPin[], prices: LivePrices): Domai
       .reduce((sum, p) => sum + pinWeight(p) * 0.8, 0)
     + (wti.ok ? wti.change * 0.15 : 0);
 
-  const envBase = 74;
+  const envBase = 61;
   const envLive = clamp(Math.round(envBase + envSignal), 1, 99);
 
   return {

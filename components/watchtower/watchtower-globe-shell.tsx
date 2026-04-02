@@ -481,7 +481,7 @@ export function WatchtowerGlobeShell() {
                             href={buildUrl(searchParams, { scenario: scActive ? null : sid })}
                             replace
                             onClick={(e) => { e.stopPropagation(); setScenarioId(scActive ? null : sid); }}
-                            className={`flex items-center gap-1.5 pl-7 pr-2.5 py-1 min-h-[36px] text-left
+                            className={`flex items-start gap-1.5 pl-5 pr-2.5 py-1.5 min-h-[36px] text-left
                                         transition-all duration-150 font-mono text-[10px] border-l border-l-transparent
                                         ${scActive ? "" : "text-text-mute2 hover:text-text-base"}`}
                             style={scActive ? { color: col, borderLeftColor: `${col}80` } : {}}
@@ -490,7 +490,7 @@ export function WatchtowerGlobeShell() {
                             <span className={`w-1 h-1 rounded-full flex-shrink-0 ${scActive ? "animate-pulse" : ""}`}
                                   style={{ background: scActive ? col : "rgba(150,165,180,0.2)" }} />
                             <span className="text-[11px] leading-none">{sc.icon}</span>
-                            <span className="truncate">{sc.title}</span>
+                            <span className="leading-tight break-words min-w-0">{sc.title}</span>
                             {scActive && sc.prob !== undefined && (
                               <span
                                 className="font-mono text-[8px] tabular-nums flex-shrink-0 ml-1"
