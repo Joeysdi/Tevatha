@@ -54,7 +54,7 @@ const PILLARS = [
     id: "provisioner",
     label: "PROVISIONER",
     accent: "#c9a84c",
-    items: ["Certified gear", "Graded A–D", "Fiat + USDC"],
+    items: ["Certified gear", "Graded A–D", "Free · Nonprofit"],
   },
   {
     id: "protocol",
