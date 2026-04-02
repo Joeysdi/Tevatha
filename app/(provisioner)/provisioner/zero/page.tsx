@@ -82,9 +82,60 @@ const STEPS = [
   },
 ];
 
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How do I prepare for an emergency with no money?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Start with water — fill every container you own from the tap. Target 1 gallon per person per day for 72 hours. Then do a pantry audit, write down 5 key phone numbers on paper, pick two meeting points, and photograph all important documents. These steps cost nothing."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How much water do I need for emergency preparedness?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "FEMA recommends 1 gallon per person per day. A family of 4 needs 12 gallons for 72 hours and 56 gallons for 2 weeks. Fill your bathtub at the first sign of disruption — a standard tub holds 80–100 gallons. Add 8 drops of unscented household bleach per gallon to purify stored tap water."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What should go in a 72-hour emergency bag?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Use a backpack you already own. Pack 3 days of non-perishable food (granola bars, jerky, nuts), water bottles, a basic first aid kit, flashlight with extra batteries, change of clothes, rain poncho, phone charger, medications, and cash in small bills. Total cost at a hardware store: under $50."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What documents should I have ready for an emergency?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Photograph your passport, driver's license, insurance cards, prescriptions, property deed, and birth certificates. Upload them to Google Drive or iCloud. Store physical originals in a single waterproof zip-lock bag in one known location. Write down account numbers and insurance policy numbers on paper."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Why is community important for emergency preparedness?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A neighborhood with 10 prepared households is exponentially more resilient than 10 isolated individuals. Know your neighbors' skills (medical, mechanical, agricultural) and who needs evacuation help. Designate one out-of-state contact for everyone to call — local lines jam in disasters, long-distance often stays open."
+      }
+    },
+  ]
+};
+
 export default function ZeroPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
 
       <Link
         href="/provisioner"

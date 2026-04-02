@@ -49,9 +49,60 @@ const CHECKLIST = [
   },
 ];
 
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is the most important emergency gear to buy first?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Medical is first — specifically a tourniquet and trauma kit. The NAR IFAK with SOF-T tourniquet and a QuikClot Combat Gauze can stop life-threatening bleeding in 3–5 minutes. After medical, prioritize a two-way satellite communicator like the Garmin inReach Mini 2, which works with no cell infrastructure."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What emergency communication gear works without cell service?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The Garmin inReach Mini 2 provides two-way satellite messaging and SOS from anywhere on Earth with no cell network required. The Midland ER310 is a hand-crank NOAA weather radio that needs no power. For local coordination, the Baofeng UV-5R is a low-cost ham radio that works on public safety frequencies."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I store emergency water long term?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The WaterBOB is a 100-gallon bathtub bladder — fill it at the first sign of disruption for a 50-day supply for one person. For ongoing filtration, the Berkey Big Berkey gravity filter removes viruses, bacteria, and heavy metals with no power or pressure required. Keep both on hand."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What backup power should I have for grid-down emergencies?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A portable power station like the Jackery 1000 Plus or EcoFlow Delta Pro can run critical electronics, CPAP machines, and small appliances for days. Pair with a 400W solar panel (Renogy) for indefinite grid-independent power. Always keep a NOCO GB40 jump starter in each vehicle."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How much fuel should I stockpile for an emergency?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Keep 4 Wavian NATO Jerry Cans (5 gallons each = 20 gallons total) filled at all times. Rotate fuel quarterly using PRI-G fuel stabilizer to maintain potency. This provides 300–400 miles of evacuation range on top of a full tank. Store in a cool, ventilated area away from ignition sources."
+      }
+    },
+  ]
+};
+
 export default function ChecklistPage() {
   return (
     <div className="max-w-2xl mx-auto">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
 
       {/* Print hide */}
       <div className="print:hidden mb-6">
