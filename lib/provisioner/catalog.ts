@@ -1,5 +1,6 @@
 // lib/provisioner/catalog.ts
 import type { TierRequirement, GradeLevel } from "@/types/treasury";
+import { REA_EXTENDED } from "./rea-extended";
 
 export type ProductCategory =
   | "communications"
@@ -584,6 +585,7 @@ export const CATALOG: Product[] = [
     imageSlug:"rea-panama-boquete",
     externalUrl:"https://www.boqueterealty.com/",
   },
+  ...REA_EXTENDED,
 ];
 
 // ── Helpers ──────────────────────────────────────────────────────────────
