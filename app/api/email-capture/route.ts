@@ -1,6 +1,6 @@
 // app/api/email-capture/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export async function POST(req: NextRequest) {
   const { email } = await req.json();
@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid email" }, { status: 400 });
   }
 
-  const supabase = await createClient();
+  const supabase = await createServerSupabaseClient();
   const { error } = await supabase
     .from("email_subscribers")
     .upsert({ email: email.toLowerCase().trim() }, { onConflict: "email", ignoreDuplicates: true });
