@@ -242,15 +242,21 @@ export default async function GearDetailPage(
       </div>
 
       {/* Back */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <Link href="/provisioner/gear"
               className="font-mono text-[10px] text-text-mute2 hover:text-gold-protocol transition-colors">
           ← Back to Gear Catalog
         </Link>
-        <Link href="/provisioner/checklist"
-              className="font-mono text-[10px] text-text-mute2 hover:text-gold-protocol transition-colors">
-          Print Critical Checklist →
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link href="/provisioner/methodology"
+                className="font-mono text-[10px] text-text-mute2 hover:text-gold-protocol transition-colors">
+            Scoring Methodology
+          </Link>
+          <Link href="/provisioner/checklist"
+                className="font-mono text-[10px] text-text-mute2 hover:text-gold-protocol transition-colors">
+            Print Critical Checklist →
+          </Link>
+        </div>
       </div>
     </div>
   );

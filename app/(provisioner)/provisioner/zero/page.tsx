@@ -82,6 +82,21 @@ const STEPS = [
   },
 ];
 
+const howToSchema = {
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "How to Prepare for Emergencies with No Money",
+  "description": "A free step-by-step emergency preparedness guide that costs nothing but time. Water, food, communication, documents, 72-hour bag, and community — before you buy any gear.",
+  "totalTime": "PT4H",
+  "estimatedCost": { "@type": "MonetaryAmount", "currency": "USD", "value": "0" },
+  "step": STEPS.map((s, i) => ({
+    "@type": "HowToStep",
+    "position": i + 1,
+    "name": s.title,
+    "text": s.items.join(" "),
+  })),
+};
+
 const faqSchema = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
@@ -132,10 +147,8 @@ const faqSchema = {
 export default function ZeroPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
 
       <Link
         href="/provisioner"

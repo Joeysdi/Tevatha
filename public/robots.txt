@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Block admin routes from indexing
+Disallow: /admin/
+Disallow: /api/
+
+# Block auth pages (Clerk handles)
+Disallow: /sign-in
+Disallow: /sign-up
+
+Sitemap: https://tevatha.com/sitemap.xml

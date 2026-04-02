@@ -98,7 +98,17 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const { id } = await params;
   const domain = DOMAINS.find((d) => d.id === id);
-  return { title: domain ? `${domain.label} — Threat Analysis` : "Threat Analysis" };
+  if (!domain) return { title: "Threat Analysis" };
+  const meta = DOMAIN_META[domain.id];
+  return {
+    title: `${domain.label} Threat Analysis — Score ${domain.score}/100`,
+    description: meta?.description.slice(0, 160) ?? `${domain.label} threat domain analysis. Current score: ${domain.score}/100 ${domain.level}.`,
+    openGraph: {
+      title: `${domain.label} — ${domain.score}/100 ${domain.level} · Tevatha Watchtower`,
+      description: meta?.description.slice(0, 200),
+    },
+    alternates: { canonical: `/watchtower/threats/${id}` },
+  };
 }
 
 // ── Page ─────────────────────────────────────────────────────────────────────
@@ -119,8 +129,37 @@ export default async function ThreatDomainPage(
   const scenarios   = SCENARIOS.filter((s) => meta.scenarioIds.includes(s.id));
   const gates       = GATES.filter((g) => meta.gateIds.includes(g.id));
 
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": `${domain.label} Threat Analysis — Score ${domain.score}/100`,
+    "description": meta.description.slice(0, 200),
+    "author": { "@type": "Organization", "name": "Tevatha", "url": "https://tevatha.com" },
+    "publisher": { "@type": "Organization", "name": "Tevatha", "url": "https://tevatha.com" },
+    "url": `https://tevatha.com/watchtower/threats/${domain.id}`,
+    "mainEntityOfPage": `https://tevatha.com/watchtower/threats/${domain.id}`,
+    "dateModified": new Date().toISOString().split("T")[0],
+    "about": {
+      "@type": "Thing",
+      "name": domain.label,
+      "description": meta.description,
+    },
+  };
+
+  const faqSchema = meta.watchFor.length > 0 ? {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": meta.watchFor.map((w) => ({
+      "@type": "Question",
+      "name": `What should I watch for regarding ${domain.label.toLowerCase()} threats?`,
+      "acceptedAnswer": { "@type": "Answer", "text": w },
+    })),
+  } : null;
+
   return (
     <div className="space-y-7 sm:space-y-8">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
+      {faqSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />}
 
       {/* Back link */}
       <Link

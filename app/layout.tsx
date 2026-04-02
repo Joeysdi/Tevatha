@@ -37,6 +37,27 @@ export const metadata: Metadata = {
   },
 };
 
+const orgSchema = {
+  "@context": "https://schema.org",
+  "@type": "NGO",
+  "@id": "https://tevatha.com/#organization",
+  "name": "Tevatha",
+  "url": "https://tevatha.com",
+  "description": "Free nonprofit emergency preparedness platform: real-time threat intelligence, curated survival gear catalog, and offline continuity tools.",
+  "nonprofitStatus": "Nonprofit501c3",
+  "foundingDate": "2024",
+  "areaServed": "Worldwide",
+  "knowsAbout": [
+    "Emergency preparedness",
+    "Survival gear",
+    "Nuclear threat intelligence",
+    "Grid-down scenarios",
+    "Off-grid living",
+    "Geopolitical risk analysis",
+  ],
+  "sameAs": ["https://github.com/Joeysdi/Tevatha"],
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -64,6 +85,7 @@ export default function RootLayout({
         `}
       >
         <body className="bg-void-0 text-text-base font-sans antialiased overscroll-none">
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }} />
           <a
             href="#main-content"
             className="sr-only focus:not-sr-only focus:fixed focus:z-[9999] focus:top-4 focus:left-4
