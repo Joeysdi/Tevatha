@@ -162,6 +162,8 @@ export default function WatchtowerOGImage() {
                 </div>
                 <div
                   style={{
+                    display: "flex",
+                    alignItems: "baseline",
                     fontFamily: "monospace",
                     fontSize: 26,
                     fontWeight: 700,
