@@ -94,7 +94,7 @@ const THREAT_DOMAINS: ThreatDomainDef[] = [
     borderHex:"#e84040",
     outcome:  "Your power is live when the grid is not.",
     rationale:"EMP destroys unshielded electronics and collapses grid power instantly. Priority is off-grid energy independence, EMP-shielded communications, and satellite fallback when terrestrial networks fail.",
-    skus:     ["COM-001","COM-002","COM-005","ENE-001","ENE-002","ENE-003","SEC-003","COM-003","COM-004","MOB-003","SHE-001","REA-001","REA-003","REA-006"],
+    skus:     ["COM-001","COM-002","COM-005","ENE-001","ENE-002","ENE-003","SEC-003","COM-003","COM-004","MOB-003","SHE-001"],
   },
   {
     id:       "economic",
@@ -104,7 +104,7 @@ const THREAT_DOMAINS: ThreatDomainDef[] = [
     borderHex:"#c9a84c",
     outcome:  "You still eat and drink when the shelves don't restock.",
     rationale:"Supply chain collapse means no resupply — what you have pre-crisis is what you operate with. Priority: water independence, grid-free energy, and fuel reserves to maintain mobility when supply networks seize.",
-    skus:     ["ENE-001","ENE-002","ENE-003","WAT-001","WAT-002","MOB-001","MOB-002","COM-003","WAT-003","WAT-004","ENE-004","MOB-003","SHE-001","SHE-002","REA-001","REA-004","REA-005","REA-010","REA-011"],
+    skus:     ["ENE-001","ENE-002","ENE-003","WAT-001","WAT-002","MOB-001","MOB-002","COM-003","WAT-003","WAT-004","ENE-004","MOB-003","SHE-001","SHE-002"],
   },
   {
     id:       "civil",
@@ -114,7 +114,7 @@ const THREAT_DOMAINS: ThreatDomainDef[] = [
     borderHex:"#f0a500",
     outcome:  "You know before the crowd knows. You move before they do.",
     rationale:"Societal fracture events demand perimeter awareness, rapid evacuation capability, and off-grid communications independent of compromised infrastructure. Know before the crowd knows.",
-    skus:     ["COM-001","COM-002","COM-005","MOB-001","MOB-002","SEC-001","COM-003","COM-004","MOB-003","SEC-002","SHE-001","REA-001","REA-002","REA-004","REA-007","REA-008"],
+    skus:     ["COM-001","COM-002","COM-005","MOB-001","MOB-002","SEC-001","COM-003","COM-004","MOB-003","SEC-002","SHE-001"],
   },
   {
     id:       "cyber",
