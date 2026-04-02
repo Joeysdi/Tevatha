@@ -73,6 +73,18 @@ interface ThreatDomainDef {
   skus:       string[];
 }
 
+// Properties tab sentinel — skus unused (REA items rendered separately)
+const PROPERTIES_TAB: ThreatDomainDef = {
+  id:        "properties",
+  label:     "Safe Land",
+  icon:      "🌍",
+  color:     "text-cyan-DEFAULT",
+  borderHex: "#00d4ff",
+  outcome:   "Your Ark Node is waiting.",
+  rationale: "Off-grid land in politically stable, low-nuclear-risk countries. Each location scored on 4 safety dimensions.",
+  skus:      [],
+};
+
 const THREAT_DOMAINS: ThreatDomainDef[] = [
   {
     id:       "nuclear",
@@ -134,6 +146,7 @@ const THREAT_DOMAINS: ThreatDomainDef[] = [
     rationale:"Water access failure and supply chain disruption are the primary climate cascade vectors. Independent water filtration, renewable energy, and fuel reserves maintain operational capability through extended disruption windows.",
     skus:     ["WAT-001","WAT-002","ENE-002","ENE-003","MOB-001","WAT-003","WAT-004","ENE-004","SHE-001","SHE-002","SHE-003"],
   },
+  PROPERTIES_TAB,
 ];
 
 // ── Price formatters ──────────────────────────────────────────────────────────
@@ -223,67 +236,93 @@ export default function GearPage() {
         </div>
       </div>
 
-      {/* Active domain info */}
-      <FadeUp key={activeDomain.id}>
-        <div
-          className="relative rounded-xl border p-4 sm:p-5 overflow-hidden"
-          style={{
-            borderColor: `${activeDomain.borderHex}30`,
-            background: `linear-gradient(135deg,${activeDomain.borderHex}0d,rgba(11,13,24,1))`,
-            boxShadow: "0 0 0 1px rgba(255,255,255,0.03) inset",
-          }}
-        >
+      {/* Active domain info OR properties panel */}
+      {activeDomain.id === "properties" ? (
+        <FadeUp key="properties">
+          <div className="relative rounded-xl border border-cyan-DEFAULT/20 bg-void-1 p-5 sm:p-6 overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-px"
+                 style={{ background: "linear-gradient(90deg,#00d4ff,rgba(0,212,255,0.3),transparent)" }} />
+            <div className="flex items-start gap-4 flex-wrap justify-between">
+              <div>
+                <p className="font-mono text-[9px] text-cyan-DEFAULT tracking-[.22em] uppercase mb-1">
+                  Ark Node Properties · {ALL_REA.length} Locations · {ALL_REA.filter(p => p.grade === "A").length} Grade A
+                </p>
+                <h2 className="font-syne font-extrabold text-[clamp(18px,4vw,24px)] text-text-base leading-tight">
+                  Safe Land. Every Country.
+                </h2>
+                <p className="font-mono text-[11px] text-text-dim mt-1 leading-relaxed max-w-lg">
+                  Curated off-grid land in politically stable, low-nuclear-risk countries. Each location
+                  scored on 4 dimensions. Links go directly to the best property search site for that country.
+                </p>
+              </div>
+            </div>
+          </div>
+        </FadeUp>
+      ) : (
+        <FadeUp key={activeDomain.id}>
           <div
-            className="absolute top-0 left-0 right-0 h-px"
-            style={{ background: `linear-gradient(90deg,${activeDomain.borderHex},transparent)` }}
-          />
-          <div className="flex items-start gap-3 mb-3">
-            <span className="text-[28px] leading-none">{activeDomain.icon}</span>
-            <div className="flex-1 min-w-0">
-              <h2 className={`font-syne font-bold text-[18px] ${activeDomain.color}`}>
-                {activeDomain.label}
-              </h2>
-              <p className="font-mono text-[11px] text-text-dim leading-relaxed mt-1">
-                {activeDomain.rationale}
-              </p>
-            </div>
-          </div>
-          <p className="font-syne font-bold text-[22px] leading-snug text-text-base mb-3">
-            {activeDomain.outcome}
-          </p>
-          <div className="flex gap-4 mt-1 mb-4">
-            <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-red-bright animate-pulse" />
-              <span className="font-mono text-[9px] text-text-mute2">
-                {criticalCount} CRITICAL
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-bright" />
-              <span className="font-mono text-[9px] text-text-mute2">
-                {gradeACount} GRADE A
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-text-mute2" />
-              <span className="font-mono text-[9px] text-text-mute2">
-                {domainProducts.length} ITEMS
-              </span>
-            </div>
-          </div>
-          <a
-            href={`#domain-products`}
-            className="inline-flex items-center gap-2 px-5 py-2 rounded-lg
-                       bg-gold-protocol text-void-0 font-syne font-bold text-[12px]
-                       tracking-[.06em] hover:bg-gold-bright hover:-translate-y-0.5
-                       hover:shadow-[0_8px_24px_rgba(201,168,76,0.3)] transition-all duration-200"
+            className="relative rounded-xl border p-4 sm:p-5 overflow-hidden"
+            style={{
+              borderColor: `${activeDomain.borderHex}30`,
+              background: `linear-gradient(135deg,${activeDomain.borderHex}0d,rgba(11,13,24,1))`,
+              boxShadow: "0 0 0 1px rgba(255,255,255,0.03) inset",
+            }}
           >
-            SHOP {domainProducts.length} ITEMS →
-          </a>
-        </div>
-      </FadeUp>
+            <div
+              className="absolute top-0 left-0 right-0 h-px"
+              style={{ background: `linear-gradient(90deg,${activeDomain.borderHex},transparent)` }}
+            />
+            <div className="flex items-start gap-3 mb-3">
+              <span className="text-[28px] leading-none">{activeDomain.icon}</span>
+              <div className="flex-1 min-w-0">
+                <h2 className={`font-syne font-bold text-[18px] ${activeDomain.color}`}>
+                  {activeDomain.label}
+                </h2>
+                <p className="font-mono text-[11px] text-text-dim leading-relaxed mt-1">
+                  {activeDomain.rationale}
+                </p>
+              </div>
+            </div>
+            <p className="font-syne font-bold text-[22px] leading-snug text-text-base mb-3">
+              {activeDomain.outcome}
+            </p>
+            <div className="flex gap-4 mt-1 mb-4">
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-bright animate-pulse" />
+                <span className="font-mono text-[9px] text-text-mute2">
+                  {criticalCount} CRITICAL
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-bright" />
+                <span className="font-mono text-[9px] text-text-mute2">
+                  {gradeACount} GRADE A
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-text-mute2" />
+                <span className="font-mono text-[9px] text-text-mute2">
+                  {domainProducts.length} ITEMS
+                </span>
+              </div>
+            </div>
+            <a
+              href={`#domain-products`}
+              className="inline-flex items-center gap-2 px-5 py-2 rounded-lg
+                         bg-gold-protocol text-void-0 font-syne font-bold text-[12px]
+                         tracking-[.06em] hover:bg-gold-bright hover:-translate-y-0.5
+                         hover:shadow-[0_8px_24px_rgba(201,168,76,0.3)] transition-all duration-200"
+            >
+              SHOP {domainProducts.length} ITEMS →
+            </a>
+          </div>
+        </FadeUp>
+      )}
 
-      {/* Product grid */}
+      {/* Product grid — gear items OR real estate */}
+      {activeDomain.id === "properties" ? (
+        <PropertiesGrid />
+      ) : (
       <div id="domain-products">
       <StaggerParent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {domainProducts.map((p) => (
@@ -307,13 +346,13 @@ export default function GearPage() {
               {(() => {
                 const imgSrc = PRODUCT_IMAGES[p.imageSlug];
                 return (
-                  <div className={`relative h-36 border-b border-border-protocol overflow-hidden flex-shrink-0 ${p.category === "real_estate" ? "bg-void-2" : "bg-white"}`}>
+                  <div className="relative h-36 border-b border-border-protocol overflow-hidden flex-shrink-0 bg-white">
                     {imgSrc ? (
                       <Image
                         src={imgSrc}
                         alt={p.name}
                         fill
-                        className={p.category === "real_estate" ? "object-cover" : "object-contain p-4"}
+                        className="object-contain p-4"
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       />
                     ) : (
@@ -356,6 +395,19 @@ export default function GearPage() {
                 {p.spec}
               </p>
 
+              {/* Gear Safety Index */}
+              {p.gearLayers && (
+                <div className="space-y-1 bg-void-2 border border-border-protocol rounded-lg px-3 py-2.5 mb-3">
+                  <p className="font-mono text-[7.5px] text-text-mute2 tracking-[.14em] uppercase mb-1.5">
+                    Safety Index
+                  </p>
+                  <SafetyBar label="Durability"  value={p.gearLayers.durability}        color={p.gearLayers.durability >= 85 ? "#1ae8a0" : p.gearLayers.durability >= 70 ? "#c9a84c" : "#e84040"} />
+                  <SafetyBar label="Grid-Free"   value={p.gearLayers.grid_independence} color={p.gearLayers.grid_independence >= 85 ? "#1ae8a0" : p.gearLayers.grid_independence >= 70 ? "#c9a84c" : "#e84040"} />
+                  <SafetyBar label="Fieldwork"   value={p.gearLayers.field_repairability} color={p.gearLayers.field_repairability >= 85 ? "#1ae8a0" : p.gearLayers.field_repairability >= 70 ? "#c9a84c" : "#e84040"} />
+                  <SafetyBar label="Value"       value={p.gearLayers.value_density}     color={p.gearLayers.value_density >= 85 ? "#1ae8a0" : p.gearLayers.value_density >= 70 ? "#c9a84c" : "#e84040"} />
+                </div>
+              )}
+
               {/* Build note */}
               <div className="flex items-start gap-2 mb-4 bg-void-2 border border-border-protocol
                                rounded-lg px-3 py-2">
@@ -371,14 +423,9 @@ export default function GearPage() {
                   <span className="font-mono text-[15px] font-bold text-gold-bright">
                     {fmtUsd(p)}
                   </span>
-                  {p.category !== "real_estate" && (
-                    <span className="font-mono text-[9px] text-cyan-DEFAULT ml-2">
-                      ◎ {fmtUsdc(p)}
-                    </span>
-                  )}
-                  {p.location && (
-                    <p className="font-mono text-[8px] text-text-mute2 mt-0.5">{p.location}</p>
-                  )}
+                  <span className="font-mono text-[9px] text-cyan-DEFAULT ml-2">
+                    ◎ {fmtUsdc(p)}
+                  </span>
                 </div>
                 <a
                     href={p.externalUrl ?? "#"}
@@ -388,7 +435,7 @@ export default function GearPage() {
                                px-3 py-3 rounded-lg hover:bg-gold-bright transition-colors
                                whitespace-nowrap flex-shrink-0 min-h-[44px] flex items-center"
                   >
-                    {p.category === "real_estate" ? "Search Listings ↗" : `Buy at ${p.brand} ↗`}
+                    {`Buy at ${p.brand} ↗`}
                   </a>
               </div>
 
@@ -398,32 +445,32 @@ export default function GearPage() {
         ))}
       </StaggerParent>
       </div>
+      )}
 
       {/* Link to full catalog */}
-      <FadeUp delay={0.1}>
-        <div className="border border-border-protocol rounded-xl px-5 py-4 flex items-center
-                         justify-between gap-4 bg-void-1">
-          <p className="font-mono text-[11px] text-text-mute2">
-            See every certified item with full grade breakdowns
-          </p>
-          <Link
-            href="/provisioner"
-            className="font-mono text-[10px] text-gold-protocol hover:text-gold-bright
-                       transition-colors flex-shrink-0"
-          >
-            Full Catalog →
-          </Link>
-        </div>
-      </FadeUp>
-
-      {/* ── REAL ESTATE ARK NODES ──────────────────────────────────────────── */}
-      <RealEstateSection />
+      {activeDomain.id !== "properties" && (
+        <FadeUp delay={0.1}>
+          <div className="border border-border-protocol rounded-xl px-5 py-4 flex items-center
+                           justify-between gap-4 bg-void-1">
+            <p className="font-mono text-[11px] text-text-mute2">
+              See every certified item with full grade breakdowns
+            </p>
+            <Link
+              href="/provisioner"
+              className="font-mono text-[10px] text-gold-protocol hover:text-gold-bright
+                         transition-colors flex-shrink-0"
+            >
+              Full Catalog →
+            </Link>
+          </div>
+        </FadeUp>
+      )}
 
     </div>
   );
 }
 
-// ── Real Estate Section ───────────────────────────────────────────────────────
+// ── Properties Grid (shown when Properties tab is active) ────────────────────
 
 const REA_SORT_OPTIONS = [
   { value: "grade",     label: "Grade" },
@@ -454,7 +501,7 @@ function SafetyBar({ label, value, color }: { label: string; value: number; colo
   );
 }
 
-function RealEstateSection() {
+function PropertiesGrid() {
   const [sort, setSort] = useState<ReaSort>("grade");
   const [search, setSearch] = useState("");
 
@@ -478,27 +525,7 @@ function RealEstateSection() {
 
   return (
     <FadeUp delay={0.05}>
-      <section className="space-y-5">
-
-        {/* Header */}
-        <div className="relative rounded-xl border border-cyan-DEFAULT/20 bg-void-1 p-5 sm:p-6 overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-px"
-               style={{ background: "linear-gradient(90deg,#00d4ff,rgba(0,212,255,0.3),transparent)" }} />
-          <div className="flex items-start justify-between gap-4 flex-wrap">
-            <div>
-              <p className="font-mono text-[9px] text-cyan-DEFAULT tracking-[.22em] uppercase mb-1">
-                Ark Node Properties · {ALL_REA.length} Locations · {ALL_REA.filter(p => p.grade === "A").length} Grade A
-              </p>
-              <h2 className="font-syne font-extrabold text-[clamp(18px,4vw,24px)] text-text-base leading-tight">
-                Safe Land. Every Country.
-              </h2>
-              <p className="font-mono text-[11px] text-text-dim mt-1 leading-relaxed max-w-lg">
-                Curated off-grid land in politically stable, low-nuclear-risk countries. Each location
-                scored on 4 dimensions. Links go directly to the best property search site for that country.
-              </p>
-            </div>
-          </div>
-        </div>
+      <section className="space-y-4">
 
         {/* Controls */}
         <div className="flex items-center gap-3 flex-wrap">
