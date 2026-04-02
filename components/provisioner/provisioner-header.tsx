@@ -42,6 +42,16 @@ export function ProvisionerHeader() {
 
           {/* Right: donate + auth + back link */}
           <div className="flex items-center gap-2 sm:gap-3">
+            {/* Contribute link */}
+            <Link
+              href="/contribute"
+              className="hidden sm:flex items-center font-mono text-[11px] text-text-mute2
+                         border border-border-protocol rounded-lg px-3 py-1.5 min-h-[40px]
+                         hover:border-gold-protocol/40 hover:text-text-base transition-all duration-200"
+            >
+              Contribute
+            </Link>
+
             {/* Donate button */}
             <Link
               href="/donate"
