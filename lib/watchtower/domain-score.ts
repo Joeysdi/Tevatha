@@ -81,14 +81,13 @@ export function calcDomainScores(
   // ════════════════════════════════════════════════════════════════════════════
 
   // Nuclear Risk (30%)
-  const nuclearTreatyBonus =
-    ANCHORS.armsControlStatus === "none"    ? 22 :
-    ANCHORS.armsControlStatus === "expired" ? 12 : 0;
+  // The Doomsday Clock already incorporates treaty status — BAS set it to 85s
+  // precisely because New START expired. Adding a separate treaty bonus is
+  // double-counting. Small pin bonus only for breaking escalation events.
   const nuclear = clamp(
     clockScore(ANCHORS.doomsdayClockSeconds)
-    + nuclearTreatyBonus
-    + pinSignal(pins, ["nuclear"], { t4: 8, t3: 5, t2: 3 }),
-    0, 100,
+    + pinSignal(pins, ["nuclear"], { t4: 5, t3: 3, t2: 1 }),
+    0, 88, // hard cap: 100 = nukes in the air; 88 = all-time danger, not active exchange
   );
 
   // Active Conflicts (30%)
@@ -121,7 +120,7 @@ export function calcDomainScores(
     {
       label: "Nuclear Risk",       score: nuclear,   weight: 0.30,
       contribution: Math.round(nuclear   * 0.30),
-      source: "BAS Doomsday Clock · New START treaty status",
+      source: "BAS Doomsday Clock (incl. treaty collapse) · nuclear news feed",
     },
     {
       label: "Active Conflicts",   score: conflicts, weight: 0.30,
