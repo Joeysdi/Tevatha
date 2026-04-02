@@ -94,7 +94,7 @@ const THREAT_DOMAINS: ThreatDomainDef[] = [
     borderHex:"#c9a84c",
     outcome:  "You stay connected when the internet and cell networks go down.",
     rationale:"When a crisis hits, phone networks and the internet are often the first things to fail. Satellite messengers, two-way radios, and emergency weather radios let you send messages, get updates, and coordinate with your group without any infrastructure.",
-    skus:     ["COM-001","COM-002","COM-003","COM-004","COM-005","COM-006","COM-007","COM-008"],
+    skus:     ["COM-001","COM-002","COM-003","COM-004","COM-005","COM-006","COM-007","COM-008","COM-009","COM-010","COM-011"],
   },
   {
     id:       "medical",
@@ -104,7 +104,7 @@ const THREAT_DOMAINS: ThreatDomainDef[] = [
     borderHex:"#e84040",
     outcome:  "You can treat serious injuries and illness without a hospital.",
     rationale:"When hospitals are overwhelmed or unreachable, your ability to treat bleeding, wounds, and illness at home could be the difference between life and death. Military-grade trauma kits, hemostatic agents, and a comprehensive medical reference are the foundation.",
-    skus:     ["MED-001","MED-002","MED-003","MED-004","MED-005","MED-006","MED-007","MED-008"],
+    skus:     ["MED-001","MED-002","MED-003","MED-004","MED-005","MED-006","MED-007","MED-008","MED-009","MED-010","MED-011"],
   },
   {
     id:       "energy",
@@ -114,7 +114,7 @@ const THREAT_DOMAINS: ThreatDomainDef[] = [
     borderHex:"#f0a500",
     outcome:  "Your lights, devices, and medical equipment stay powered.",
     rationale:"Power outages can last days to weeks in a serious crisis. Portable battery stations store electricity for immediate use, solar panels generate power indefinitely from sunlight, and a dual-fuel generator bridges any gap — keeping your refrigerator, medical devices, and communications running.",
-    skus:     ["ENE-001","ENE-002","ENE-003","ENE-004","ENE-005","ENE-006","ENE-007"],
+    skus:     ["ENE-001","ENE-002","ENE-003","ENE-004","ENE-005","ENE-006","ENE-007","ENE-008","ENE-009","ENE-010"],
   },
   {
     id:       "mobility",
@@ -124,7 +124,7 @@ const THREAT_DOMAINS: ThreatDomainDef[] = [
     borderHex:"#00d4ff",
     outcome:  "Your vehicle starts and moves when you need to leave.",
     rationale:"Getting out fast could save your life — but fuel shortages, dead batteries, and flat tires strand people every crisis. Pre-stored fuel in certified containers, a compact jump starter in every vehicle, and a GPS that works without cell service keep your evacuation route open.",
-    skus:     ["MOB-001","MOB-002","MOB-003","MOB-004","MOB-005","MOB-006"],
+    skus:     ["MOB-001","MOB-002","MOB-003","MOB-004","MOB-005","MOB-006","MOB-007","MOB-008","MOB-009"],
   },
   {
     id:       "water",
@@ -134,7 +134,7 @@ const THREAT_DOMAINS: ThreatDomainDef[] = [
     borderHex:"#38bdf8",
     outcome:  "You have clean drinking water even when the tap runs dry.",
     rationale:"Safe water is the most critical resource in any emergency — the human body can only survive 3 days without it. A gravity-fed ceramic filter removes viruses, bacteria, and heavy metals from any water source. Emergency storage bladders and purification tablets provide redundant backup layers.",
-    skus:     ["WAT-001","WAT-002","WAT-003","WAT-004","WAT-005","WAT-006"],
+    skus:     ["WAT-001","WAT-002","WAT-003","WAT-004","WAT-005","WAT-006","WAT-007","WAT-008","WAT-009"],
   },
   {
     id:       "security",
@@ -144,7 +144,7 @@ const THREAT_DOMAINS: ThreatDomainDef[] = [
     borderHex:"#1ae8a0",
     outcome:  "You see what is happening around you and protect your electronics.",
     rationale:"Perimeter awareness and electronic protection are overlooked until they matter. Local security cameras that store footage on-site (no cloud) give early warning. A Faraday bag protects critical electronics from an EMP. High-lumen tactical lights are essential in grid-down conditions.",
-    skus:     ["SEC-001","SEC-002","SEC-003","SEC-004","SEC-005","SEC-006"],
+    skus:     ["SEC-001","SEC-002","SEC-003","SEC-004","SEC-005","SEC-006","SEC-007","SEC-008","SEC-009"],
   },
   {
     id:       "shelter",
@@ -154,7 +154,7 @@ const THREAT_DOMAINS: ThreatDomainDef[] = [
     borderHex:"#8b8fa8",
     outcome:  "You stay warm and dry no matter where you are.",
     rationale:"Exposure kills faster than most threats. Emergency bivvy bags retain 90% of body heat in a fist-sized pack. A quality sleeping bag rated to 20°F keeps you alive in freezing temperatures. A heavy-duty tarp serves as rain fly, ground cloth, or heat reflector in any environment.",
-    skus:     ["SHE-001","SHE-002","SHE-003","SHE-004","SHE-005","SHE-006"],
+    skus:     ["SHE-001","SHE-002","SHE-003","SHE-004","SHE-005","SHE-006","SHE-007","SHE-008","SHE-009"],
   },
   PROPERTIES_TAB,
 ];
