@@ -6,7 +6,6 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { StaggerParent, StaggerChild } from "@/components/ui/motion";
 import { GradeBadge }  from "./grade-badge";
-import { useCart }     from "@/lib/cart/store";
 import type { Product, ProductCategory } from "@/lib/provisioner/catalog";
 import type { GradeLevel } from "@/types/treasury";
 import { useTranslation } from "@/lib/i18n/use-translation";
@@ -300,9 +299,6 @@ export function ProductGrid({ products }: ProductGridProps) {
 
   // ── UI state ─────────────────────────────────────────────────────────────
   const [filterOpen, setFilterOpen] = useState(false);
-  const [inquiryProduct, setInquiryProduct] = useState<Product | null>(null);
-  const [form, setForm] = useState({ name: "", email: "", message: "" });
-  const [submitState, setSubmitState] = useState<"idle" | "loading" | "done" | "error">("idle");
 
   // ── Derived data ─────────────────────────────────────────────────────────
   const availableCategories = useMemo<ProductCategory[]>(() => {
@@ -360,33 +356,6 @@ export function ProductGrid({ products }: ProductGridProps) {
     setActiveGrades([]);
     setActiveTiers([]);
     setCriticalOnly(false);
-  };
-
-  const openInquiry = (p: Product) => {
-    setInquiryProduct(p);
-    setForm({ name: "", email: "", message: `I'm interested in ${p.name} and would like more information.` });
-    setSubmitState("idle");
-  };
-
-  const closeModal = () => {
-    setInquiryProduct(null);
-    setForm({ name: "", email: "", message: "" });
-    setSubmitState("idle");
-  };
-
-  const handleInquirySubmit = async () => {
-    if (!inquiryProduct) return;
-    setSubmitState("loading");
-    try {
-      const res = await fetch("/api/provisioner/inquire", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId: inquiryProduct.id, ...form }),
-      });
-      setSubmitState(res.ok ? "done" : "error");
-    } catch {
-      setSubmitState("error");
-    }
   };
 
   const filterProps: FilterControlsProps = {
@@ -455,7 +424,7 @@ export function ProductGrid({ products }: ProductGridProps) {
           <StaggerParent className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
             {filtered.map((p) => (
               <StaggerChild key={p.id}>
-                <ProductCard product={p} onInquire={openInquiry} />
+                <ProductCard product={p} />
               </StaggerChild>
             ))}
           </StaggerParent>
@@ -533,151 +502,12 @@ export function ProductGrid({ products }: ProductGridProps) {
         )}
       </AnimatePresence>
 
-      {/* ── Inquiry modal (bottom sheet on mobile, centered on desktop) ──── */}
-      {inquiryProduct && (
-        <div
-          className="fixed inset-0 z-50 flex sm:items-center items-end p-0 sm:p-4 bg-void-0/85"
-          onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
-        >
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2 }}
-            className="relative w-full sm:max-w-md bg-void-1 border border-border-protocol
-                       rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-[0_24px_64px_rgba(0,0,0,0.6)]"
-          >
-            {/* Top accent */}
-            <div className="absolute top-0 left-0 right-0 h-px"
-              style={{ background: "linear-gradient(90deg,transparent,rgba(201,168,76,0.6),transparent)" }} />
-
-            {/* Header */}
-            <div className="p-5 border-b border-border-protocol">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <GradeBadge grade={inquiryProduct.grade} composite={inquiryProduct.gradeComposite} size="sm" />
-                    <span className="font-mono text-[9px] text-text-mute2">
-                      {inquiryProduct.location}
-                    </span>
-                  </div>
-                  <h2 className="font-syne font-bold text-[16px] text-text-base leading-snug">
-                    {inquiryProduct.name}
-                  </h2>
-                  <p className="font-mono text-[11px] text-gold-protocol mt-0.5">
-                    {inquiryProduct.priceDisplay}
-                  </p>
-                </div>
-                <button
-                  onClick={closeModal}
-                  className="text-text-mute2 hover:text-text-base transition-colors text-[18px]
-                             leading-none flex-shrink-0 min-w-[40px] min-h-[40px] flex items-center justify-center"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-
-            {/* Body */}
-            <div className="p-5 space-y-3.5">
-              {submitState === "done" ? (
-                <div className="text-center py-4">
-                  <div className="text-[28px] mb-3">✓</div>
-                  <p className="font-syne font-bold text-[15px] text-green-bright mb-1">Inquiry received.</p>
-                  <p className="font-mono text-[11px] text-text-dim">We&apos;ll connect you within 24h.</p>
-                  <button
-                    onClick={closeModal}
-                    className="mt-5 font-mono text-[11px] font-bold px-5 py-2 rounded-lg
-                               border border-border-protocol text-text-mute2 hover:text-text-base
-                               hover:border-border-bright transition-all"
-                  >
-                    Close
-                  </button>
-                </div>
-              ) : submitState === "error" ? (
-                <div className="text-center py-4">
-                  <p className="font-syne font-bold text-[15px] text-red-bright mb-1">Something went wrong.</p>
-                  <p className="font-mono text-[11px] text-text-dim">
-                    Email <span className="text-gold-protocol">provisioner@tevatha.com</span> directly.
-                  </p>
-                  <button
-                    onClick={() => setSubmitState("idle")}
-                    className="mt-5 font-mono text-[11px] font-bold px-5 py-2 rounded-lg
-                               border border-border-protocol text-text-mute2 hover:text-text-base
-                               transition-all"
-                  >
-                    Try again
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <div>
-                    <label className="block font-mono text-[9.5px] text-text-mute2 tracking-[.1em] uppercase mb-1.5">
-                      Name
-                    </label>
-                    <input
-                      type="text"
-                      value={form.name}
-                      onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                      placeholder="Your name"
-                      className="w-full bg-void-2 border border-border-protocol rounded-lg
-                                 px-3 py-2.5 font-mono text-[12px] text-text-base
-                                 placeholder:text-text-mute2/50 focus:outline-none
-                                 focus:border-gold-protocol/60 transition-colors"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-mono text-[9.5px] text-text-mute2 tracking-[.1em] uppercase mb-1.5">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      value={form.email}
-                      onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                      placeholder="you@example.com"
-                      className="w-full bg-void-2 border border-border-protocol rounded-lg
-                                 px-3 py-2.5 font-mono text-[12px] text-text-base
-                                 placeholder:text-text-mute2/50 focus:outline-none
-                                 focus:border-gold-protocol/60 transition-colors"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-mono text-[9.5px] text-text-mute2 tracking-[.1em] uppercase mb-1.5">
-                      Message
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={form.message}
-                      onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
-                      className="w-full bg-void-2 border border-border-protocol rounded-lg
-                                 px-3 py-2.5 font-mono text-[12px] text-text-base resize-none
-                                 placeholder:text-text-mute2/50 focus:outline-none
-                                 focus:border-gold-protocol/60 transition-colors"
-                    />
-                  </div>
-                  <button
-                    onClick={handleInquirySubmit}
-                    disabled={submitState === "loading" || !form.name || !form.email}
-                    className="w-full font-mono font-bold text-[11px] tracking-[.06em]
-                               px-4 py-3 rounded-lg bg-gold-protocol text-void-0
-                               hover:bg-gold-bright hover:-translate-y-0.5 transition-all duration-150
-                               disabled:opacity-40 disabled:cursor-not-allowed disabled:translate-y-0"
-                  >
-                    {submitState === "loading" ? "Sending…" : "Submit Inquiry →"}
-                  </button>
-                </>
-              )}
-            </div>
-          </motion.div>
-        </div>
-      )}
     </>
   );
 }
 
-function ProductCard({ product: p, onInquire }: { product: Product; onInquire: (p: Product) => void }) {
+function ProductCard({ product: p }: { product: Product }) {
   const { t } = useTranslation();
-  const { addItem, setOpen } = useCart();
-  const [added, setAdded] = useState(false);
 
   const gradeMeta = {
     A: { border: "border-[#1ae8a0]/25", glow: "hover:shadow-[0_0_24px_rgba(26,232,160,0.08)]" },
@@ -689,25 +519,6 @@ function ProductCard({ product: p, onInquire }: { product: Product; onInquire: (
 
   const g = gradeMeta[p.grade];
   const imgSrc = PRODUCT_IMAGES[p.imageSlug];
-
-  const handleAddToCart = () => {
-    addItem({
-      id:           p.id,
-      sku:          p.sku,
-      name:         p.name,
-      brand:        p.brand,
-      priceUsd:     p.priceUsd,
-      priceUsdc:    p.priceUsdc,
-      highTicket:   p.highTicket,
-      imageSlug:    p.imageSlug,
-      stripePriceId: p.stripePriceId,
-    });
-    setAdded(true);
-    setTimeout(() => {
-      setAdded(false);
-      setOpen(true);
-    }, 600);
-  };
 
   return (
     <article
@@ -831,34 +642,16 @@ function ProductCard({ product: p, onInquire }: { product: Product; onInquire: (
 
         {/* Action button */}
         <div className={p.buildNote ? "" : "mt-auto"}>
-          {p.category === "real_estate" ? (
-            <button
-              onClick={() => onInquire(p)}
-              className="w-full font-mono font-bold text-[11px] tracking-[.06em]
-                         px-4 py-3 rounded-lg transition-all duration-150
-                         bg-gold-protocol text-void-0 hover:bg-gold-bright hover:-translate-y-0.5"
-            >
-              Inquire →
-            </button>
-          ) : (
-            <button
-              onClick={handleAddToCart}
-              disabled={!p.inStock}
-              className={`w-full font-mono font-bold text-[11px] tracking-[.06em]
-                         px-4 py-3 rounded-lg transition-all duration-150
-                         ${added
-                           ? "bg-green-bright/20 text-green-bright border border-green-bright/30"
-                           : "bg-gold-protocol text-void-0 hover:bg-gold-bright hover:-translate-y-0.5"
-                         }
-                         disabled:opacity-40 disabled:cursor-not-allowed`}
-            >
-              {added
-                ? `✓ ${t("shop_added_to_cart")}`
-                : p.inStock
-                  ? `${t("shop_add_to_cart")} — $${(p.priceUsd / 100).toFixed(2)}`
-                  : t("shop_out_of_stock")}
-            </button>
-          )}
+          <a
+            href={p.externalUrl ?? "#"}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full font-mono font-bold text-[11px] tracking-[.06em]
+                       px-4 py-3 rounded-lg transition-all duration-150 text-center block
+                       bg-gold-protocol text-void-0 hover:bg-gold-bright hover:-translate-y-0.5"
+          >
+            {p.category === "real_estate" ? "Search Listings ↗" : `Buy at ${p.brand} ↗`}
+          </a>
         </div>
       </div>
     </article>

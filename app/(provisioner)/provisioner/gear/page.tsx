@@ -7,7 +7,6 @@ import Link from "next/link";
 import { GradeBadge } from "@/components/provisioner/grade-badge";
 import { CATALOG } from "@/lib/provisioner/catalog";
 import { FadeUp, StaggerParent, StaggerChild } from "@/components/ui/motion";
-import { useCart } from "@/lib/cart/store";
 import type { Product } from "@/lib/provisioner/catalog";
 import type { GradeLevel } from "@/types/treasury";
 
@@ -146,7 +145,6 @@ function fmtUsdc(p: Product): string { return `${p.priceUsdc.toFixed(2)} USDC`; 
 
 export default function GearPage() {
   const [activeDomain, setActiveDomain] = useState(THREAT_DOMAINS[0]);
-  const { addItem, setOpen } = useCart();
 
   const domainProducts: Product[] = activeDomain.skus
     .map((sku) => CATALOG.find((p) => p.sku === sku))
@@ -365,48 +363,18 @@ export default function GearPage() {
                     <p className="font-mono text-[8px] text-text-mute2 mt-0.5">{p.location}</p>
                   )}
                 </div>
-                {p.category === "real_estate" ? (
-                  <Link
-                    href="/provisioner"
+                <a
+                    href={p.externalUrl ?? "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="font-mono text-[9.5px] font-bold text-void-0 bg-gold-protocol
                                px-3 py-3 rounded-lg hover:bg-gold-bright transition-colors
                                whitespace-nowrap flex-shrink-0 min-h-[44px] flex items-center"
                   >
-                    Inquire →
-                  </Link>
-                ) : (
-                  <button
-                    onClick={() => {
-                      addItem({
-                        id: p.id, sku: p.sku, name: p.name, brand: p.brand,
-                        priceUsd: p.priceUsd, priceUsdc: p.priceUsdc,
-                        highTicket: p.highTicket, imageSlug: p.imageSlug,
-                        stripePriceId: p.stripePriceId,
-                      });
-                      setOpen(true);
-                    }}
-                    className="font-mono text-[9.5px] font-bold text-void-0 bg-gold-protocol
-                               px-3 py-3 rounded-lg hover:bg-gold-bright transition-colors
-                               whitespace-nowrap flex-shrink-0 min-h-[44px]"
-                  >
-                    Add to Cart
-                  </button>
-                )}
+                    {p.category === "real_estate" ? "Search Listings ↗" : `Buy at ${p.brand} ↗`}
+                  </a>
               </div>
 
-              {/* Manufacturer link — shown for items needing external activation */}
-              {p.externalUrl && (
-                <a
-                  href={p.externalUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-2 flex items-center gap-1 font-mono text-[9px] text-text-mute2
-                             hover:text-cyan-DEFAULT transition-colors"
-                >
-                  <span>↗</span>
-                  <span>Also available at {p.brand} — activate subscription here</span>
-                </a>
-              )}
               </div>{/* /p-4 content wrapper */}
             </div>
           </StaggerChild>

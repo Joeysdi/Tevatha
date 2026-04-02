@@ -174,43 +174,51 @@ export default function ShopPage() {
           </FadeUp>
         </div>
 
-        {/* Payment Rails */}
+        {/* Donate */}
         <div>
           <div className="flex items-center gap-3 mb-4">
-            <h2 className="font-syne font-bold text-[17px] text-text-base">{t("shop_section_rails")}</h2>
+            <h2 className="font-syne font-bold text-[17px] text-text-base">Support This Project</h2>
             <div className="flex-1 h-px bg-border-protocol" />
           </div>
-          <StaggerParent className="grid grid-cols-1 gap-4">
-            <StaggerChild>
-            <div className="rounded-xl bg-void-1 border border-gold-protocol/22 p-5"
-                 style={{ boxShadow: "0 0 0 1px rgba(255,255,255,0.03) inset" }}>
-              <div className="flex items-center gap-2 mb-3">
-                <span className="font-mono text-[10px] text-gold-protocol font-bold tracking-[.1em]">{t("shop_rail_card")}</span>
-                <span className="font-mono text-[9px] text-text-mute2">{t("shop_rail_card_sub")}</span>
-              </div>
-              <p className="text-[12px] text-text-dim leading-relaxed mb-3">{t("shop_rail_card_desc")}</p>
-              <div className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-bright animate-pulse" />
-                <span className="font-mono text-[10px] text-green-bright">{t("shop_rail_active")}</span>
-              </div>
+          <div
+            className="relative rounded-xl bg-void-1 border border-gold-protocol/30 p-6 overflow-hidden"
+            style={{ boxShadow: "0 0 0 1px rgba(255,255,255,0.03) inset" }}
+          >
+            <div
+              className="absolute top-0 left-0 right-0 h-px"
+              style={{ background: "linear-gradient(90deg,#f0c842,#c9a84c,transparent)" }}
+            />
+            <p className="font-mono text-[9.5px] text-gold-protocol tracking-[.2em] uppercase mb-3">
+              Nonprofit · Free Resource
+            </p>
+            <p className="font-syne font-bold text-[17px] text-text-base mb-2 leading-snug">
+              Tevatha is free.<br />
+              <span className="text-gold-protocol">Your donation keeps it alive.</span>
+            </p>
+            <p className="text-[12px] text-text-dim leading-relaxed mb-5 max-w-sm">
+              No subscriptions. No paywalls. If this resource helps you prepare, consider a small contribution via USDT on Tron (TRC-20).
+            </p>
+            <div className="mb-4 bg-void-2 border border-border-protocol rounded-lg px-3 py-2.5 flex items-center gap-2">
+              <span className="font-mono text-[10px] text-text-mute2 select-all break-all">
+                TMJwucn2aQpzfLBabAPzr8x6dH7ViZ1Rqb
+              </span>
             </div>
-            </StaggerChild>
-
-            <StaggerChild>
-            <div className="rounded-xl bg-void-1 border border-cyan-border p-5"
-                 style={{ boxShadow: "0 0 0 1px rgba(255,255,255,0.03) inset" }}>
-              <div className="flex items-center gap-2 mb-3">
-                <span className="font-mono text-[10px] text-cyan-DEFAULT font-bold tracking-[.1em]">{t("shop_rail_usdc")}</span>
-                <span className="font-mono text-[9px] text-text-mute2">{t("shop_rail_usdc_sub")}</span>
-              </div>
-              <p className="text-[12px] text-text-dim leading-relaxed mb-3">{t("shop_rail_usdc_desc")}</p>
-              <div className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-cyan-DEFAULT animate-pulse" />
-                <span className="font-mono text-[10px] text-cyan-DEFAULT">{t("shop_rail_active")}</span>
-              </div>
-            </div>
-            </StaggerChild>
-          </StaggerParent>
+            <a
+              href="https://tronscan.org/#/address/TMJwucn2aQpzfLBabAPzr8x6dH7ViZ1Rqb"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-syne font-bold
+                         text-[13px] tracking-[.06em] bg-gold-protocol text-void-0
+                         hover:bg-gold-bright hover:-translate-y-0.5
+                         hover:shadow-[0_8px_24px_rgba(201,168,76,0.35)]
+                         transition-all duration-200"
+            >
+              ♥ Donate to Creator
+            </a>
+            <p className="font-mono text-[9px] text-text-mute2 mt-3">
+              USDT · TRC-20 · Tron network
+            </p>
+          </div>
         </div>
       </section>
 

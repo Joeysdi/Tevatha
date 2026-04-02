@@ -3,13 +3,11 @@
 
 import Link from "next/link";
 import { UserButton, SignInButton, useUser } from "@clerk/nextjs";
-import { useCart } from "@/lib/cart/store";
-import { CartDrawer } from "./cart-drawer";
+
+const DONATE_URL = "https://tronscan.org/#/address/TMJwucn2aQpzfLBabAPzr8x6dH7ViZ1Rqb";
 
 export function ProvisionerHeader() {
-  const { items, open, setOpen } = useCart();
   const { isSignedIn, isLoaded } = useUser();
-  const itemCount = items.reduce((sum, i) => sum + i.qty, 0);
 
   return (
     <>
@@ -44,30 +42,22 @@ export function ProvisionerHeader() {
             </span>
           </div>
 
-          {/* Right: cart + auth + back link */}
+          {/* Right: donate + auth + back link */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Cart button */}
-            <button
-              onClick={() => setOpen(!open)}
-              className="relative flex items-center gap-1.5 font-mono text-[11px]
-                         text-text-mute2 hover:text-gold-bright border border-border-protocol
-                         rounded-lg px-2.5 sm:px-3 py-1.5 min-h-[40px] hover:border-gold-protocol/40
+            {/* Donate button */}
+            <a
+              href={DONATE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 font-mono text-[11px] font-bold
+                         text-void-0 bg-gold-protocol hover:bg-gold-bright
+                         rounded-lg px-2.5 sm:px-3 py-1.5 min-h-[40px]
+                         hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(201,168,76,0.35)]
                          transition-all duration-200"
-              aria-label="Open cart"
             >
-              <span>🛒</span>
-              <span className="hidden sm:inline">Cart</span>
-              {itemCount > 0 && (
-                <span
-                  className="absolute -top-1.5 -right-1.5 min-w-[20px] h-[20px]
-                             bg-gold-protocol text-void-0 font-mono font-bold
-                             text-[9px] rounded-full flex items-center justify-center
-                             px-1 tabular-nums"
-                >
-                  {itemCount > 99 ? "99+" : itemCount}
-                </span>
-              )}
-            </button>
+              <span>♥</span>
+              <span className="hidden sm:inline">Donate to Creator</span>
+            </a>
 
             {/* Auth */}
             {isLoaded && (
@@ -109,7 +99,6 @@ export function ProvisionerHeader() {
         </div>
       </header>
 
-      <CartDrawer />
     </>
   );
 }

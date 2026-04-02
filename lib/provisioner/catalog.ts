@@ -77,6 +77,7 @@ export const CATALOG: Product[] = [
     buildNote:"Pre-program channels before crisis. HAM licence recommended.",
     stripePriceId:"price_1TE8RPAQV21Gk5Rw5f9LZOZh",
     imageSlug:"baofeng-uv5r",
+    externalUrl:"https://www.baofengradio.com/products/uv-5r",
     gearLayers:{ durability:70, grid_independence:95, field_repairability:80, value_density:95, supply_chain:82 },
   },
   {
@@ -102,6 +103,7 @@ export const CATALOG: Product[] = [
     buildNote:"1 per adult go-bag. Non-negotiable.",
     stripePriceId:"price_1TE8RQAQV21Gk5RwD4EMtRVJ",
     imageSlug:"nar-ifak",
+    externalUrl:"https://www.narescue.com/individual-first-aid-kit-ifak",
     gearLayers:{ durability:100, grid_independence:100, field_repairability:98, value_density:98, supply_chain:98 },
   },
   {
@@ -113,6 +115,7 @@ export const CATALOG: Product[] = [
     buildNote:"1 per household minimum.",
     stripePriceId:"price_1TE8RSAQV21Gk5Rwpn4aFKf2",
     imageSlug:"myfak-advanced",
+    externalUrl:"https://mymedic.com/products/the-myfak-pro-kit",
     gearLayers:{ durability:95, grid_independence:100, field_repairability:95, value_density:96, supply_chain:94 },
   },
   {
@@ -124,6 +127,7 @@ export const CATALOG: Product[] = [
     buildNote:"Keep 6+ units total. Replace at 80% of shelf life.",
     stripePriceId:"price_1TE8RTAQV21Gk5RwjHqpR9kF",
     imageSlug:"quikclot",
+    externalUrl:"https://www.zmedica.com/collections/quikclot",
     gearLayers:{ durability:100, grid_independence:100, field_repairability:98, value_density:99, supply_chain:98 },
   },
 
@@ -137,6 +141,7 @@ export const CATALOG: Product[] = [
     buildNote:"Tier 1 go-bag power station. Add Nomad 100 for solar input.",
     stripePriceId:"price_1TEUHCAQV21Gk5RwrTg0OO0i",
     imageSlug:"jackery-1000plus",
+    externalUrl:"https://www.jackery.com/products/explorer-1000-plus-portable-power-station",
     gearLayers:{ durability:88, grid_independence:96, field_repairability:72, value_density:90, supply_chain:85 },
   },
   {
@@ -148,6 +153,7 @@ export const CATALOG: Product[] = [
     buildNote:"Tier 2 sanctuary essential. Pair with Renogy 400W array.",
     stripePriceId:"price_1TEUHEAQV21Gk5RwQ7lnNsGR",
     imageSlug:"ecoflow-delta-pro",
+    externalUrl:"https://www.ecoflow.com/us/delta-pro-portable-power-station.html",
     gearLayers:{ durability:95, grid_independence:99, field_repairability:88, value_density:96, supply_chain:90 },
   },
   {
@@ -159,6 +165,7 @@ export const CATALOG: Product[] = [
     buildNote:"Starting point for off-grid solar. Scales to 2kW array.",
     stripePriceId:"price_1TEUHGAQV21Gk5RwU6Kj9KXD",
     imageSlug:"renogy-400w",
+    externalUrl:"https://www.renogy.com/400-watt-12-volt-monocrystalline-solar-starter-kit/",
     gearLayers:{ durability:84, grid_independence:98, field_repairability:76, value_density:88, supply_chain:80 },
   },
 
@@ -172,6 +179,7 @@ export const CATALOG: Product[] = [
     buildNote:"Always kept full. Rotate fuel quarterly with PRI-G stabiliser.",
     stripePriceId:"price_1TE8RUAQV21Gk5RwwZCWF6PZ",
     imageSlug:"wavian-jerry",
+    externalUrl:"https://wavian.us/",
     gearLayers:{ durability:100, grid_independence:100, field_repairability:95, value_density:98, supply_chain:92 },
   },
   {
@@ -183,6 +191,7 @@ export const CATALOG: Product[] = [
     buildNote:"Keep in every vehicle. Charge quarterly.",
     stripePriceId:"price_1TE8RWAQV21Gk5RwXsoQMDtM",
     imageSlug:"noco-gb40",
+    externalUrl:"https://no-co.com/gb40.html",
     gearLayers:{ durability:95, grid_independence:98, field_repairability:88, value_density:96, supply_chain:95 },
   },
 
@@ -196,6 +205,7 @@ export const CATALOG: Product[] = [
     buildNote:"Primary household filter. Replace elements per manufacturer spec.",
     stripePriceId:"price_1TE8RXAQV21Gk5RwO8LlZhQi",
     imageSlug:"berkey-big",
+    externalUrl:"https://berkeyfilters.com/products/big-berkey",
     gearLayers:{ durability:98, grid_independence:100, field_repairability:95, value_density:94, supply_chain:90 },
   },
   {
@@ -207,6 +217,7 @@ export const CATALOG: Product[] = [
     buildNote:"1 per go-bag. Does not remove viruses — pair with Steripen in bio zones.",
     stripePriceId:"price_1TE8RZAQV21Gk5RwkOTw1WTa",
     imageSlug:"sawyer-squeeze",
+    externalUrl:"https://sawyer.com/products/sawyer-squeeze-filter-system/",
     gearLayers:{ durability:70, grid_independence:100, field_repairability:80, value_density:92, supply_chain:78 },
   },
 
@@ -220,6 +231,7 @@ export const CATALOG: Product[] = [
     buildNote:"One per location. No subscription. Crank powers radio in full comms blackout.",
     stripePriceId:"price_placeholder_COM003",
     imageSlug:"midland-er310",
+    externalUrl:"https://www.midlandusa.com/products/er310",
     gearLayers:{ durability:80, grid_independence:98, field_repairability:72, value_density:88, supply_chain:80 },
   },
   {
@@ -231,6 +243,7 @@ export const CATALOG: Product[] = [
     buildNote:"License-free FRS. Pre-program household node channels before crisis.",
     stripePriceId:"price_placeholder_COM004",
     imageSlug:"motorola-t800",
+    externalUrl:"https://www.motorolasolutions.com/en_us/consumer/two-way-radios/talkabout/t800.html",
     gearLayers:{ durability:75, grid_independence:88, field_repairability:62, value_density:88, supply_chain:82 },
   },
 
@@ -244,6 +257,7 @@ export const CATALOG: Product[] = [
     buildNote:"2 per go-bag minimum. Standard TCCC dressing for penetrating wounds.",
     stripePriceId:"price_placeholder_MED004",
     imageSlug:"israeli-bandage",
+    externalUrl:"https://www.persysmedical.com/products/emergency-bandage",
     gearLayers:{ durability:100, grid_independence:100, field_repairability:96, value_density:98, supply_chain:96 },
   },
   {
@@ -255,6 +269,7 @@ export const CATALOG: Product[] = [
     buildNote:"Complements QuikClot gauze. Use for wounds where packing is not feasible.",
     stripePriceId:"price_placeholder_MED005",
     imageSlug:"celox-granules",
+    externalUrl:"https://www.celox.co.uk/products/celox-granules/",
     gearLayers:{ durability:98, grid_independence:100, field_repairability:94, value_density:96, supply_chain:94 },
   },
 
@@ -268,6 +283,7 @@ export const CATALOG: Product[] = [
     buildNote:"Go-bag power station for phones, radios, and CPAP. Pairs with Nomad 20 panel.",
     stripePriceId:"price_placeholder_ENE004",
     imageSlug:"goal-zero-yeti-200x",
+    externalUrl:"https://www.goalzero.com/products/yeti-200x",
     gearLayers:{ durability:90, grid_independence:96, field_repairability:82, value_density:92, supply_chain:90 },
   },
 
@@ -281,6 +297,7 @@ export const CATALOG: Product[] = [
     buildNote:"Primary nav when cell infrastructure is down. Pre-load offline topo maps.",
     stripePriceId:"price_placeholder_MOB003",
     imageSlug:"garmin-gpsmap-67",
+    externalUrl:"https://www.garmin.com/en-US/p/765156",
     gearLayers:{ durability:96, grid_independence:98, field_repairability:85, value_density:90, supply_chain:95 },
   },
 
@@ -294,6 +311,7 @@ export const CATALOG: Product[] = [
     buildNote:"Fill at first sign of disruption. 100gal = 50-day supply per adult.",
     stripePriceId:"price_placeholder_WAT003",
     imageSlug:"waterbob",
+    externalUrl:"https://waterbob.com/",
     gearLayers:{ durability:72, grid_independence:100, field_repairability:68, value_density:88, supply_chain:80 },
   },
   {
@@ -305,6 +323,7 @@ export const CATALOG: Product[] = [
     buildNote:"Backup to primary filter. Effective vs bacteria and viruses. Not heavy metals.",
     stripePriceId:"price_placeholder_WAT004",
     imageSlug:"potable-aqua",
+    externalUrl:"https://potableaqua.com/",
     gearLayers:{ durability:52, grid_independence:95, field_repairability:60, value_density:78, supply_chain:72 },
   },
 
@@ -318,6 +337,7 @@ export const CATALOG: Product[] = [
     buildNote:"4-camera perimeter minimum. Pair with local NVR (no cloud).",
     stripePriceId:"price_1TE8RaAQV21Gk5RwuYAccWXC",
     imageSlug:"reolink-810a",
+    externalUrl:"https://reolink.com/us/product/rlc-810a/",
     gearLayers:{ durability:86, grid_independence:84, field_repairability:82, value_density:92, supply_chain:88 },
   },
   {
@@ -329,6 +349,7 @@ export const CATALOG: Product[] = [
     buildNote:"Grade C: effective for shielding only. Not a long-term storage solution.",
     stripePriceId:"price_1TE8RbAQV21Gk5RwcQUclk8w",
     imageSlug:"faraday-xl",
+    externalUrl:"https://www.mosequipment.com/products/mission-darkness-non-window-laptop-faraday-bag",
     gearLayers:{ durability:60, grid_independence:100, field_repairability:48, value_density:72, supply_chain:65 },
   },
   {
@@ -340,6 +361,7 @@ export const CATALOG: Product[] = [
     buildNote:"1 per household member. Stored with go-bag. Spare batteries in Faraday bag.",
     stripePriceId:"price_placeholder_SEC002",
     imageSlug:"surefire-g2x",
+    externalUrl:"https://www.surefire.com/g2x-tactical/",
     gearLayers:{ durability:92, grid_independence:88, field_repairability:82, value_density:86, supply_chain:84 },
   },
 
@@ -353,6 +375,7 @@ export const CATALOG: Product[] = [
     buildNote:"1 per go-bag. Packs to fist-size. Viable below freezing without sleeping bag.",
     stripePriceId:"price_placeholder_SHE001",
     imageSlug:"sol-bivvy",
+    externalUrl:"https://www.surviveoutdoorslonger.com/products/escape-bivvy",
     gearLayers:{ durability:90, grid_independence:100, field_repairability:84, value_density:98, supply_chain:90 },
   },
   {
@@ -364,6 +387,7 @@ export const CATALOG: Product[] = [
     buildNote:"One per adult for cold-weather grid-down shelter. Pair with SOL bivvy as vapor barrier.",
     stripePriceId:"price_placeholder_SHE002",
     imageSlug:"kelty-cosmic-20",
+    externalUrl:"https://www.kelty.com/cosmic-20/",
     gearLayers:{ durability:88, grid_independence:100, field_repairability:80, value_density:90, supply_chain:86 },
   },
   {
@@ -375,6 +399,7 @@ export const CATALOG: Product[] = [
     buildNote:"Pack 2 per group. Reflective silver side doubles as signaling panel.",
     stripePriceId:"price_placeholder_SHE003",
     imageSlug:"titan-tarp",
+    externalUrl:"https://titansurvival.com/products/multi-use-tarp",
     gearLayers:{ durability:68, grid_independence:100, field_repairability:72, value_density:80, supply_chain:68 },
   },
 
@@ -392,6 +417,7 @@ export const CATALOG: Product[] = [
     priceDisplay:"$350,000",
     safetyScore:{ nuclearDistance:99, disasterRisk:90, populationDensity:98, politicalStability:96 },
     imageSlug:"rea-nz-south-island",
+    externalUrl:"https://www.trademe.co.nz/a/property/rural",
   },
   {
     id:"rea-switzerland-graubunden", sku:"REA-002",
@@ -406,6 +432,7 @@ export const CATALOG: Product[] = [
     priceDisplay:"$850,000",
     safetyScore:{ nuclearDistance:88, disasterRisk:92, populationDensity:94, politicalStability:99 },
     imageSlug:"rea-switzerland-graubunden",
+    externalUrl:"https://www.immoscout24.ch/en/real-estate/buy/region-graubuenden",
   },
   {
     id:"rea-iceland-westfjords", sku:"REA-003",
@@ -420,6 +447,7 @@ export const CATALOG: Product[] = [
     priceDisplay:"$280,000",
     safetyScore:{ nuclearDistance:99, disasterRisk:86, populationDensity:99, politicalStability:98 },
     imageSlug:"rea-iceland-westfjords",
+    externalUrl:"https://www.mbl.is/fasteignir/",
   },
   {
     id:"rea-uruguay-rivera", sku:"REA-004",
@@ -434,6 +462,7 @@ export const CATALOG: Product[] = [
     priceDisplay:"$180,000",
     safetyScore:{ nuclearDistance:94, disasterRisk:91, populationDensity:96, politicalStability:88 },
     imageSlug:"rea-uruguay-rivera",
+    externalUrl:"https://www.infocasas.com.uy/",
   },
   {
     id:"rea-portugal-alentejo", sku:"REA-005",
@@ -448,6 +477,7 @@ export const CATALOG: Product[] = [
     priceDisplay:"$220,000",
     safetyScore:{ nuclearDistance:86, disasterRisk:88, populationDensity:93, politicalStability:90 },
     imageSlug:"rea-portugal-alentejo",
+    externalUrl:"https://www.idealista.pt/comprar-casas/alentejo/",
   },
   {
     id:"rea-finland-lapland", sku:"REA-006",
@@ -462,6 +492,7 @@ export const CATALOG: Product[] = [
     priceDisplay:"$190,000",
     safetyScore:{ nuclearDistance:82, disasterRisk:93, populationDensity:99, politicalStability:94 },
     imageSlug:"rea-finland-lapland",
+    externalUrl:"https://www.oikotie.fi/en/buying/",
   },
   {
     id:"rea-australia-tasmania", sku:"REA-007",
@@ -476,6 +507,7 @@ export const CATALOG: Product[] = [
     priceDisplay:"$290,000",
     safetyScore:{ nuclearDistance:91, disasterRisk:85, populationDensity:95, politicalStability:87 },
     imageSlug:"rea-australia-tasmania",
+    externalUrl:"https://www.realestate.com.au/buy/in-tasmania/",
   },
   {
     id:"rea-canada-bc-interior", sku:"REA-008",
@@ -490,6 +522,7 @@ export const CATALOG: Product[] = [
     priceDisplay:"$320,000",
     safetyScore:{ nuclearDistance:78, disasterRisk:86, populationDensity:97, politicalStability:92 },
     imageSlug:"rea-canada-bc-interior",
+    externalUrl:"https://www.realtor.ca/map#view=list&Sort=6-D&GeoName=British%20Columbia",
   },
   {
     id:"rea-norway-innlandet", sku:"REA-009",
@@ -504,6 +537,7 @@ export const CATALOG: Product[] = [
     priceDisplay:"$280,000",
     safetyScore:{ nuclearDistance:80, disasterRisk:90, populationDensity:96, politicalStability:95 },
     imageSlug:"rea-norway-innlandet",
+    externalUrl:"https://www.finn.no/eiendom/til-salgs/",
   },
   {
     id:"rea-costa-rica-guanacaste", sku:"REA-010",
@@ -518,6 +552,7 @@ export const CATALOG: Product[] = [
     priceDisplay:"$150,000",
     safetyScore:{ nuclearDistance:95, disasterRisk:76, populationDensity:88, politicalStability:84 },
     imageSlug:"rea-costa-rica-guanacaste",
+    externalUrl:"https://www.century21cr.com/",
   },
   {
     id:"rea-chile-patagonia", sku:"REA-011",
@@ -532,6 +567,7 @@ export const CATALOG: Product[] = [
     priceDisplay:"$120,000",
     safetyScore:{ nuclearDistance:96, disasterRisk:72, populationDensity:99, politicalStability:78 },
     imageSlug:"rea-chile-patagonia",
+    externalUrl:"https://www.portalinmobiliario.com/",
   },
   {
     id:"rea-panama-boquete", sku:"REA-012",
@@ -546,6 +582,7 @@ export const CATALOG: Product[] = [
     priceDisplay:"$130,000",
     safetyScore:{ nuclearDistance:93, disasterRisk:74, populationDensity:85, politicalStability:80 },
     imageSlug:"rea-panama-boquete",
+    externalUrl:"https://www.boqueterealty.com/",
   },
 ];
 

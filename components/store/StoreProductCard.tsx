@@ -1,11 +1,9 @@
 // components/store/StoreProductCard.tsx
 "use client";
 
-import { useState } from "react";
 import { TevathaBadge } from "@/components/properties/TevathaBadge";
 import { GradeBadge }   from "@/components/provisioner/grade-badge";
-import { useCart }      from "@/lib/cart/store";
-import type { StoreProduct, StoreVariant } from "@/lib/store/types";
+import type { StoreProduct } from "@/lib/store/types";
 import type { GradeLevel } from "@/types/treasury";
 
 const VALID_GRADES = new Set<string>(["A", "B", "C", "D", "F"]);
@@ -57,9 +55,6 @@ interface StoreProductCardProps {
 }
 
 export function StoreProductCard({ product }: StoreProductCardProps) {
-  const { addItem, setOpen } = useCart();
-  const [added, setAdded] = useState(false);
-
   const stats     = topStats(product);
   const emoji     = CATEGORY_EMOJI[product.category] ?? "📦";
   const firstImg  = product.images?.[0] ?? null;
@@ -67,46 +62,10 @@ export function StoreProductCard({ product }: StoreProductCardProps) {
   const isDrop    = product.fulfillment_type === "dropship";
   const safetyBadge = resolveGrade(product.grade, product.safety_score);
 
-  // Pick cheapest in-stock variant for cart
-  const variants      = product.store_variants ?? [];
-  const cheapestVar: StoreVariant | undefined = variants
-    .filter((v) => v.in_stock)
-    .sort((a, b) => a.price_usd - b.price_usd)[0];
-
   const priceDisplay =
     product.min_price_usd !== null
       ? `$${(product.min_price_usd / 100).toFixed(2)}`
-      : cheapestVar
-      ? `$${(cheapestVar.price_usd / 100).toFixed(2)}`
       : "—";
-
-  const handleAddToCart = () => {
-    if (!cheapestVar) return;
-
-    // Guard: DB products without stripe_price_id should not silently enter Stripe
-    // The cart-drawer / payment-router will route to Solana automatically via routePayment()
-    addItem({
-      id:              `${product.id}:${cheapestVar.id}`,
-      sku:             cheapestVar.sku,
-      name:            product.title,
-      brand:           product.brand ?? "",
-      priceUsd:        cheapestVar.price_usd,
-      priceUsdc:       cheapestVar.price_usdc,
-      highTicket:      cheapestVar.price_usdc >= 500,
-      imageSlug:       "",
-      stripePriceId:   cheapestVar.stripe_price_id ?? undefined,
-      // DB extension fields
-      variant_id:      cheapestVar.id,
-      source:          "db",
-      fulfillment_type: product.fulfillment_type,
-      vendor_name:     product.vendor_name ?? undefined,
-    });
-    setAdded(true);
-    setTimeout(() => {
-      setAdded(false);
-      setOpen(true);
-    }, 600);
-  };
 
   const borderClass = product.tevatha_certified
     ? "border-gold-protocol/50"
@@ -212,31 +171,16 @@ export function StoreProductCard({ product }: StoreProductCardProps) {
         </div>
 
         {/* Action button */}
-        {cheapestVar ? (
-          <button
-            onClick={handleAddToCart}
-            className={`w-full font-mono font-bold text-[11px] tracking-[.06em]
-                       px-4 py-2.5 rounded-lg transition-all duration-150
-                       ${added
-                         ? "bg-green-bright/20 text-green-bright border border-green-bright/30"
-                         : "bg-gold-protocol text-void-0 hover:bg-gold-bright hover:-translate-y-0.5"
-                       }`}
-          >
-            {added ? "✓ Added" : `Add — ${priceDisplay}`}
-          </button>
-        ) : (
-          <a
-            href={detailHref}
-            target={product.external_url ? "_blank" : undefined}
-            rel={product.external_url ? "noopener noreferrer" : undefined}
-            className="w-full font-mono font-bold text-[11px] tracking-[.06em]
-                       px-4 py-2.5 rounded-lg transition-all duration-150 text-center
-                       border border-border-protocol text-text-mute2
-                       hover:border-gold-protocol/40 hover:text-text-dim"
-          >
-            View →
-          </a>
-        )}
+        <a
+          href={detailHref}
+          target={product.external_url ? "_blank" : undefined}
+          rel={product.external_url ? "noopener noreferrer" : undefined}
+          className="w-full font-mono font-bold text-[11px] tracking-[.06em]
+                     px-4 py-2.5 rounded-lg transition-all duration-150 text-center block
+                     bg-gold-protocol text-void-0 hover:bg-gold-bright hover:-translate-y-0.5"
+        >
+          {product.external_url ? `View at Store ↗` : "View Details →"}
+        </a>
       </div>
     </article>
   );
