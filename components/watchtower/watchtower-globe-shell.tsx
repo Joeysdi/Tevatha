@@ -315,7 +315,7 @@ export function WatchtowerGlobeShell() {
     <div className="w-full h-full flex flex-col bg-void-0">
 
       {/* ── Globe area ───────────────────────────────────────────────────── */}
-      <div ref={globeContainerRef} className="flex-1 relative overflow-hidden min-h-0">
+      <div ref={globeContainerRef} className="h-[44dvh] sm:flex-1 sm:h-auto relative overflow-hidden min-h-0">
         {/* Globe */}
         <WorldRiskGlobe
           eraPhase={eraPhase}
@@ -748,36 +748,105 @@ export function WatchtowerGlobeShell() {
 
       </div>
 
-      {/* ── Mobile control bar (hidden sm+) ──────────────────────────────── */}
-      <div className="flex sm:hidden flex-shrink-0 items-center gap-1.5 px-2 py-1.5
-                      bg-void-1 border-t border-border-protocol/60 overflow-x-auto"
-           style={{ scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch" } as React.CSSProperties}>
+      {/* ── Mobile domain list (hidden sm+) ──────────────────────────────── */}
+      <div className="sm:hidden flex-1 min-h-0 overflow-y-auto bg-void-0 border-t border-border-protocol/30"
+           style={{ scrollbarWidth: "none" } as React.CSSProperties}>
 
-        <div className="w-px h-4 bg-border-protocol/60 flex-shrink-0" />
+        {/* Header row */}
+        <div className="flex items-center gap-1.5 px-3 pt-2 pb-1">
+          <div className="w-[2px] h-2.5 rounded-full bg-red-protocol/60 flex-shrink-0" />
+          <p className="font-mono text-[9px] tracking-[.2em] uppercase text-text-mute2/70">Threat Domains</p>
+          {livePrices && (
+            <span className="ml-auto flex items-center gap-1 flex-shrink-0">
+              <span className="w-1 h-1 rounded-full bg-[#1ae8a0] animate-pulse" />
+              <span className="font-mono text-[7px] tracking-[.12em] text-[#1ae8a0]/60">LIVE</span>
+            </span>
+          )}
+        </div>
+        <div className="h-px mx-3" style={{ background: "rgba(255,255,255,0.05)" }} />
 
-        {/* Domain buttons (mobile) */}
+        {/* Domain rows */}
         {DOMAINS.map((d) => {
           const active = domainId === d.id;
           const col    = DOMAIN_COLORS[d.label.toLowerCase()] ?? "#c9a84c";
+          const score  = domainScores ? domainScores[d.id as keyof DomainScores].live : d.score;
+          const delta  = domainScores ? domainScores[d.id as keyof DomainScores].delta : 0;
           return (
-            <button key={d.id}
-              onClick={() => {
-                const next = active ? null : d.id;
-                setDomainId(next);
-                updateUrl({ domain: next });
-              }}
-              aria-pressed={active}
-              className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-2.5 rounded-lg border font-mono text-[9px] transition-all min-h-[44px]`}
-              style={active
-                ? { color: col, background: `${col}18`, borderColor: `${col}40` }
-                : { background: undefined }}
-            >
-              <span className="text-[12px] leading-none">{d.icon}</span>
-            </button>
+            <React.Fragment key={d.id}>
+              {/* Domain header button */}
+              <button
+                onClick={() => {
+                  const next = active ? null : d.id;
+                  setDomainId(next);
+                  setScenarioId(null);
+                  updateUrl({ domain: next, scenario: null });
+                }}
+                aria-pressed={active}
+                className="w-full flex items-center gap-2 px-3 py-2 min-h-[44px] transition-all duration-150"
+                style={active ? { color: col, background: `${col}08`, borderLeft: `2px solid ${col}` } : { borderLeft: "2px solid transparent" }}
+              >
+                <span className="text-[13px] leading-none flex-shrink-0">{d.icon}</span>
+                <span className="font-mono text-[12px] font-bold flex-1 text-left" style={active ? { color: col } : { color: "rgba(180,190,200,0.8)" }}>
+                  {d.label}
+                </span>
+                <span
+                  className="font-mono text-[11px] font-bold tabular-nums px-1.5 py-0.5 rounded flex-shrink-0"
+                  style={active
+                    ? { color: col, background: `${col}20`, border: `1px solid ${col}40` }
+                    : { color: "rgba(150,165,180,0.4)", background: "rgba(150,165,180,0.06)", border: "1px solid rgba(150,165,180,0.10)" }}
+                >
+                  {score}
+                </span>
+                {delta !== 0 && (
+                  <span
+                    className="font-mono text-[9px] tabular-nums px-1 py-0.5 rounded flex-shrink-0"
+                    style={{
+                      color:      delta > 0 ? "#e84040" : "#1ae8a0",
+                      background: delta > 0 ? "rgba(232,64,64,0.12)" : "rgba(26,232,160,0.10)",
+                      border:     `1px solid ${delta > 0 ? "rgba(232,64,64,0.25)" : "rgba(26,232,160,0.20)"}`,
+                    }}
+                  >
+                    {delta > 0 ? "+" : ""}{delta}
+                  </span>
+                )}
+              </button>
+
+              {/* Scenario sub-rows */}
+              {(d.scenarioIds ?? []).map((sid) => {
+                const sc = SCENARIOS.find(s => s.id === sid);
+                if (!sc) return null;
+                const scActive = scenarioId === sid;
+                return (
+                  <button
+                    key={sid}
+                    onClick={() => {
+                      const next = scActive ? null : sid;
+                      setScenarioId(next);
+                      if (next) { setDomainId(d.id); updateUrl({ scenario: next, domain: d.id }); }
+                      else updateUrl({ scenario: null });
+                    }}
+                    className="w-full flex items-start gap-1.5 pl-8 pr-3 py-1.5 min-h-[36px] transition-all duration-150"
+                    style={scActive ? { color: col, borderLeft: `2px solid ${col}50` } : { borderLeft: "2px solid transparent" }}
+                  >
+                    <span className="text-text-mute2/40 text-[10px] mt-0.5 flex-shrink-0">└</span>
+                    <span className={`w-1 h-1 rounded-full flex-shrink-0 mt-1.5 ${scActive ? "animate-pulse" : ""}`}
+                          style={{ background: scActive ? col : "rgba(150,165,180,0.2)" }} />
+                    <span className="text-[11px] leading-none flex-shrink-0 mt-0.5">{sc.icon}</span>
+                    <span className="font-mono text-[10px] leading-tight flex-1 text-left"
+                          style={scActive ? { color: col } : { color: "rgba(150,165,180,0.5)" }}>
+                      {sc.title}
+                    </span>
+                  </button>
+                );
+              })}
+
+              <div className="h-px mx-3" style={{ background: "rgba(255,255,255,0.04)" }} />
+            </React.Fragment>
           );
         })}
 
-
+        {/* Bottom spacer */}
+        <div className="h-3" />
       </div>
 
     </div>

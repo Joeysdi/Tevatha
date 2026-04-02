@@ -952,17 +952,25 @@ export function GlobeRightPanel({
 
   const activeCol = domainId ? (DOMAIN_COLORS[domainId] ?? "#c9a84c") : "#e84040";
 
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
   return (
     <AnimatePresence>
       {hasAny && (
         <motion.div
           key="right-panel"
-          initial={{ opacity: 0, x: 16 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: 16 }}
-          transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="absolute right-4 z-20 [&::-webkit-scrollbar]:hidden"
-          style={{
+          initial={isMobile ? { y: "100%" } : { opacity: 0, x: 16 }}
+          animate={isMobile ? { y: 0 } : { opacity: 1, x: 0 }}
+          exit={isMobile ? { y: "100%" } : { opacity: 0, x: 16 }}
+          transition={isMobile ? { type: "spring", damping: 30, stiffness: 280 } : { duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
+          className={isMobile ? "fixed bottom-0 left-0 right-0 z-50 max-h-[80dvh] overflow-y-auto [&::-webkit-scrollbar]:hidden rounded-t-2xl" : "absolute right-4 z-20 [&::-webkit-scrollbar]:hidden"}
+          style={isMobile ? { borderTop: `2px solid ${activeCol}`, boxShadow: "0 -8px 40px rgba(0,0,0,0.75)" } : {
             top: "48px",
             width: "360px",
             transform: `scale(${panelScale})`,
@@ -980,6 +988,11 @@ export function GlobeRightPanel({
               boxShadow: "0 8px 40px rgba(0,0,0,0.75)",
             }}
           >
+            {isMobile && (
+              <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+                <div className="w-10 h-1 rounded-full bg-border-protocol" />
+              </div>
+            )}
             {/* Panel header */}
             <div
               className="flex items-center justify-between px-3 py-2 border-b"
@@ -997,7 +1010,7 @@ export function GlobeRightPanel({
             {/* Scrollable content body */}
             <div
               className="overflow-y-auto [&::-webkit-scrollbar]:hidden"
-              style={{ maxHeight: `${Math.max(200, (containerH - 96) / panelScale)}px`, scrollbarWidth: "none" }}
+              style={isMobile ? { overflowY: "auto" } : { maxHeight: `${Math.max(200, (containerH - 96) / panelScale)}px`, scrollbarWidth: "none" }}
             >
               {selectedCityIdx !== null && (
                 <CityDetailCard cityIdx={selectedCityIdx} onClose={onCloseCity} />
