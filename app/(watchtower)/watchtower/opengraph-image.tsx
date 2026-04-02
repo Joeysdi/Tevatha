@@ -201,112 +201,49 @@ export default function WatchtowerOGImage() {
           />
 
           <svg width="340" height="340" viewBox="0 0 100 100" fill="none">
-            {/* Outermost subtle ring */}
             <circle cx="50" cy="50" r="48" stroke="#c9a84c" strokeWidth="0.3" strokeOpacity="0.15" />
-            {/* Main clock ring */}
             <circle cx="50" cy="50" r="42" stroke="#c9a84c" strokeWidth="0.8" strokeOpacity="0.35" />
-            {/* Inner ring */}
             <circle cx="50" cy="50" r="36" stroke="#c9a84c" strokeWidth="0.3" strokeOpacity="0.12" />
-
-            {/* Globe latitude rings */}
             <ellipse cx="50" cy="50" rx="42" ry="14" stroke="#e84040" strokeWidth="0.4" strokeOpacity="0.08" />
             <ellipse cx="50" cy="50" rx="42" ry="28" stroke="#e84040" strokeWidth="0.4" strokeOpacity="0.06" />
             <ellipse cx="50" cy="50" rx="14" ry="42" stroke="#e84040" strokeWidth="0.4" strokeOpacity="0.06" />
-
-            {/* Hour tick marks */}
-            {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((deg, i) => {
+            {[0,30,60,90,120,150,180,210,240,270,300,330].map((deg, i) => {
               const rad = (deg - 90) * (Math.PI / 180);
-              const x1 = 50 + 40 * Math.cos(rad);
-              const y1 = 50 + 40 * Math.sin(rad);
-              const x2 = 50 + 42 * Math.cos(rad);
-              const y2 = 50 + 42 * Math.sin(rad);
               return (
-                <line
-                  key={i}
-                  x1={x1}
-                  y1={y1}
-                  x2={x2}
-                  y2={y2}
-                  stroke="#c9a84c"
-                  strokeWidth="0.6"
-                  strokeOpacity="0.4"
+                <line key={i}
+                  x1={50 + 40 * Math.cos(rad)} y1={50 + 40 * Math.sin(rad)}
+                  x2={50 + 42 * Math.cos(rad)} y2={50 + 42 * Math.sin(rad)}
+                  stroke="#c9a84c" strokeWidth="0.6" strokeOpacity="0.4"
                 />
               );
             })}
-
-            {/* Danger arc glow — ~45° CCW from midnight */}
-            <path
-              d="M 50 8 A 42 42 0 0 0 20.3 20.3"
-              stroke="#e84040"
-              strokeWidth="8"
-              strokeLinecap="round"
-              strokeOpacity="0.18"
-            />
-            {/* Danger arc */}
-            <path
-              d="M 50 8 A 42 42 0 0 0 20.3 20.3"
-              stroke="#e84040"
-              strokeWidth="3"
-              strokeLinecap="round"
-            />
-
-            {/* Clock hand — pointing ~45° CCW from midnight */}
-            <line
-              x1="50" y1="50"
-              x2="28" y2="28"
-              stroke="#c9a84c"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-            {/* Minute hand */}
-            <line
-              x1="50" y1="50"
-              x2="50" y2="14"
-              stroke="#c9a84c"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeOpacity="0.5"
-            />
-
-            {/* 12 o'clock dot */}
+            <path d="M 50 8 A 42 42 0 0 0 20.3 20.3" stroke="#e84040" strokeWidth="8" strokeLinecap="round" strokeOpacity="0.18" />
+            <path d="M 50 8 A 42 42 0 0 0 20.3 20.3" stroke="#e84040" strokeWidth="3" strokeLinecap="round" />
+            <line x1="50" y1="50" x2="28" y2="28" stroke="#c9a84c" strokeWidth="2.5" strokeLinecap="round" />
+            <line x1="50" y1="50" x2="50" y2="14" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round" strokeOpacity="0.5" />
             <circle cx="50" cy="8" r="2.5" fill="#e84040" />
-            {/* 3 o'clock */}
             <circle cx="92" cy="50" r="1.2" fill="#c9a84c" fillOpacity="0.3" />
-            {/* 6 o'clock */}
             <circle cx="50" cy="92" r="1.2" fill="#c9a84c" fillOpacity="0.3" />
-            {/* 9 o'clock */}
-            <circle cx="8" cy="50" r="1.2" fill="#c9a84c" fillOpacity="0.3" />
-
-            {/* Center pin */}
-            <circle cx="50" cy="50" r="3" fill="#c9a84c" />
+            <circle cx="8"  cy="50" r="1.2" fill="#c9a84c" fillOpacity="0.3" />
+            <circle cx="50" cy="50" r="3"   fill="#c9a84c" />
             <circle cx="50" cy="50" r="1.5" fill="#05080a" />
-
-            {/* "85s" label */}
-            <text
-              x="50"
-              y="68"
-              textAnchor="middle"
-              fill="#e84040"
-              fontSize="7"
-              fontFamily="monospace"
-              fontWeight="bold"
-              letterSpacing="0.05em"
-            >
-              85 SEC
-            </text>
-            <text
-              x="50"
-              y="74"
-              textAnchor="middle"
-              fill="#c9a84c"
-              fontSize="3.5"
-              fontFamily="monospace"
-              letterSpacing="0.15em"
-              fillOpacity="0.6"
-            >
-              TO MIDNIGHT
-            </text>
           </svg>
+
+          {/* "85 SEC TO MIDNIGHT" label — div overlay replaces SVG <text> (Satori unsupported) */}
+          <div style={{
+            position: "absolute",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            top: 218,
+          }}>
+            <div style={{ display: "flex", fontFamily: "monospace", fontSize: 22, fontWeight: 700, color: "#e84040", letterSpacing: "0.05em" }}>
+              85 SEC
+            </div>
+            <div style={{ display: "flex", fontFamily: "monospace", fontSize: 11, color: "#c9a84c", letterSpacing: "0.18em", opacity: 0.7 }}>
+              TO MIDNIGHT
+            </div>
+          </div>
         </div>
 
         {/* Bottom border accent */}
