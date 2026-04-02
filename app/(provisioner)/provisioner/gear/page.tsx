@@ -7,7 +7,6 @@ import Link from "next/link";
 import { GradeBadge } from "@/components/provisioner/grade-badge";
 import { CATALOG, CATALOG_STATS } from "@/lib/provisioner/catalog";
 import { FadeUp, StaggerParent, StaggerChild } from "@/components/ui/motion";
-import { EmailCapture } from "@/components/email-capture";
 import type { Product } from "@/lib/provisioner/catalog";
 import type { GradeLevel } from "@/types/treasury";
 
@@ -169,7 +168,8 @@ function fmtUsdc(p: Product): string { return `${p.priceUsdc.toFixed(2)} USDC`; 
 
 export default function GearPage() {
   const [activeDomain, setActiveDomain] = useState(THREAT_DOMAINS[0]);
-  const [copied, setCopied] = useState(false);
+  const [copied,       setCopied]       = useState(false);
+  const [search,       setSearch]       = useState("");
 
   const shareLink = useCallback(() => {
     const url = `${window.location.origin}/provisioner/gear?domain=${activeDomain.id}`;
@@ -179,9 +179,22 @@ export default function GearPage() {
     });
   }, [activeDomain.id]);
 
-  const domainProducts: Product[] = activeDomain.skus
-    .map((sku) => CATALOG.find((p) => p.sku === sku))
-    .filter((p): p is Product => p !== undefined);
+  const isSearching = search.trim().length > 0;
+
+  const domainProducts: Product[] = isSearching
+    ? (() => {
+        const q = search.toLowerCase();
+        return CATALOG.filter(
+          (p) =>
+            p.name.toLowerCase().includes(q)  ||
+            p.brand.toLowerCase().includes(q) ||
+            p.sku.toLowerCase().includes(q)   ||
+            p.spec.toLowerCase().includes(q),
+        );
+      })()
+    : activeDomain.skus
+        .map((sku) => CATALOG.find((p) => p.sku === sku))
+        .filter((p): p is Product => p !== undefined);
 
   const criticalCount  = domainProducts.filter((p) => p.criticalFlag).length;
   const gradeACount    = domainProducts.filter((p) => p.grade === "A").length;
@@ -237,12 +250,43 @@ export default function GearPage() {
             </Link>
           </div>
 
-          {/* Email capture */}
+          {/* Search bar */}
           <div className="mb-5 max-w-xl">
             <p className="font-mono text-[9.5px] text-text-mute2 tracking-[.1em] uppercase mb-2">
-              Get threat level updates — free
+              Search {CATALOG_STATS.total}+ items
             </p>
-            <EmailCapture />
+            <div className="relative flex items-center">
+              <span className="absolute left-3 text-text-mute2/40 pointer-events-none select-none text-[14px]">
+                🔍
+              </span>
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Radio, water filter, solar…"
+                className="w-full bg-void-1 border border-border-protocol rounded-lg
+                           pl-9 pr-10 py-2.5 font-mono text-[12px] text-text-base
+                           placeholder:text-text-mute2/40 outline-none
+                           focus:border-gold-protocol/60 transition-colors duration-150"
+              />
+              {isSearching && (
+                <button
+                  onClick={() => setSearch("")}
+                  className="absolute right-3 font-mono text-[11px] text-text-mute2/50
+                             hover:text-text-mute2 transition-colors"
+                  aria-label="Clear search"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+            {isSearching && (
+              <p className="font-mono text-[9px] text-text-mute2/50 mt-1.5">
+                {domainProducts.length === 0
+                  ? "No items found"
+                  : `${domainProducts.length} item${domainProducts.length !== 1 ? "s" : ""} across all categories`}
+              </p>
+            )}
           </div>
 
           {/* Stats bar */}
@@ -306,8 +350,8 @@ export default function GearPage() {
         </div>
       </div>
 
-      {/* Active domain info OR properties panel */}
-      {activeDomain.id === "properties" ? (
+      {/* Active domain info OR properties panel — hidden during search */}
+      {!isSearching && activeDomain.id === "properties" ? (
         <FadeUp key="properties">
           <div className="relative rounded-xl border border-cyan-DEFAULT/20 bg-void-1 p-5 sm:p-6 overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-px"
@@ -328,7 +372,7 @@ export default function GearPage() {
             </div>
           </div>
         </FadeUp>
-      ) : (
+      ) : !isSearching ? (
         <FadeUp key={activeDomain.id}>
           <div
             className="relative rounded-xl border p-4 sm:p-5 overflow-hidden"
@@ -387,7 +431,7 @@ export default function GearPage() {
             </a>
           </div>
         </FadeUp>
-      )}
+      ) : null}
 
       {/* Product grid — gear items OR real estate */}
       {activeDomain.id === "properties" ? (
