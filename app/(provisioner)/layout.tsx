@@ -47,7 +47,7 @@ export default function ProvisionerLayout({ children }: { children: ReactNode })
       />
       <ProvisionerHeader />
 
-      <main id="main-content" className="relative z-10 flex-1 max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-10 py-6 sm:py-8 w-full">
+      <main id="main-content" className="relative z-10 flex-1 max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-6 sm:py-8 w-full">
         {children}
       </main>
     </div>

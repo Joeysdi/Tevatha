@@ -5,8 +5,9 @@ import { useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { GradeBadge } from "@/components/provisioner/grade-badge";
-import { CATALOG } from "@/lib/provisioner/catalog";
+import { CATALOG, CATALOG_STATS } from "@/lib/provisioner/catalog";
 import { FadeUp, StaggerParent, StaggerChild } from "@/components/ui/motion";
+import { EmailCapture } from "@/components/email-capture";
 import type { Product } from "@/lib/provisioner/catalog";
 import type { GradeLevel } from "@/types/treasury";
 
@@ -180,22 +181,81 @@ export default function GearPage() {
 
       {/* Hero */}
       <FadeUp>
-        <header className="relative rounded-xl border border-border-protocol bg-void-1 p-6 sm:p-8 overflow-hidden">
-          <div
-            className="absolute top-0 left-0 right-0 h-px"
-            style={{ background: "linear-gradient(90deg,#c9a84c,transparent)" }}
-          />
-          <p className="font-mono text-[9.5px] text-gold-protocol tracking-[.22em] uppercase mb-3">
+        <header className="relative rounded-xl border p-5 sm:p-7 overflow-hidden"
+          style={{
+            background: "linear-gradient(135deg,rgba(201,168,76,0.07),rgba(11,13,24,1))",
+            borderColor: "rgba(201,168,76,0.22)",
+          }}
+        >
+          <div className="absolute top-0 left-0 right-0 h-px"
+               style={{ background: "linear-gradient(90deg,transparent,#c9a84c,transparent)" }} />
+
+          {/* Eyebrow + threat ticker */}
+          <p className="font-mono text-[9.5px] text-gold-protocol tracking-[.22em] uppercase mb-2">
             Provisioner · Threat Domain Catalog
           </p>
-          <h1 className="font-syne font-extrabold text-[clamp(22px,5vw,32px)]
-                          text-text-base leading-tight mb-2">
-            Your Risk Analysis{" "}
-            <span className="text-gold-protocol">Points Here.</span>
+          <div className="font-mono text-[10px] tracking-[.06em] mb-3 flex flex-wrap gap-x-3 gap-y-1">
+            <span className="text-red-bright">73% FINANCIAL COLLAPSE PROBABILITY</span>
+            <span className="text-text-mute2/40">·</span>
+            <span className="text-amber-protocol">68% INFRASTRUCTURE FAILURE</span>
+            <span className="text-text-mute2/40">·</span>
+            <span className="text-gold-protocol">85 SECONDS TO MIDNIGHT</span>
+          </div>
+
+          {/* Title */}
+          <h1 className="font-syne font-extrabold text-[clamp(24px,5vw,34px)] leading-[1.12] text-text-base mb-2">
+            Still Fed. Still Connected.{" "}
+            <span className="text-gold-protocol">Still Operational.</span>
           </h1>
-          <p className="text-text-dim text-[13px] leading-relaxed max-w-xl">
-            Select the threat your Watchtower analysis says is most probable. The gear you need to stay operational when it arrives is below.
+          <p className="text-text-dim text-[13px] leading-relaxed mb-3 max-w-2xl">
+            While supply chains fracture and shelves empty, your baseline holds. {CATALOG_STATS.total}+ Tevatha-certified items — graded on performance, not commission. No affiliate links. Life Over Money.
           </p>
+
+          {/* Nonprofit badge + quick links */}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-4">
+            <span className="font-mono text-[10px] text-green-bright border border-green-bright/30
+                             bg-green-bright/5 px-2 py-0.5 rounded tracking-[.08em] uppercase">
+              Free · Nonprofit
+            </span>
+            <Link href="/provisioner/zero"
+              className="font-mono text-[10px] text-text-mute2 hover:text-gold-protocol transition-colors">
+              Start Here — No Money Needed →
+            </Link>
+            <Link href="/provisioner/checklist"
+              className="font-mono text-[10px] text-text-mute2 hover:text-gold-protocol transition-colors">
+              Print Checklist →
+            </Link>
+          </div>
+
+          {/* Email capture */}
+          <div className="mb-5 max-w-xl">
+            <p className="font-mono text-[9.5px] text-text-mute2 tracking-[.1em] uppercase mb-2">
+              Get threat level updates — free
+            </p>
+            <EmailCapture />
+          </div>
+
+          {/* Stats bar */}
+          <StaggerParent className="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-3">
+            {[
+              { val: CATALOG_STATS.total,      label: "TOTAL ITEMS" },
+              { val: CATALOG_STATS.gradeA,     label: "GRADE A" },
+              { val: CATALOG_STATS.gradeB,     label: "GRADE B" },
+              { val: CATALOG_STATS.critical,   label: "CRITICAL ITEMS" },
+              { val: CATALOG_STATS.categories, label: "CATEGORIES" },
+              { val: CATALOG_STATS.highTicket, label: "USDC RAIL" },
+            ].map((s) => (
+              <StaggerChild key={s.label}>
+                <div className="text-center px-2 py-2.5 bg-void-1 rounded-lg
+                                border border-border-protocol border-l-2 border-l-gold-protocol">
+                  <div className="font-mono font-extrabold tabular-nums text-[20px] sm:text-[22px]
+                                  text-gold-protocol leading-none">{s.val}</div>
+                  <div className="font-mono text-[8px] sm:text-[9px] text-text-mute2
+                                  mt-1 leading-tight uppercase">{s.label}</div>
+                </div>
+              </StaggerChild>
+            ))}
+          </StaggerParent>
         </header>
       </FadeUp>
 
@@ -324,7 +384,7 @@ export default function GearPage() {
         <PropertiesGrid />
       ) : (
       <div id="domain-products">
-      <StaggerParent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <StaggerParent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {domainProducts.map((p) => (
           <StaggerChild key={p.id}>
             <div
@@ -558,7 +618,7 @@ function PropertiesGrid() {
         </div>
 
         {/* Grid */}
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {sorted.map((p) => {
             const ss = p.safetyScore;
             const imgSrc = PRODUCT_IMAGES[p.imageSlug];
