@@ -19,14 +19,14 @@ export default function WatchtowerLayout({ children }: { children: ReactNode }) 
 
       {/* ── GLOBAL THREAT MATRIX HEADER ───────────────────────────────── */}
       <header className="flex-shrink-0 flex items-center justify-between
-                         px-3 py-2 sm:px-6 sm:py-3.5 bg-void-1 border-b border-border-protocol/40 z-50"
+                         px-3 py-2 md:px-6 md:py-3.5 bg-void-1 border-b border-border-protocol/40 z-50"
               aria-label="Tevatha Global Threat Matrix"
               style={{ boxShadow: "0 0 24px rgba(232,64,64,0.06)" }}>
         <div className="flex items-center gap-3">
           <span className="w-2 h-2 rounded-full bg-red-bright animate-pulse flex-shrink-0"
                 aria-hidden="true" />
           <span
-            className="font-bold text-[13px] sm:text-[14px] tracking-[.3em]"
+            className="font-bold text-[13px] md:text-[14px] tracking-[.3em]"
             style={{
               fontFamily: "var(--font-cinzel)",
               background: "linear-gradient(90deg, #c9a84c, #e84040)",
@@ -38,15 +38,15 @@ export default function WatchtowerLayout({ children }: { children: ReactNode }) 
             TEVATHA
           </span>
           <span className="w-px h-4 bg-border-protocol opacity-60" aria-hidden="true" />
-          <span className="hidden sm:inline font-mono text-[8.5px] text-text-mute2/60 tracking-[.22em] uppercase">
+          <span className="hidden md:inline font-mono text-[8.5px] text-text-mute2/60 tracking-[.22em] uppercase">
             Global Threat Matrix
           </span>
-          <span className="hidden sm:inline font-mono text-[8px] text-green-bright border border-green-bright/30
+          <span className="hidden md:inline font-mono text-[8px] text-green-bright border border-green-bright/30
                            bg-green-bright/5 px-2 py-0.5 rounded tracking-[.1em] uppercase">
             Free · Nonprofit
           </span>
         </div>
-        <div className="flex items-center gap-2 sm:gap-4">
+        <div className="flex items-center gap-2 md:gap-4">
           <HeaderLocale />
           <span className="w-px h-3 bg-border-protocol opacity-40" aria-hidden="true" />
           <LiveClock inline />

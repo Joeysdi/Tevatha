@@ -315,7 +315,7 @@ export function WatchtowerGlobeShell() {
     <div className="w-full h-full flex flex-col bg-void-0">
 
       {/* ── Globe area ───────────────────────────────────────────────────── */}
-      <div ref={globeContainerRef} className="h-[44dvh] sm:flex-1 sm:h-auto relative overflow-hidden min-h-0">
+      <div ref={globeContainerRef} className="h-[44dvh] md:flex-1 md:h-auto relative overflow-hidden min-h-0">
         {/* Globe */}
         <WorldRiskGlobe
           eraPhase={eraPhase}
@@ -380,7 +380,7 @@ export function WatchtowerGlobeShell() {
 
         {/* ── Globe mode controls — desktop only ───────────────────────────── */}
         <div
-          className="hidden sm:flex absolute left-4 z-20 overflow-y-auto [&::-webkit-scrollbar]:hidden"
+          className="hidden md:flex absolute left-4 z-20 overflow-y-auto [&::-webkit-scrollbar]:hidden"
           style={{
             top: "48px",
             maxHeight: `${Math.max(200, (containerH - 64) / panelScale)}px`,
@@ -749,7 +749,7 @@ export function WatchtowerGlobeShell() {
       </div>
 
       {/* ── Mobile domain list (hidden sm+) ──────────────────────────────── */}
-      <div className="sm:hidden flex-1 min-h-0 overflow-y-auto bg-void-0 border-t border-border-protocol/30"
+      <div className="md:hidden flex-1 min-h-0 overflow-y-auto bg-void-0 border-t border-border-protocol/30"
            style={{ scrollbarWidth: "none" } as React.CSSProperties}>
 
         {/* Header row */}
