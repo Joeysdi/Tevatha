@@ -4,6 +4,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { cinzel, inter, jetbrains, syne } from "@/lib/fonts";
 import { LanguageProvider } from "@/lib/i18n/use-translation";
 import { TevatahSplash } from "@/components/tevatha-splash";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -100,6 +101,7 @@ export default function RootLayout({
             <TevatahSplash />
             {children}
           </LanguageProvider>
+          <Analytics />
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{
