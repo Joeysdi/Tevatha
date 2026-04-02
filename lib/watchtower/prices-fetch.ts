@@ -11,8 +11,9 @@ export interface LivePrices {
   wti:    AssetPrice;
   btc:    AssetPrice;
   usdRub: AssetPrice;
-  vix:    AssetPrice; // price = VIX level; change = day % (unused in scoring)
+  vix:    AssetPrice; // price = VIX level; change = day %
   tbill:  AssetPrice; // price = 13-week T-bill yield %; proxy for overnight/repo rate
+  dxy:    AssetPrice; // price = USD Index (DXY) level; used for currency risk sub-index
 }
 
 const FAIL: AssetPrice = { price: 0, change: 0, ok: false };
@@ -35,17 +36,20 @@ export async function fetchLivePrices(): Promise<LivePrices> {
   let wti:   AssetPrice = FAIL;
   let vix:   AssetPrice = FAIL;
   let tbill: AssetPrice = FAIL;
+  let dxy:   AssetPrice = FAIL;
   if (serverResult.status === "fulfilled") {
     const data = serverResult.value as {
       gold:  { price: number; change: number } | null;
       oil:   { price: number; change: number } | null;
       vix:   { price: number; change: number } | null;
       tbill: { price: number; change: number } | null;
+      dxy:   { price: number; change: number } | null;
     };
     if (data.gold)  xau   = { price: data.gold.price,  change: data.gold.change,  ok: true };
     if (data.oil)   wti   = { price: data.oil.price,   change: data.oil.change,   ok: true };
     if (data.vix)   vix   = { price: data.vix.price,   change: data.vix.change,   ok: true };
     if (data.tbill) tbill = { price: data.tbill.price, change: data.tbill.change, ok: true };
+    if (data.dxy)   dxy   = { price: data.dxy.price,   change: data.dxy.change,   ok: true };
   }
 
   // ── BTC/USD ───────────────────────────────────────────────────────────────
@@ -70,5 +74,5 @@ export async function fetchLivePrices(): Promise<LivePrices> {
     }
   }
 
-  return { xau, wti, btc, usdRub, vix, tbill };
+  return { xau, wti, btc, usdRub, vix, tbill, dxy };
 }

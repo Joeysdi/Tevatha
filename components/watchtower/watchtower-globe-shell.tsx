@@ -569,6 +569,7 @@ export function WatchtowerGlobeShell() {
           newsFeedPins={newsPins}
           onNewsClick={setSelectedNewsId}
           gateStatuses={gateStatuses}
+          domainScores={domainScores ?? undefined}
         />
 
 

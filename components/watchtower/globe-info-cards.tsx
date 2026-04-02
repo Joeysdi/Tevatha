@@ -6,6 +6,8 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import type { ReactNode } from "react";
 import { DOMAINS, SIGNALS, SCENARIOS, PSYCH_PILLARS, GATES } from "@/lib/watchtower/data";
+import type { DomainScores } from "@/lib/watchtower/domain-score";
+import { SubIndexPanel } from "./sub-index-bar";
 import { type GateStatus } from "@/lib/watchtower/gate-status";
 import { GEAR } from "@/lib/watchtower/data-gear";
 import { DOMAIN_COLORS } from "@/lib/watchtower/domain-colors";
@@ -935,6 +937,7 @@ interface GlobeRightPanelProps {
   newsFeedPins:        NewsFeedPin[];
   onNewsClick:         (newsId: string) => void;
   gateStatuses?:       GateStatus[];
+  domainScores?:       DomainScores;
 }
 
 export function GlobeRightPanel({
@@ -944,7 +947,7 @@ export function GlobeRightPanel({
   onClose,
   onCloseCommodity, onCloseNews, onCloseCity,
   onOpenShop, newsFeedPins, onNewsClick,
-  gateStatuses,
+  gateStatuses, domainScores,
 }: GlobeRightPanelProps) {
   const hasAny = !!(domainId || scenarioId || selectedSignalIdx !== null
     || selectedPsychZone || selectedGateId || selectedCommodityId
@@ -1074,6 +1077,16 @@ export function GlobeRightPanel({
                 return (
                   <>
                     <DomainInfoCard domainId={domainId} col={col} />
+                    {domainScores && domainScores[domainId as keyof DomainScores] && (
+                      <>
+                        <Divider />
+                        <SubIndexPanel
+                          subIndices={domainScores[domainId as keyof DomainScores].subIndices}
+                          col={col}
+                          liveScore={domainScores[domainId as keyof DomainScores].live}
+                        />
+                      </>
+                    )}
                     <Divider />
                     <DomainLiveFeedCard domainId={domainId} newsFeedPins={newsFeedPins} onNewsClick={onNewsClick} col={col} compact={true} />
                     {gateIds.length > 0
