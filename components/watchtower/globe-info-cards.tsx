@@ -969,8 +969,13 @@ export function GlobeRightPanel({
           animate={isMobile ? { y: 0 } : { opacity: 1, x: 0 }}
           exit={isMobile ? { y: "100%" } : { opacity: 0, x: 16 }}
           transition={isMobile ? { type: "spring", damping: 30, stiffness: 280 } : { duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className={isMobile ? "fixed bottom-0 left-0 right-0 z-50 max-h-[80dvh] overflow-y-auto [&::-webkit-scrollbar]:hidden rounded-t-2xl" : "absolute right-4 z-20 [&::-webkit-scrollbar]:hidden"}
-          style={isMobile ? { borderTop: `2px solid ${activeCol}`, boxShadow: "0 -8px 40px rgba(0,0,0,0.75)" } : {
+          className={isMobile ? "fixed left-0 right-0 z-50 overflow-y-auto [&::-webkit-scrollbar]:hidden rounded-t-2xl" : "absolute right-4 z-20 [&::-webkit-scrollbar]:hidden"}
+          style={isMobile ? {
+            top: "calc(44dvh + 50px)",
+            bottom: 0,
+            borderTop: `2px solid ${activeCol}`,
+            boxShadow: "0 -8px 40px rgba(0,0,0,0.75)",
+          } : {
             top: "48px",
             width: "360px",
             transform: `scale(${panelScale})`,
