@@ -416,6 +416,195 @@ export default function GearPage() {
         </div>
       </FadeUp>
 
+      {/* ── REAL ESTATE ARK NODES ──────────────────────────────────────────── */}
+      <RealEstateSection />
+
     </div>
+  );
+}
+
+// ── Real Estate Section ───────────────────────────────────────────────────────
+
+const REA_SORT_OPTIONS = [
+  { value: "grade",     label: "Grade" },
+  { value: "nuclear",   label: "Nuclear Safety" },
+  { value: "stability", label: "Stability" },
+  { value: "disaster",  label: "Disaster Risk" },
+] as const;
+
+type ReaSort = typeof REA_SORT_OPTIONS[number]["value"];
+
+const ALL_REA = CATALOG
+  .filter((p) => p.category === "real_estate")
+  .sort((a, b) => b.gradeComposite - a.gradeComposite);
+
+function SafetyBar({ label, value, color }: { label: string; value: number; color: string }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="font-mono text-[8.5px] text-text-mute2 w-20 flex-shrink-0 tracking-[.04em] uppercase truncate">
+        {label}
+      </span>
+      <div className="flex-1 h-1 bg-void-2 rounded-full overflow-hidden">
+        <div className="h-full rounded-full" style={{ width: `${value}%`, background: color }} />
+      </div>
+      <span className="font-mono text-[8.5px] tabular-nums w-5 text-right" style={{ color }}>
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function RealEstateSection() {
+  const [sort, setSort] = useState<ReaSort>("grade");
+  const [search, setSearch] = useState("");
+
+  const sorted = [...ALL_REA]
+    .filter((p) => {
+      if (!search) return true;
+      const q = search.toLowerCase();
+      return (
+        p.name.toLowerCase().includes(q) ||
+        (p.location ?? "").toLowerCase().includes(q) ||
+        p.spec.toLowerCase().includes(q)
+      );
+    })
+    .sort((a, b) => {
+      if (sort === "grade")     return b.gradeComposite - a.gradeComposite;
+      if (sort === "nuclear")   return (b.safetyScore?.nuclearDistance ?? 0) - (a.safetyScore?.nuclearDistance ?? 0);
+      if (sort === "stability") return (b.safetyScore?.politicalStability ?? 0) - (a.safetyScore?.politicalStability ?? 0);
+      if (sort === "disaster")  return (b.safetyScore?.disasterRisk ?? 0) - (a.safetyScore?.disasterRisk ?? 0);
+      return 0;
+    });
+
+  return (
+    <FadeUp delay={0.05}>
+      <section className="space-y-5">
+
+        {/* Header */}
+        <div className="relative rounded-xl border border-cyan-DEFAULT/20 bg-void-1 p-5 sm:p-6 overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-px"
+               style={{ background: "linear-gradient(90deg,#00d4ff,rgba(0,212,255,0.3),transparent)" }} />
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <p className="font-mono text-[9px] text-cyan-DEFAULT tracking-[.22em] uppercase mb-1">
+                Ark Node Properties · {ALL_REA.length} Locations · {ALL_REA.filter(p => p.grade === "A").length} Grade A
+              </p>
+              <h2 className="font-syne font-extrabold text-[clamp(18px,4vw,24px)] text-text-base leading-tight">
+                Safe Land. Every Country.
+              </h2>
+              <p className="font-mono text-[11px] text-text-dim mt-1 leading-relaxed max-w-lg">
+                Curated off-grid land in politically stable, low-nuclear-risk countries. Each location
+                scored on 4 dimensions. Links go directly to the best property search site for that country.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Controls */}
+        <div className="flex items-center gap-3 flex-wrap">
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search country, region…"
+            className="bg-void-1 border border-border-protocol rounded-lg px-3 py-2
+                       font-mono text-[11px] text-text-base placeholder:text-text-mute2/50
+                       focus:outline-none focus:border-cyan-DEFAULT/50 transition-colors w-48"
+          />
+          <div className="flex items-center gap-1">
+            <span className="font-mono text-[9px] text-text-mute2 tracking-[.1em] uppercase mr-1">Sort:</span>
+            {REA_SORT_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => setSort(opt.value)}
+                className={`font-mono text-[9.5px] px-2.5 py-1.5 rounded-lg border transition-all duration-150
+                  ${sort === opt.value
+                    ? "bg-cyan-DEFAULT/10 border-cyan-DEFAULT/50 text-cyan-DEFAULT"
+                    : "border-border-protocol text-text-mute2 hover:border-border-bright/40"}`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <span className="font-mono text-[9px] text-text-mute2 ml-auto">
+            {sorted.length} results
+          </span>
+        </div>
+
+        {/* Grid */}
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {sorted.map((p) => {
+            const ss = p.safetyScore;
+            const imgSrc = PRODUCT_IMAGES[p.imageSlug];
+            const composite = ss
+              ? Math.round((ss.nuclearDistance + ss.disasterRisk + ss.populationDensity + ss.politicalStability) / 4)
+              : p.gradeComposite;
+            return (
+              <Link
+                key={p.id}
+                href={`/provisioner/gear/${p.id}`}
+                className="relative bg-void-1 border border-border-protocol rounded-xl overflow-hidden
+                           hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,212,255,0.1)]
+                           transition-all duration-200 flex flex-col group"
+              >
+                <div className="absolute top-0 left-0 right-0 h-px"
+                     style={{ background: "linear-gradient(90deg,transparent,rgba(0,212,255,0.3),transparent)" }} />
+                <div className="absolute top-0 left-0 bottom-0 w-[3px]"
+                     style={{ background: GRADE_BAR[p.grade] }} />
+
+                {/* Image / placeholder */}
+                <div className="relative h-28 bg-void-2 border-b border-border-protocol overflow-hidden flex-shrink-0">
+                  {imgSrc ? (
+                    <Image src={imgSrc} alt={p.name} fill className="object-cover" sizes="(max-width:640px) 100vw,33vw" />
+                  ) : (
+                    <div className="h-full flex flex-col items-center justify-center gap-1 opacity-30">
+                      <span className="text-[28px]">🌍</span>
+                      <span className="font-mono text-[8px] text-text-mute2 tracking-[.1em] uppercase">{p.location?.split("—")[0].trim()}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-4 flex flex-col flex-1 gap-3">
+                  {/* Title row */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-mono text-[8.5px] text-text-mute2 truncate">{p.location}</p>
+                      <p className="font-syne font-bold text-[12.5px] text-text-base leading-tight mt-0.5 group-hover:text-cyan-DEFAULT transition-colors">
+                        {p.name}
+                      </p>
+                    </div>
+                    <GradeBadge grade={p.grade} composite={composite} size="sm" />
+                  </div>
+
+                  {/* Safety Index bars */}
+                  {ss && (
+                    <div className="space-y-1.5 bg-void-2 rounded-lg px-3 py-2.5">
+                      <p className="font-mono text-[7.5px] text-text-mute2 tracking-[.14em] uppercase mb-1.5">
+                        Safety Index
+                      </p>
+                      <SafetyBar label="Nuclear"    value={ss.nuclearDistance}    color={ss.nuclearDistance >= 85 ? "#1ae8a0" : ss.nuclearDistance >= 70 ? "#c9a84c" : "#e84040"} />
+                      <SafetyBar label="Disasters"  value={ss.disasterRisk}       color={ss.disasterRisk    >= 85 ? "#1ae8a0" : ss.disasterRisk    >= 70 ? "#c9a84c" : "#e84040"} />
+                      <SafetyBar label="Population" value={ss.populationDensity}  color={ss.populationDensity >= 85 ? "#1ae8a0" : ss.populationDensity >= 70 ? "#c9a84c" : "#e84040"} />
+                      <SafetyBar label="Stability"  value={ss.politicalStability} color={ss.politicalStability >= 85 ? "#1ae8a0" : ss.politicalStability >= 70 ? "#c9a84c" : "#e84040"} />
+                    </div>
+                  )}
+
+                  {/* Footer */}
+                  <div className="flex items-center justify-between mt-auto pt-1">
+                    <span className="font-mono text-[12px] font-bold text-gold-bright">
+                      {p.priceDisplay ?? `$${(p.priceUsd / 100).toFixed(0)}`}
+                    </span>
+                    <span className="font-mono text-[9px] text-cyan-DEFAULT border border-cyan-DEFAULT/30
+                                     rounded-lg px-2.5 py-1.5 group-hover:bg-cyan-DEFAULT/10 transition-colors">
+                      View + Search ↗
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+
+      </section>
+    </FadeUp>
   );
 }
