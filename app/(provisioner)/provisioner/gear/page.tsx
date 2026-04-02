@@ -61,7 +61,7 @@ const PRODUCT_IMAGES: Record<string, string> = {
   "rea-panama-boquete":         "/products/rea-panama-boquete.jpg",
 };
 
-// ── Domain definitions ───────────────────────────────────────────────────────
+// ── Category definitions ──────────────────────────────────────────────────────
 
 interface ThreatDomainDef {
   id:         string;
@@ -81,71 +81,81 @@ const PROPERTIES_TAB: ThreatDomainDef = {
   icon:      "🌍",
   color:     "text-cyan-DEFAULT",
   borderHex: "#00d4ff",
-  outcome:   "Your Ark Node is waiting.",
-  rationale: "Off-grid land in politically stable, low-nuclear-risk countries. Each location scored on 4 safety dimensions.",
+  outcome:   "Your Ark node is ready when you need it.",
+  rationale: "Off-grid land in politically stable, low-nuclear-risk countries. Each location is scored on 4 safety dimensions: nuclear distance, disaster risk, population density, and political stability.",
   skus:      [],
 };
 
 const THREAT_DOMAINS: ThreatDomainDef[] = [
   {
-    id:       "nuclear",
-    label:    "Nuclear / EMP",
-    icon:     "☢️",
-    color:    "text-red-bright",
-    borderHex:"#e84040",
-    outcome:  "Your power is live when the grid is not.",
-    rationale:"EMP destroys unshielded electronics and collapses grid power instantly. Priority is off-grid energy independence, EMP-shielded communications, and satellite fallback when terrestrial networks fail.",
-    skus:     ["COM-001","COM-002","COM-005","ENE-001","ENE-002","ENE-003","SEC-003","COM-003","COM-004","MOB-003","SHE-001"],
-  },
-  {
-    id:       "economic",
-    label:    "Economic",
-    icon:     "💸",
+    id:       "communications",
+    label:    "Communications",
+    icon:     "📡",
     color:    "text-gold-bright",
     borderHex:"#c9a84c",
-    outcome:  "You still eat and drink when the shelves don't restock.",
-    rationale:"Supply chain collapse means no resupply — what you have pre-crisis is what you operate with. Priority: water independence, grid-free energy, and fuel reserves to maintain mobility when supply networks seize.",
-    skus:     ["ENE-001","ENE-002","ENE-003","WAT-001","WAT-002","MOB-001","MOB-002","COM-003","WAT-003","WAT-004","ENE-004","MOB-003","SHE-001","SHE-002"],
+    outcome:  "You stay connected when the internet and cell networks go down.",
+    rationale:"When a crisis hits, phone networks and the internet are often the first things to fail. Satellite messengers, two-way radios, and emergency weather radios let you send messages, get updates, and coordinate with your group without any infrastructure.",
+    skus:     ["COM-001","COM-002","COM-003","COM-004","COM-005"],
   },
   {
-    id:       "civil",
-    label:    "Civil / Political",
-    icon:     "🔥",
+    id:       "medical",
+    label:    "Medical",
+    icon:     "🩺",
+    color:    "text-red-bright",
+    borderHex:"#e84040",
+    outcome:  "You can treat serious injuries and illness without a hospital.",
+    rationale:"When hospitals are overwhelmed or unreachable, your ability to treat bleeding, wounds, and illness at home could be the difference between life and death. Military-grade trauma kits, hemostatic agents, and a comprehensive medical reference are the foundation.",
+    skus:     ["MED-001","MED-002","MED-003","MED-004","MED-005"],
+  },
+  {
+    id:       "energy",
+    label:    "Energy",
+    icon:     "⚡",
     color:    "text-amber-protocol",
     borderHex:"#f0a500",
-    outcome:  "You know before the crowd knows. You move before they do.",
-    rationale:"Societal fracture events demand perimeter awareness, rapid evacuation capability, and off-grid communications independent of compromised infrastructure. Know before the crowd knows.",
-    skus:     ["COM-001","COM-002","COM-005","MOB-001","MOB-002","SEC-001","COM-003","COM-004","MOB-003","SEC-002","SHE-001"],
+    outcome:  "Your lights, devices, and medical equipment stay powered.",
+    rationale:"Power outages can last days to weeks in a serious crisis. Portable battery stations store electricity for immediate use, solar panels generate power indefinitely from sunlight, and a dual-fuel generator bridges any gap — keeping your refrigerator, medical devices, and communications running.",
+    skus:     ["ENE-001","ENE-002","ENE-003","ENE-004"],
   },
   {
-    id:       "cyber",
-    label:    "Cyber / Tech",
-    icon:     "🤖",
+    id:       "mobility",
+    label:    "Mobility",
+    icon:     "🚗",
     color:    "text-cyan-DEFAULT",
     borderHex:"#00d4ff",
-    outcome:  "Your comms hold when digital infrastructure fails.",
-    rationale:"Coordinated cyberattacks target grid and communications infrastructure simultaneously. EMP-hardened communications, off-grid power, and Faraday-shielded devices preserve operational capability when digital infrastructure collapses.",
-    skus:     ["COM-001","COM-002","COM-005","ENE-001","ENE-002","SEC-003","COM-003","ENE-004","MOB-003"],
+    outcome:  "Your vehicle starts and moves when you need to leave.",
+    rationale:"Getting out fast could save your life — but fuel shortages, dead batteries, and flat tires strand people every crisis. Pre-stored fuel in certified containers, a compact jump starter in every vehicle, and a GPS that works without cell service keep your evacuation route open.",
+    skus:     ["MOB-001","MOB-002","MOB-003"],
   },
   {
-    id:       "bio",
-    label:    "Biological",
-    icon:     "🦠",
-    color:    "text-green-protocol",
-    borderHex:"#1ae8a0",
-    outcome:  "Your household runs self-sufficient in full isolation.",
-    rationale:"Isolation and medical self-sufficiency are the Ark response to biological events. Medical supplies, independent water filtration, and satellite communications for monitoring without exposure to compromised networks.",
-    skus:     ["MED-001","MED-002","MED-003","WAT-001","WAT-002","COM-001","MED-004","MED-005","WAT-004","SHE-001"],
-  },
-  {
-    id:       "climate",
-    label:    "Climate",
-    icon:     "🌊",
+    id:       "water",
+    label:    "Water",
+    icon:     "💧",
     color:    "text-blue-DEFAULT",
     borderHex:"#38bdf8",
-    outcome:  "Your water is clean when municipal systems fail.",
-    rationale:"Water access failure and supply chain disruption are the primary climate cascade vectors. Independent water filtration, renewable energy, and fuel reserves maintain operational capability through extended disruption windows.",
-    skus:     ["WAT-001","WAT-002","ENE-002","ENE-003","MOB-001","WAT-003","WAT-004","ENE-004","SHE-001","SHE-002","SHE-003"],
+    outcome:  "You have clean drinking water even when the tap runs dry.",
+    rationale:"Safe water is the most critical resource in any emergency — the human body can only survive 3 days without it. A gravity-fed ceramic filter removes viruses, bacteria, and heavy metals from any water source. Emergency storage bladders and purification tablets provide redundant backup layers.",
+    skus:     ["WAT-001","WAT-002","WAT-003","WAT-004"],
+  },
+  {
+    id:       "security",
+    label:    "Security",
+    icon:     "🔒",
+    color:    "text-green-protocol",
+    borderHex:"#1ae8a0",
+    outcome:  "You see what is happening around you and protect your electronics.",
+    rationale:"Perimeter awareness and electronic protection are overlooked until they matter. Local security cameras that store footage on-site (no cloud) give early warning. A Faraday bag protects critical electronics from an EMP. High-lumen tactical lights are essential in grid-down conditions.",
+    skus:     ["SEC-001","SEC-002","SEC-003"],
+  },
+  {
+    id:       "shelter",
+    label:    "Shelter",
+    icon:     "🏕️",
+    color:    "text-text-dim",
+    borderHex:"#8b8fa8",
+    outcome:  "You stay warm and dry no matter where you are.",
+    rationale:"Exposure kills faster than most threats. Emergency bivvy bags retain 90% of body heat in a fist-sized pack. A quality sleeping bag rated to 20°F keeps you alive in freezing temperatures. A heavy-duty tarp serves as rain fly, ground cloth, or heat reflector in any environment.",
+    skus:     ["SHE-001","SHE-002","SHE-003"],
   },
   PROPERTIES_TAB,
 ];
@@ -192,7 +202,7 @@ export default function GearPage() {
 
           {/* Eyebrow + threat ticker */}
           <p className="font-mono text-[9.5px] text-gold-protocol tracking-[.22em] uppercase mb-2">
-            Provisioner · Threat Domain Catalog
+            Provisioner · Preparedness Catalog
           </p>
           <div className="font-mono text-[10px] tracking-[.06em] mb-3 flex flex-wrap gap-x-3 gap-y-1">
             <span className="text-red-bright">73% FINANCIAL COLLAPSE PROBABILITY</span>
@@ -261,7 +271,7 @@ export default function GearPage() {
 
       {/* Domain tabs */}
       <div className="flex items-center gap-3 mb-3">
-        <span className="font-mono text-[9px] text-text-mute2 tracking-[.14em] uppercase">THREAT DOMAIN</span>
+        <span className="font-mono text-[9px] text-text-mute2 tracking-[.14em] uppercase">CATEGORY</span>
         <div className="flex-1 h-px bg-border-protocol" />
         <button
           onClick={shareLink}
