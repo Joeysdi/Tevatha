@@ -14,33 +14,65 @@ import type { StoreProduct } from "@/lib/store/types";
 
 // Maps imageSlug → local /public path for each product that has an image
 const PRODUCT_IMAGES: Record<string, string> = {
-  "garmin-inreach-mini2": "/products/garmin-inreach-mini2.jpg",
-  "baofeng-uv5r":         "/products/baofeng-uv5r.jpg",
-  "starlink-mini":        "/products/starlink-mini.png",
-  "nar-ifak":             "/products/nar-ifak.jpg",
-  "myfak-advanced":       "/products/myfak-advanced.png",
-  "quikclot":             "/products/quikclot.jpg",
-  "jackery-1000plus":     "/products/jackery-1000plus.png",
-  "ecoflow-delta-pro":    "/products/ecoflow-delta-pro.png",
-  "renogy-400w":          "/products/renogy-400w.jpg",
-  "wavian-jerry":         "/products/wavian-jerry.jpg",
-  "noco-gb40":            "/products/noco-gb40.png",
-  "berkey-big":           "/products/berkey-big.jpg",
-  "sawyer-squeeze":       "/products/sawyer-squeeze.png",
-  "reolink-810a":               "/products/reolink-810a.png",
-  "faraday-xl":                 "/products/faraday-xl.jpg",
-  "midland-er310":              "/products/midland-er310.jpg",
-  "motorola-t800":              "/products/motorola-t800.jpg",
-  "israeli-bandage":            "/products/israeli-bandage.jpg",
-  "celox-granules":             "/products/celox-granules.jpg",
-  "goal-zero-yeti-200x":        "/products/goal-zero-yeti-200x.jpg",
-  "garmin-gpsmap-67":           "/products/garmin-gpsmap-67.jpg",
-  "waterbob":                   "/products/waterbob.jpg",
-  "potable-aqua":               "/products/potable-aqua.jpg",
-  "surefire-g2x":               "/products/surefire-g2x.jpg",
-  "sol-bivvy":                  "/products/sol-bivvy.jpg",
-  "kelty-cosmic-20":            "/products/kelty-cosmic-20.jpg",
-  "titan-tarp":                 "/products/titan-tarp.jpg",
+  // ── Communications ───────────────────────────────────────────────────────
+  "garmin-inreach-mini2":   "/products/garmin-inreach-mini2.jpg",
+  "baofeng-uv5r":           "/products/baofeng-uv5r.jpg",
+  "baofeng-bf-f8hp":        "/products/baofeng-bf-f8hp.jpg",
+  "starlink-mini":          "/products/starlink-mini.png",
+  "iridium-go-exec":        "/products/iridium-go-exec.png",
+  "anytone-d878uvii":       "/products/anytone-d878uvii.png",
+  "meshtastic-rak":         "/products/meshtastic-rak.webp",
+  "midland-er310":          "/products/midland-er310.jpg",
+  "motorola-t800":          "/products/motorola-t800.jpg",
+
+  // ── Medical ──────────────────────────────────────────────────────────────
+  "nar-ifak":               "/products/nar-ifak.jpg",
+  "myfak-advanced":         "/products/myfak-advanced.png",
+  "quikclot":               "/products/quikclot.jpg",
+  "israeli-bandage":        "/products/israeli-bandage.jpg",
+  "celox-granules":         "/products/celox-granules.jpg",
+  "omron-3-series-bp":      "/products/omron-3-series-bp.jpg",
+  "merck-manual-home":      "/products/merck-manual-home.jpg",
+  "sam-splint":             "/products/sam-splint.png",
+  "sam-splint-6pk":         "/products/sam-splint-6pk.png",
+  "dripdrop-ors":           "/products/dripdrop-ors.jpg",
+  "primedic-heartsave-aed": "/products/primedic-heartsave-aed.jpg",
+
+  // ── Energy ───────────────────────────────────────────────────────────────
+  "jackery-1000plus":       "/products/jackery-1000plus.png",
+  "jackery-solarsaga-100w": "/products/jackery-solarsaga-100w.png",
+  "ecoflow-delta-pro":      "/products/ecoflow-delta-pro.png",
+  "renogy-400w":            "/products/renogy-400w.jpg",
+  "wavian-jerry":           "/products/wavian-jerry.jpg",
+  "noco-gb40":              "/products/noco-gb40.png",
+  "goal-zero-yeti-200x":    "/products/goal-zero-yeti-200x.jpg",
+  "nitecore-nb10000":       "/products/nitecore-nb10000.png",
+  "biolite-campstove2":     "/products/biolite-campstove2.png",
+  "mr-heater-little-buddy": "/products/mr-heater-little-buddy.jpg",
+
+  // ── Water ────────────────────────────────────────────────────────────────
+  "berkey-big":             "/products/berkey-big.jpg",
+  "sawyer-squeeze":         "/products/sawyer-squeeze.png",
+  "waterbob":               "/products/waterbob.jpg",
+  "potable-aqua":           "/products/potable-aqua.jpg",
+  "lifestraw-personal":     "/products/lifestraw-personal.jpg",
+
+  // ── Security ─────────────────────────────────────────────────────────────
+  "reolink-810a":           "/products/reolink-810a.png",
+  "faraday-xl":             "/products/faraday-xl.jpg",
+  "ajax-starterkit":        "/products/ajax-starterkit.jpg",
+  "surefire-g2x":           "/products/surefire-g2x.jpg",
+
+  // ── Shelter / General ────────────────────────────────────────────────────
+  "sol-bivvy":              "/products/sol-bivvy.jpg",
+  "kelty-cosmic-20":        "/products/kelty-cosmic-20.jpg",
+  "titan-tarp":             "/products/titan-tarp.jpg",
+  "husqvarna-460-rancher":  "/products/husqvarna-460-rancher.jpg",
+  "open-seed-vault":        "/products/open-seed-vault.jpg",
+  "garmin-gpsmap-67":       "/products/garmin-gpsmap-67.jpg",
+  "klymit-static-v2":       "/products/klymit-static-v2.jpg",
+
+  // ── Real Estate — Original catalog ───────────────────────────────────────
   "rea-nz-south-island":        "/products/rea-nz-south-island.jpg",
   "rea-switzerland-graubunden": "/products/rea-switzerland-graubunden.jpg",
   "rea-iceland-westfjords":     "/products/rea-iceland-westfjords.jpg",
@@ -53,6 +85,79 @@ const PRODUCT_IMAGES: Record<string, string> = {
   "rea-costa-rica-guanacaste":  "/products/rea-costa-rica-guanacaste.jpg",
   "rea-chile-patagonia":        "/products/rea-chile-patagonia.jpg",
   "rea-panama-boquete":         "/products/rea-panama-boquete.jpg",
+
+  // ── Real Estate — Extended (rea-extended.ts) ─────────────────────────────
+  // Europe — Northern
+  "rea-sweden-norrland":        "/products/rea-sweden-norrland.png",
+  "rea-denmark-jutland":        "/products/rea-denmark-jutland.png",
+  "rea-ireland-connaught":      "/products/rea-ireland-connaught.png",
+  "rea-uk-scotland":            "/products/rea-uk-scotland.png",
+  "rea-estonia-saaremaa":       "/products/rea-estonia-saaremaa.jpg",
+  "rea-latvia-latgale":         "/products/rea-latvia-latgale.jpg",
+  "rea-lithuania-dzukija":      "/products/rea-lithuania-dzukija.jpg",
+  // Europe — Western / Central
+  "rea-austria-styria":         "/products/rea-austria-styria.png",
+  "rea-austria-burgenland":     "/products/rea-austria-burgenland.png",
+  "rea-germany-bavaria":        "/products/rea-germany-bavaria.png",
+  "rea-france-auvergne":        "/products/rea-france-auvergne.png",
+  "rea-spain-extremadura":      "/products/rea-spain-extremadura.png",
+  "rea-italy-abruzzo":          "/products/rea-italy-abruzzo.png",
+  "rea-greece-epirus":          "/products/rea-greece-epirus.png",
+  "rea-czech-bohemia":          "/products/rea-czech-bohemia.jpg",
+  "rea-slovenia-karst":         "/products/rea-slovenia-karst.jpg",
+  "rea-slovakia-tatras":        "/products/rea-slovakia-tatras.jpg",
+  "rea-croatia-dalmatia":       "/products/rea-croatia-dalmatia.png",
+  // Europe — Eastern
+  "rea-poland-mazury":          "/products/rea-poland-mazury.jpg",
+  "rea-hungary-baranya":        "/products/rea-hungary-baranya.jpg",
+  "rea-romania-transylvania":   "/products/rea-romania-transylvania.png",
+  "rea-bulgaria-rhodope":       "/products/rea-bulgaria-rhodope.jpg",
+  "rea-serbia-sumadija":        "/products/rea-serbia-sumadija.png",
+  "rea-montenegro-highlands":   "/products/rea-montenegro-highlands.png",
+  // North America
+  "rea-usa-montana":            "/products/rea-usa-montana.png",
+  "rea-canada-quebec":          "/products/rea-canada-quebec.png",
+  "rea-mexico-oaxaca":          "/products/rea-mexico-oaxaca.jpg",
+  // Central America
+  "rea-belize-cayo":            "/products/rea-belize-cayo.png",
+  // South America
+  "rea-brazil-minas":           "/products/rea-brazil-minas.png",
+  "rea-argentina-mendoza":      "/products/rea-argentina-mendoza.jpg",
+  "rea-colombia-coffee":        "/products/rea-colombia-coffee.png",
+  "rea-peru-andes":             "/products/rea-peru-andes.jpg",
+  "rea-ecuador-andes":          "/products/rea-ecuador-andes.png",
+  "rea-paraguay-interior":      "/products/rea-paraguay-interior.png",
+  "rea-bolivia-beni":           "/products/rea-bolivia-beni.jpg",
+  // East Asia
+  "rea-japan-hokkaido":         "/products/rea-japan-hokkaido.png",
+  // Southeast Asia
+  "rea-thailand-chiangmai":     "/products/rea-thailand-chiangmai.jpg",
+  "rea-malaysia-sabah":         "/products/rea-malaysia-sabah.png",
+  "rea-cambodia-kampot":        "/products/rea-cambodia-kampot.jpg",
+  "rea-vietnam-dalat":          "/products/rea-vietnam-dalat.jpg",
+  "rea-philippines-palawan":    "/products/rea-philippines-palawan.jpg",
+  "rea-indonesia-lombok":       "/products/rea-indonesia-lombok.jpg",
+  // Caucasus / Central Asia
+  "rea-georgia-kakheti":        "/products/rea-georgia-kakheti.jpg",
+  "rea-armenia-tavush":         "/products/rea-armenia-tavush.jpg",
+  "rea-kyrgyzstan-issykkul":    "/products/rea-kyrgyzstan-issykkul.jpg",
+  // Middle East
+  "rea-oman-interior":          "/products/rea-oman-interior.png",
+  "rea-jordan-aqaba":           "/products/rea-jordan-aqaba.png",
+  // Africa
+  "rea-namibia-central":        "/products/rea-namibia-central.png",
+  "rea-botswana-rural":         "/products/rea-botswana-rural.png",
+  "rea-zambia-southern":        "/products/rea-zambia-southern.png",
+  "rea-tanzania-highland":      "/products/rea-tanzania-highland.png",
+  "rea-kenya-laikipia":         "/products/rea-kenya-laikipia.jpg",
+  "rea-morocco-atlas":          "/products/rea-morocco-atlas.jpg",
+  "rea-rwanda-kivu":            "/products/rea-rwanda-kivu.jpg",
+  "rea-southafrica-karoo":      "/products/rea-southafrica-karoo.jpg",
+  // Pacific
+  "rea-fiji-vanua-levu":        "/products/rea-fiji-vanua-levu.png",
+  "rea-vanuatu-espiritu":       "/products/rea-vanuatu-espiritu.jpg",
+  "rea-new-zealand-northland":  "/products/rea-new-zealand-northland.jpg",
+  "rea-australia-queensland":   "/products/rea-australia-queensland.png",
 };
 
 type Tier = "T0" | "T1" | "T2" | "T3";
