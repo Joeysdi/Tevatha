@@ -969,28 +969,24 @@ export function GlobeRightPanel({
           animate={isMobile ? { y: 0 } : { opacity: 1, x: 0 }}
           exit={isMobile ? { y: "100%" } : { opacity: 0, x: 16 }}
           transition={isMobile ? { type: "spring", damping: 30, stiffness: 280 } : { duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className={isMobile ? "fixed left-0 right-0 z-50 overflow-y-auto [&::-webkit-scrollbar]:hidden rounded-t-2xl" : "absolute right-4 z-20 [&::-webkit-scrollbar]:hidden"}
+          className={isMobile ? "fixed left-0 right-0 z-50 overflow-y-auto [&::-webkit-scrollbar]:hidden rounded-t-2xl" : "absolute right-0 top-0 bottom-0 z-20 flex flex-col [&::-webkit-scrollbar]:hidden"}
           style={isMobile ? {
             top: "calc(44dvh + 50px)",
             bottom: 0,
             borderTop: `2px solid ${activeCol}`,
             boxShadow: "0 -8px 40px rgba(0,0,0,0.75)",
           } : {
-            top: "48px",
             width: "360px",
-            transform: `scale(${panelScale})`,
-            transformOrigin: "top right",
           }}
           onClick={(e) => e.stopPropagation()}
         >
           <div
-            className="rounded-md overflow-hidden"
+            className="flex flex-col h-full overflow-hidden"
             style={{
-              background: "rgba(6,7,14,0.96)",
-              border: "1px solid rgba(255,255,255,0.06)",
+              background: "rgba(6,7,14,0.97)",
               borderLeft: `2px solid ${activeCol}`,
-              backdropFilter: "blur(8px)",
-              boxShadow: "0 8px 40px rgba(0,0,0,0.75)",
+              backdropFilter: "blur(12px)",
+              boxShadow: "-8px 0 40px rgba(0,0,0,0.6)",
             }}
           >
             {isMobile && (
@@ -1014,8 +1010,8 @@ export function GlobeRightPanel({
 
             {/* Scrollable content body */}
             <div
-              className="overflow-y-auto [&::-webkit-scrollbar]:hidden"
-              style={isMobile ? { overflowY: "auto" } : { maxHeight: `${Math.max(200, (containerH - 96) / panelScale)}px`, scrollbarWidth: "none" }}
+              className="overflow-y-auto flex-1 [&::-webkit-scrollbar]:hidden"
+              style={{ scrollbarWidth: "none" }}
             >
               {selectedCityIdx !== null && (
                 <CityDetailCard cityIdx={selectedCityIdx} onClose={onCloseCity} />
