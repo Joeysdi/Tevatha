@@ -290,6 +290,12 @@ export function TevatahSplash() {
                 >
                   85 SEC TO MIDNIGHT · 2026
                 </span>
+                <span
+                  className="font-mono text-[9px] tracking-[.12em] uppercase mt-0.5"
+                  style={{ color: "#1ae8a0" }}
+                >
+                  ♥ Free Nonprofit · No Paywalls
+                </span>
               </div>
             </motion.div>
 
