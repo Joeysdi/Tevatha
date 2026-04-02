@@ -39,9 +39,19 @@ export function SubIndexPanel({ subIndices, col, liveScore }: SubIndexPanelProps
           <div key={si.label}>
             {/* Label row */}
             <div className="flex items-center justify-between mb-1">
-              <span className="font-mono text-[9.5px] text-text-dim tracking-[.05em]">
-                {si.label}
-              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="font-mono text-[9.5px] text-text-dim tracking-[.05em]">
+                  {si.label}
+                </span>
+                {si.isLive && (
+                  <span
+                    className="font-mono text-[7px] tracking-[.1em] px-1 py-px rounded"
+                    style={{ background: "rgba(26,232,160,0.12)", color: "#1ae8a0" }}
+                  >
+                    LIVE
+                  </span>
+                )}
+              </div>
               <div className="flex items-center gap-2">
                 <span
                   className="font-mono text-[9px] text-text-mute2/60"
@@ -103,7 +113,7 @@ export function SubIndexPanel({ subIndices, col, liveScore }: SubIndexPanelProps
 
       {/* Methodology note */}
       <p className="font-mono text-[7.5px] text-text-mute2/35 mt-2 leading-relaxed">
-        Live inputs: VIX · DXY · T-bill · news pins · static anchors updated {new Date().toLocaleDateString("en-US", { month: "short", year: "numeric" })}
+        Live: VIX · DXY · T-bill · news feed · Static anchors: {new Date().toLocaleDateString("en-US", { month: "short", year: "numeric" })}
       </p>
     </div>
   );
