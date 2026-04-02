@@ -1,7 +1,6 @@
 // app/opengraph-image.tsx — dynamic OG image via Next.js ImageResponse
 import { ImageResponse } from "next/og";
 
-export const runtime = "edge";
 export const alt     = "Tevatha — Prepare. Operate. Endure.";
 export const size    = { width: 1200, height: 630 };
 export const contentType = "image/png";
