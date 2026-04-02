@@ -106,7 +106,7 @@ export function ProtocolNav() {
               transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
               style={{ overflow: "hidden" }}
               className="absolute top-full left-0 right-0 bg-void-1
-                         border-b border-border-protocol z-50 px-6 py-4"
+                         border-b border-border-protocol z-50 px-4 py-4"
             >
               <div className="flex flex-col gap-2">
                 {PROTOCOL_LINKS.map((l) => {
@@ -116,7 +116,7 @@ export function ProtocolNav() {
                       key={l.href}
                       href={l.href}
                       onClick={() => setOpen(false)}
-                      className={`font-mono text-[12px] py-2 transition-colors duration-150
+                      className={`font-mono text-[12px] py-3 transition-colors duration-150
                         ${active
                           ? "text-cyan-DEFAULT border-b border-cyan-DEFAULT/40"
                           : "text-text-dim hover:text-text-base"

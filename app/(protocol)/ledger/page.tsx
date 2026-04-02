@@ -412,7 +412,7 @@ export default function LedgerPage() {
   // ── Overview ────────────────────────────────────────────────────────────
   return (
     <FadeUp>
-    <div className="max-w-4xl mx-auto px-6 py-10 space-y-8">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-8">
 
       {/* Header */}
       <header className="border-b border-border-protocol pb-8">
@@ -563,10 +563,10 @@ function PinGate({
   const isCreate = mode === "create";
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-6">
+    <div className="min-h-[80vh] flex items-center justify-center px-4 sm:px-6">
       <FadeUp className="w-full max-w-sm">
         <div
-          className="rounded-2xl border border-cyan-border bg-void-1 p-10 relative overflow-hidden"
+          className="rounded-2xl border border-cyan-border bg-void-1 p-6 sm:p-10 relative overflow-hidden"
           style={{ boxShadow: "0 0 0 1px rgba(255,255,255,0.03) inset, 0 8px 40px rgba(0,212,255,0.08)" }}
         >
           {/* CYAN top accent line */}
@@ -595,6 +595,7 @@ function PinGate({
           >
             <input
               type="password"
+              inputMode="numeric"
               placeholder={isCreate ? t("ledger_new_pin") : "· · · ·"}
               value={pin}
               onChange={(e) => setPin(e.target.value)}
@@ -616,6 +617,7 @@ function PinGate({
             {isCreate && (
               <input
                 type="password"
+                inputMode="numeric"
                 placeholder={t("ledger_confirm_pin")}
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
@@ -684,7 +686,7 @@ function EntryDetail({
     ?? { id: entry.category, icon: "❓", encrypted: false };
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-10 space-y-6">
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-6">
       <button onClick={onBack}
         className="font-mono text-[10px] text-text-mute2 hover:text-gold-DEFAULT
                    transition-colors tracking-[.1em]">
@@ -848,7 +850,7 @@ function AddEntryForm({
     ?? CATEGORIES_STATIC[0];
 
   return (
-    <div className="max-w-2xl mx-auto px-6 py-10 space-y-6">
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-6">
       <button onClick={onCancel}
         className="font-mono text-[10px] text-text-mute2 hover:text-gold-DEFAULT
                    transition-colors tracking-[.1em]">

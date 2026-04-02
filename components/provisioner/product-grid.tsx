@@ -388,7 +388,7 @@ export function ProductGrid({ products }: ProductGridProps) {
                 onClick={() => setFilterOpen(true)}
                 className="lg:hidden flex items-center gap-1.5 font-mono text-[11px]
                            text-text-mute2 hover:text-text-base border border-border-protocol
-                           rounded-lg px-3 py-2 min-h-[40px] transition-colors"
+                           rounded-lg px-3 py-2 min-h-[44px] transition-colors"
               >
                 <span>≡</span>
                 <span>Filters</span>
@@ -409,7 +409,7 @@ export function ProductGrid({ products }: ProductGridProps) {
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortBy)}
                 className="font-mono text-[11px] text-text-dim bg-void-1 border border-border-protocol
-                           rounded-lg px-2.5 py-2 min-h-[40px] focus:outline-none
+                           rounded-lg px-2.5 py-2 min-h-[44px] focus:outline-none
                            focus:border-gold-protocol/60 transition-colors cursor-pointer"
               >
                 <option value="grade">Grade</option>

@@ -46,7 +46,7 @@ export function ProvisionerHeader() {
             <Link
               href="/contribute"
               className="hidden sm:flex items-center font-mono text-[11px] text-text-mute2
-                         border border-border-protocol rounded-lg px-3 py-1.5 min-h-[40px]
+                         border border-border-protocol rounded-lg px-3 py-1.5 min-h-[44px]
                          hover:border-gold-protocol/40 hover:text-text-base transition-all duration-200"
             >
               Contribute
@@ -57,12 +57,12 @@ export function ProvisionerHeader() {
               href="/donate"
               className="flex items-center gap-1.5 font-mono text-[11px] font-bold
                          text-void-0 bg-gold-protocol hover:bg-gold-bright
-                         rounded-lg px-2.5 sm:px-3 py-1.5 min-h-[40px]
+                         rounded-lg px-2.5 sm:px-3 py-1.5 min-h-[44px]
                          hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(201,168,76,0.35)]
                          transition-all duration-200"
             >
               <span>♥</span>
-              <span className="hidden sm:inline">Donate</span>
+              <span>Donate</span>
             </Link>
 
             {/* Auth */}
@@ -84,7 +84,7 @@ export function ProvisionerHeader() {
                   <button
                     className="font-mono text-[11px] text-text-mute2 hover:text-gold-bright
                                border border-border-protocol rounded-lg px-2.5 sm:px-3 py-1.5
-                               min-h-[40px] hover:border-gold-protocol/40 transition-all duration-200"
+                               min-h-[44px] hover:border-gold-protocol/40 transition-all duration-200"
                   >
                     Sign In
                   </button>
@@ -96,7 +96,7 @@ export function ProvisionerHeader() {
             <Link
               href="/watchtower"
               className="hidden sm:inline font-mono text-[11px] text-text-mute2 hover:text-gold-bright
-                         border border-border-protocol rounded-lg px-3 py-1.5 min-h-[40px]
+                         border border-border-protocol rounded-lg px-3 py-1.5 min-h-[44px]
                          hover:border-gold-protocol/40 transition-all duration-200 flex items-center"
             >
               ← Watchtower

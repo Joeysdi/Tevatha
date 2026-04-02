@@ -157,7 +157,7 @@ export function EnvoyDashboard({ commissions, stats, ambassadorTier, userId }: P
         </div>
 
         {commissions.length === 0 ? (
-          <div className="border border-border-protocol rounded-xl p-10 text-center bg-void-1">
+          <div className="border border-border-protocol rounded-xl p-6 sm:p-10 text-center bg-void-1">
             <p className="font-mono text-[10px] text-text-mute2 tracking-[.12em] uppercase mb-2">
               {t("envoy_no_history")}
             </p>

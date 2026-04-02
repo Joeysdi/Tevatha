@@ -278,7 +278,7 @@ export default function GearPage() {
             <button
               key={d.id}
               onClick={() => setActiveDomain(d)}
-              className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 min-h-[40px] rounded-xl font-mono
+              className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 min-h-[44px] rounded-xl font-mono
                           text-[11px] font-bold border transition-all duration-150 whitespace-nowrap
                 ${activeDomain.id === d.id
                   ? "bg-void-1 border-[var(--dc)]"
