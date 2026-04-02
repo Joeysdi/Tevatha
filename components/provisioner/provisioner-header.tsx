@@ -4,8 +4,6 @@
 import Link from "next/link";
 import { UserButton, SignInButton, useUser } from "@clerk/nextjs";
 
-const DONATE_URL = "https://tronscan.org/#/address/TMJwucn2aQpzfLBabAPzr8x6dH7ViZ1Rqb";
-
 export function ProvisionerHeader() {
   const { isSignedIn, isLoaded } = useUser();
 
@@ -45,10 +43,8 @@ export function ProvisionerHeader() {
           {/* Right: donate + auth + back link */}
           <div className="flex items-center gap-2 sm:gap-3">
             {/* Donate button */}
-            <a
-              href={DONATE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href="/donate"
               className="flex items-center gap-1.5 font-mono text-[11px] font-bold
                          text-void-0 bg-gold-protocol hover:bg-gold-bright
                          rounded-lg px-2.5 sm:px-3 py-1.5 min-h-[40px]
@@ -56,8 +52,8 @@ export function ProvisionerHeader() {
                          transition-all duration-200"
             >
               <span>♥</span>
-              <span className="hidden sm:inline">Donate to Creator</span>
-            </a>
+              <span className="hidden sm:inline">Donate</span>
+            </Link>
 
             {/* Auth */}
             {isLoaded && (

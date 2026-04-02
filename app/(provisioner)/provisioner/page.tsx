@@ -200,7 +200,7 @@ export default function ShopPage() {
           </FadeUp>
         </div>
 
-        {/* Donate */}
+        {/* Donate CTA */}
         <div>
           <div className="flex items-center gap-3 mb-4">
             <h2 className="font-syne font-bold text-[17px] text-text-base">Support This Project</h2>
@@ -214,36 +214,23 @@ export default function ShopPage() {
               className="absolute top-0 left-0 right-0 h-px"
               style={{ background: "linear-gradient(90deg,#f0c842,#c9a84c,transparent)" }}
             />
-            <p className="font-mono text-[9.5px] text-gold-protocol tracking-[.2em] uppercase mb-3">
-              Nonprofit · Free Resource
-            </p>
             <p className="font-syne font-bold text-[17px] text-text-base mb-2 leading-snug">
               Tevatha is free.<br />
               <span className="text-gold-protocol">Your donation keeps it alive.</span>
             </p>
             <p className="text-[12px] text-text-dim leading-relaxed mb-5 max-w-sm">
-              No subscriptions. No paywalls. If this resource helps you prepare, consider a small contribution via USDT on Tron (TRC-20).
+              No subscriptions. No paywalls. If this resource helps you prepare, consider a small USDT contribution.
             </p>
-            <div className="mb-4 bg-void-2 border border-border-protocol rounded-lg px-3 py-2.5 flex items-center gap-2">
-              <span className="font-mono text-[10px] text-text-mute2 select-all break-all">
-                TMJwucn2aQpzfLBabAPzr8x6dH7ViZ1Rqb
-              </span>
-            </div>
-            <a
-              href="https://tronscan.org/#/address/TMJwucn2aQpzfLBabAPzr8x6dH7ViZ1Rqb"
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href="/donate"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-syne font-bold
                          text-[13px] tracking-[.06em] bg-gold-protocol text-void-0
                          hover:bg-gold-bright hover:-translate-y-0.5
                          hover:shadow-[0_8px_24px_rgba(201,168,76,0.35)]
                          transition-all duration-200"
             >
-              ♥ Donate to Creator
-            </a>
-            <p className="font-mono text-[9px] text-text-mute2 mt-3">
-              USDT · TRC-20 · Tron network
-            </p>
+              ♥ Donate to Creator →
+            </Link>
           </div>
         </div>
       </section>
