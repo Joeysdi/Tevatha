@@ -1,6 +1,7 @@
 // app/(provisioner)/provisioner/checklist/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PrintButton } from "@/components/provisioner/print-button";
 
 export const metadata: Metadata = {
   title: "Critical Gear Checklist",
@@ -78,14 +79,7 @@ export default function ChecklistPage() {
           These are the minimum items needed to sustain life and communication in a grid-down event.
           Check off each item as you acquire it. Links go directly to the manufacturer.
         </p>
-        <button
-          onClick={() => window.print()}
-          className="mt-4 font-mono text-[10px] font-bold px-4 py-2 rounded-lg
-                     border border-gold-protocol/40 text-gold-protocol
-                     hover:bg-gold-protocol/10 transition-colors print:hidden"
-        >
-          Print / Save as PDF →
-        </button>
+        <PrintButton />
       </div>
 
       {/* Checklist */}
