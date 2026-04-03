@@ -94,7 +94,7 @@ const THREAT_DOMAINS: ThreatDomainDef[] = [
     borderHex:"#c9a84c",
     outcome:  "You stay connected when the internet and cell networks go down.",
     rationale:"When a crisis hits, phone networks and the internet are often the first things to fail. Satellite messengers, two-way radios, and emergency weather radios let you send messages, get updates, and coordinate with your group without any infrastructure.",
-    skus:     ["COM-001","COM-002","COM-003","COM-004","COM-005","COM-006","COM-007","COM-008","COM-009","COM-010","COM-011","COM-012","COM-013","COM-014","COM-015","COM-016","COM-017","COM-018","COM-019","COM-020"],
+    skus:     ["COM-001","COM-002","COM-003","COM-004","COM-005","COM-006","COM-007","COM-008","COM-009","COM-010","COM-011","COM-012","COM-013","COM-014","COM-015","COM-016","COM-017","COM-018","COM-019","COM-020","COM-021","COM-022","COM-023"],
   },
   {
     id:       "medical",
@@ -104,7 +104,7 @@ const THREAT_DOMAINS: ThreatDomainDef[] = [
     borderHex:"#e84040",
     outcome:  "You can treat serious injuries and illness without a hospital.",
     rationale:"When hospitals are overwhelmed or unreachable, your ability to treat bleeding, wounds, and illness at home could be the difference between life and death. Military-grade trauma kits, hemostatic agents, and a comprehensive medical reference are the foundation.",
-    skus:     ["MED-001","MED-002","MED-003","MED-004","MED-005","MED-006","MED-007","MED-008","MED-009","MED-010","MED-011","MED-012","MED-013","MED-014","MED-015","MED-016","MED-017","MED-018","MED-019","MED-020"],
+    skus:     ["MED-001","MED-002","MED-003","MED-004","MED-005","MED-006","MED-007","MED-008","MED-009","MED-010","MED-011","MED-012","MED-013","MED-014","MED-015","MED-016","MED-017","MED-018","MED-019","MED-020","MED-021","MED-022","MED-023"],
   },
   {
     id:       "energy",
