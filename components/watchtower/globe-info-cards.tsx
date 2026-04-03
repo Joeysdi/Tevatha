@@ -12,6 +12,8 @@ import { type GateStatus } from "@/lib/watchtower/gate-status";
 import { GEAR } from "@/lib/watchtower/data-gear";
 import { DOMAIN_COLORS } from "@/lib/watchtower/domain-colors";
 import { DomainLiveFeedCard } from "./domain-live-feed-card";
+import { filterNewsByDomain, DOMAIN_ASSETS } from "@/lib/watchtower/domain-live-feed";
+import { fetchLivePrices, type LivePrices, type AssetPrice } from "@/lib/watchtower/prices-fetch";
 import { COMMODITY_PINS } from "@/lib/watchtower/commodity-pins";
 import { NEWS_FEED_PINS } from "@/lib/watchtower/news-feed-pins";
 import type { NewsFeedPin } from "@/lib/watchtower/news-feed-pins";
@@ -916,6 +918,412 @@ function PanelShopFooter({ domainId, col, onOpenShop }: { domainId: string; col:
   );
 }
 
+// ── Score color helper (mirrors sub-index-bar) ────────────────────────────────
+function scoreCol(score: number): string {
+  if (score >= 80) return "#e84040";
+  if (score >= 65) return "#f0a500";
+  if (score >= 45) return "#c9a84c";
+  return "#1ae8a0";
+}
+
+// ── Unified domain panel ───────────────────────────────────────────────────────
+// One seamless narrative: Threat → Score Intelligence → Live Signals → Action
+function DomainUnifiedPanel({
+  domainId,
+  col,
+  domainScores,
+  newsFeedPins,
+  onNewsClick,
+  gateStatuses,
+  onOpenShop,
+}: {
+  domainId:    string;
+  col:         string;
+  domainScores?: DomainScores;
+  newsFeedPins: NewsFeedPin[];
+  onNewsClick:  (newsId: string) => void;
+  gateStatuses?: GateStatus[];
+  onOpenShop:  () => void;
+}) {
+  const domain    = DOMAINS.find((d) => d.id === domainId);
+  const scores    = domainScores?.[domainId as keyof DomainScores];
+  const gateIds   = DOMAIN_GATES[domainId] ?? [];
+  const gates     = GATES.filter((g) => gateIds.includes(g.id));
+  const statusMap = Object.fromEntries((gateStatuses ?? []).map(s => [s.id, s]));
+  const provDomain = DOMAIN_PROV_MAP[domainId] ?? "nuclear";
+  const shopItems  = getDomainGear(domainId, 4);
+  const shopTotal  = getDomainGearTotal(domainId);
+  const assetKeys  = DOMAIN_ASSETS[domainId] ?? [];
+  const newsItems  = filterNewsByDomain(newsFeedPins, domainId).slice(0, 5);
+
+  const [prices, setPrices]   = useState<LivePrices | null>(null);
+  const [speaking, setSpeaking] = useState(false);
+  const uttRef = useRef<SpeechSynthesisUtterance | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      try { const p = await fetchLivePrices(); if (!cancelled) setPrices(p); } catch {}
+    }
+    load();
+    const id = setInterval(load, 60_000);
+    return () => { cancelled = true; clearInterval(id); };
+  }, []);
+
+  useEffect(() => { return () => { window.speechSynthesis?.cancel(); }; }, []);
+
+  const handleSpeak = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (typeof window === "undefined" || !window.speechSynthesis) return;
+    if (speaking) { window.speechSynthesis.cancel(); setSpeaking(false); return; }
+    const script = DOMAIN_VOICE[domainId];
+    if (!script) return;
+    window.speechSynthesis.cancel();
+    const utt = new SpeechSynthesisUtterance(script);
+    utt.lang = "en-US"; utt.rate = 0.82; utt.pitch = 0.65; utt.volume = 1;
+    const trySetVoice = () => {
+      const v = window.speechSynthesis.getVoices();
+      const voice = pickCommandVoice(v);
+      if (voice) utt.voice = voice;
+    };
+    trySetVoice();
+    if (window.speechSynthesis.getVoices().length === 0) {
+      window.speechSynthesis.onvoiceschanged = () => { trySetVoice(); window.speechSynthesis.onvoiceschanged = null; };
+    }
+    utt.onstart = () => setSpeaking(true);
+    utt.onend   = () => setSpeaking(false);
+    utt.onerror = () => setSpeaking(false);
+    uttRef.current = utt;
+    window.speechSynthesis.speak(utt);
+    setSpeaking(true);
+  };
+
+  if (!domain) return null;
+
+  return (
+    <div className="flex flex-col">
+
+      {/* ── 1. THREAT HEADER ──────────────────────────────────────────────── */}
+      <div className="px-4 pt-4 pb-3">
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <div className="flex items-center gap-2.5">
+            <span className="text-[20px] leading-none flex-shrink-0">{domain.icon}</span>
+            <div>
+              <p className="font-mono text-[10px] tracking-[.16em] uppercase mb-0.5" style={{ color: col }}>
+                ARK SCORE · {domain.score}/100 · {domain.trend}
+              </p>
+              <p className="font-syne font-bold text-[14px] text-text-base leading-none">{domain.label}</p>
+              <span
+                className="inline-block mt-1 font-mono text-[9px] px-1.5 py-0.5 rounded border font-bold"
+                style={{ color: col, borderColor: `${col}40`, background: `${col}15` }}
+              >
+                {domain.level}
+              </span>
+            </div>
+          </div>
+          <button
+            onClick={handleSpeak}
+            title={speaking ? "Stop narration" : "Play domain briefing"}
+            className="flex items-center gap-1 px-2 py-1 rounded-lg border font-mono text-[10px] transition-all duration-150 flex-shrink-0"
+            style={speaking
+              ? { color: col, borderColor: `${col}60`, background: `${col}18` }
+              : { color: "rgba(150,165,180,0.6)", borderColor: "rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.03)" }
+            }
+          >
+            {speaking ? (
+              <>
+                <motion.span animate={{ opacity: [1, 0.3, 1] }} transition={{ repeat: Infinity, duration: 1.2 }} style={{ color: col }}>■</motion.span>
+                <span style={{ color: col }}>STOP</span>
+              </>
+            ) : (
+              <>🔊 <span>BRIEF</span></>
+            )}
+          </button>
+        </div>
+        <p className="font-mono text-[11.5px] text-text-dim leading-relaxed">{domain.summary}</p>
+      </div>
+
+      {/* ── 2. SCORE INTELLIGENCE — bars + driving signals woven together ── */}
+      <div
+        className="mx-3 mb-3 rounded-xl overflow-hidden"
+        style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)" }}
+      >
+        {/* Section header */}
+        <div
+          className="flex items-center justify-between px-3 py-2"
+          style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}
+        >
+          <div className="flex items-center gap-1.5">
+            <span className="w-1 h-3 rounded-full" style={{ background: col }} />
+            <span className="font-mono text-[9px] tracking-[.16em] uppercase" style={{ color: `${col}99` }}>
+              Score Intelligence
+            </span>
+          </div>
+          {scores && (
+            <span className="font-mono text-[9px] text-text-mute2/50">
+              COMPOSITE <span className="text-text-dim font-bold">{scores.live}/100</span>
+            </span>
+          )}
+        </div>
+
+        {/* Sub-index bars */}
+        {scores?.subIndices.map((si, i) => (
+          <div
+            key={si.label}
+            className="px-3 pt-2.5 pb-2"
+            style={{ borderBottom: i < (scores.subIndices.length - 1) ? "1px solid rgba(255,255,255,0.04)" : undefined }}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center gap-1.5">
+                <span className="font-mono text-[9.5px] text-text-dim tracking-[.04em]">{si.label}</span>
+                {si.isLive && (
+                  <span className="font-mono text-[7px] tracking-[.1em] px-1 py-px rounded"
+                    style={{ background: "rgba(26,232,160,0.12)", color: "#1ae8a0" }}>LIVE</span>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-[8.5px] text-text-mute2/50">×{Math.round(si.weight * 100)}%</span>
+                <span className="font-mono text-[10px] font-bold tabular-nums w-6 text-right"
+                  style={{ color: scoreCol(si.score) }}>{si.score}</span>
+              </div>
+            </div>
+            <div className="relative h-1 rounded-full overflow-hidden mb-0.5" style={{ background: "rgba(255,255,255,0.05)" }}>
+              <div
+                className="absolute inset-y-0 left-0 rounded-full transition-all duration-700"
+                style={{ width: `${si.score}%`, background: `linear-gradient(90deg,${scoreCol(si.score)}66,${scoreCol(si.score)})` }}
+              />
+            </div>
+            <p className="font-mono text-[7.5px] text-text-mute2/35 truncate">{si.source}</p>
+          </div>
+        ))}
+
+        {/* Contribution row */}
+        {scores && (
+          <div className="px-3 py-2 flex items-center justify-between flex-wrap gap-1"
+            style={{ borderTop: "1px solid rgba(255,255,255,0.05)", background: "rgba(0,0,0,0.15)" }}>
+            <div className="flex gap-1.5 flex-wrap">
+              {scores.subIndices.map((si) => (
+                <span key={si.label} className="font-mono text-[8px] text-text-mute2/50">
+                  <span style={{ color: scoreCol(si.score) }}>{si.contribution}</span>
+                  <span className="text-text-mute2/30"> +</span>
+                </span>
+              ))}
+            </div>
+            <span className="font-mono text-[10px] font-bold" style={{ color: col }}>= {scores.live}</span>
+          </div>
+        )}
+
+        {/* Active signals — driving the scores above */}
+        {newsItems.length > 0 && (
+          <div style={{ borderTop: `2px solid ${col}30` }}>
+            <div className="flex items-center gap-1.5 px-3 pt-2.5 pb-1">
+              <span className="w-1.5 h-1.5 rounded-full animate-pulse flex-shrink-0"
+                style={{ background: col, boxShadow: `0 0 4px ${col}` }} />
+              <span className="font-mono text-[9px] tracking-[.16em] uppercase" style={{ color: `${col}99` }}>
+                Signals Driving This Score
+              </span>
+            </div>
+            <div className="px-3 pb-2.5 space-y-0">
+              {newsItems.map((pin) => {
+                const tierCol = TIER_HEX[pin.tier] ?? "#c9a84c";
+                const time    = typeof pin.date === "string" && pin.date.includes("T")
+                  ? relativeTime(pin.date) : pin.date;
+                return (
+                  <button
+                    key={pin.id}
+                    onClick={(e) => { e.stopPropagation(); onNewsClick(pin.id); }}
+                    className="w-full flex items-start gap-2 py-1.5 text-left rounded transition-colors hover:bg-white/[0.04] group"
+                  >
+                    <span className="font-mono text-[8px] flex-shrink-0 mt-0.5" style={{ color: col }}>▸</span>
+                    <span className="font-mono text-[8.5px] text-text-dim leading-snug flex-1 min-w-0 group-hover:text-text-base transition-colors line-clamp-2">
+                      {pin.headline}
+                    </span>
+                    <div className="flex flex-col items-end gap-0.5 flex-shrink-0 ml-1">
+                      <span className="font-mono text-[7px] text-text-mute2/50">{time}</span>
+                      <span className="font-mono text-[6.5px] px-1 py-0.5 rounded border font-bold leading-none"
+                        style={{ color: tierCol, borderColor: `${tierCol}40`, background: `${tierCol}12` }}>
+                        {pin.tier.toUpperCase()}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Market signals (price tickers) */}
+        {assetKeys.length > 0 && prices && (
+          <div className="px-3 py-2"
+            style={{ borderTop: "1px solid rgba(255,255,255,0.05)", background: "rgba(0,0,0,0.1)" }}>
+            <p className="font-mono text-[8px] tracking-[.14em] uppercase text-text-mute2/40 mb-1">Market Signals</p>
+            {assetKeys.map((key) => {
+              const p     = prices[key as keyof LivePrices] as AssetPrice | undefined;
+              const ok    = p?.ok ?? false;
+              const val   = p?.price ?? 0;
+              const chg   = p?.change ?? 0;
+              const label = key === "xau" ? "XAU" : key === "wti" ? "WTI" : key === "btc" ? "BTC" : key === "usdRub" ? "USD/RUB" : key.toUpperCase();
+              let displayVal = "--";
+              if (ok) {
+                if (key === "btc") displayVal = `$${val.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+                else if (key === "usdRub") displayVal = val.toFixed(2);
+                else displayVal = `$${val.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+              }
+              const up = chg > 0;
+              const chgCol = up ? "#1ae8a0" : "#e84040";
+              return (
+                <div key={key} className="flex items-center justify-between gap-2 py-0.5">
+                  <span className="font-mono text-[8.5px] text-text-mute2/70 tracking-[.08em]">{label}</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-mono text-[9px] tabular-nums font-bold"
+                      style={{ color: ok ? "#c9c9c9" : "rgba(150,165,180,0.35)" }}>{displayVal}</span>
+                    {ok && key !== "usdRub" && chg !== 0 && (
+                      <span className="font-mono text-[8px]" style={{ color: chgCol }}>
+                        {up ? "▲" : "▼"}{Math.abs(chg).toFixed(2)}%
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* ── 3. KEY DRIVERS ───────────────────────────────────────────────── */}
+      <div className="px-4 pb-3">
+        <p className="font-mono text-[9px] tracking-[.16em] uppercase mb-2" style={{ color: `${col}80` }}>
+          Key Drivers
+        </p>
+        <div className="space-y-1.5">
+          {domain.drivers.slice(0, 3).map((drv, i) => (
+            <div key={i} className="flex items-start gap-2">
+              <span className="font-mono text-[11px] flex-shrink-0 mt-0.5 font-bold" style={{ color: col }}>→</span>
+              <p className="font-mono text-[11px] text-text-mute2 leading-snug">{drv}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── 4. RESPONSE PROTOCOL + SHOP ──────────────────────────────────── */}
+      {gates.length > 0 ? (
+        <div className="px-4 pb-4">
+          <p className="font-mono text-[9px] tracking-[.16em] uppercase mb-2.5" style={{ color: `${col}80` }}>
+            ⚡ Response Protocol
+          </p>
+          <div className="space-y-2.5">
+            {gates.map((gate) => {
+              const gc  = TIER_HEX[gate.tier] ?? "#c9a84c";
+              const gs  = statusMap[gate.id];
+              const dot = gs?.status === "triggered" ? "#e84040" : gs?.status === "warning" ? "#f0a500" : "rgba(150,165,180,0.4)";
+              const pulse = gs?.status === "triggered";
+              return (
+                <div key={gate.id} className="rounded-lg px-3 py-2.5"
+                  style={{ background: "rgba(255,255,255,0.025)", border: `1px solid ${gc}18`, borderLeft: `2px solid ${gc}60` }}>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${pulse ? "animate-pulse" : ""}`}
+                      style={{ background: dot, boxShadow: pulse ? `0 0 6px ${dot}` : "none" }} />
+                    <span className="font-mono text-[9px] font-bold px-1.5 py-0.5 rounded border flex-shrink-0"
+                      style={{ color: gc, borderColor: `${gc}40`, background: `${gc}15` }}>
+                      {gate.id} · {gate.tier.toUpperCase()}
+                    </span>
+                    <span className="font-mono text-[9.5px] text-text-mute2/60">{gate.window}</span>
+                    {gs && gs.confidence > 0 && (
+                      <span className="ml-auto font-mono text-[8px] tabular-nums flex-shrink-0" style={{ color: dot }}>
+                        {Math.round(gs.confidence * 100)}%
+                      </span>
+                    )}
+                  </div>
+                  <p className="font-mono text-[10.5px] text-text-base leading-snug mb-0.5">{gate.trigger}</p>
+                  {gs && (gs.status !== "monitoring" || gs.id === "G5") && gs.reason && (
+                    <p className="font-mono text-[9px] leading-snug mb-0.5 italic" style={{ color: `${dot}cc` }}>{gs.reason}</p>
+                  )}
+                  <p className="font-mono text-[10.5px] font-bold leading-snug" style={{ color: gc }}>{gate.action}</p>
+                  {(gs?.status === "warning" || gs?.status === "triggered") && (() => {
+                    const items  = getGateGear(gate.id);
+                    const config = GATE_GEAR[gate.id];
+                    if (!items.length || !config) return null;
+                    return (
+                      <div className="mt-2 pt-2 border-t space-y-1" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+                        <p className="font-mono text-[7px] tracking-[.14em] uppercase mb-1" style={{ color: `${dot}80` }}>{config.label}</p>
+                        {items.map((item, i) => (
+                          <div key={i} className="flex items-center gap-2">
+                            <span className="font-mono text-[7px] px-1 py-0.5 rounded border border-border-protocol bg-void-3 text-text-mute2 flex-shrink-0">{item.tier}</span>
+                            <p className="font-mono text-[9px] text-text-base flex-1 truncate">{item.name}</p>
+                            <span className="font-mono text-[8px] text-gold-protocol flex-shrink-0 tabular-nums">{item.price}</span>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Shop CTA woven into the protocol section */}
+          {shopItems.length > 0 && (
+            <div className="mt-3 pt-3.5 -mx-4 px-4 pb-0"
+              style={{ background: "rgba(201,168,76,0.04)", borderTop: "1px solid rgba(201,168,76,0.10)" }}>
+              <p className="font-mono text-[9px] tracking-[.14em] uppercase mb-2" style={{ color: "rgba(201,168,76,0.6)" }}>
+                Fix the Risk — Critical Gear
+              </p>
+              <div className="space-y-2 mb-3.5">
+                {shopItems.map((item, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <span className="font-mono text-[9px] px-1 py-0.5 rounded border border-border-protocol bg-void-3 text-text-mute2 flex-shrink-0">{item.tier}</span>
+                    <p className="font-mono text-[11px] text-text-base flex-1 truncate">{item.name}</p>
+                    <span className="font-mono text-[10px] text-gold-protocol flex-shrink-0 tabular-nums">{item.price}</span>
+                  </div>
+                ))}
+              </div>
+              <Link
+                href={`/provisioner/gear?domain=${provDomain}`}
+                onClick={(e) => e.stopPropagation()}
+                className="block w-full text-center font-mono text-[10px] font-bold py-2.5 rounded-lg
+                           border border-gold-dim bg-gold-glow text-gold-bright
+                           hover:-translate-y-px hover:shadow-[0_4px_20px_rgba(201,168,76,0.35)]
+                           transition-all duration-150 mb-3.5"
+              >
+                {shopTotal} items ready for this threat →
+              </Link>
+            </div>
+          )}
+        </div>
+      ) : (
+        /* No gates — just the shop CTA */
+        shopItems.length > 0 && (
+          <div className="px-4 pt-0 pb-4"
+            style={{ background: "rgba(201,168,76,0.04)", borderTop: "1px solid rgba(201,168,76,0.10)" }}>
+            <p className="font-mono text-[9px] tracking-[.14em] uppercase mb-2 pt-3.5" style={{ color: "rgba(201,168,76,0.6)" }}>
+              Fix the Risk — Critical Gear
+            </p>
+            <div className="space-y-2 mb-3.5">
+              {shopItems.map((item, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <span className="font-mono text-[9px] px-1 py-0.5 rounded border border-border-protocol bg-void-3 text-text-mute2 flex-shrink-0">{item.tier}</span>
+                  <p className="font-mono text-[11px] text-text-base flex-1 truncate">{item.name}</p>
+                  <span className="font-mono text-[10px] text-gold-protocol flex-shrink-0 tabular-nums">{item.price}</span>
+                </div>
+              ))}
+            </div>
+            <Link
+              href={`/provisioner/gear?domain=${provDomain}`}
+              onClick={(e) => e.stopPropagation()}
+              className="block w-full text-center font-mono text-[10px] font-bold py-2.5 rounded-lg
+                         border border-gold-dim bg-gold-glow text-gold-bright
+                         hover:-translate-y-px hover:shadow-[0_4px_20px_rgba(201,168,76,0.35)]
+                         transition-all duration-150"
+            >
+              {shopTotal} items ready for this threat →
+            </Link>
+          </div>
+        )
+      )}
+    </div>
+  );
+}
+
 // ── Main export ───────────────────────────────────────────────────────────────
 
 interface GlobeRightPanelProps {
@@ -1071,31 +1479,17 @@ export function GlobeRightPanel({
                   </>
                 );
               })()}
-              {domainId && !scenarioId && !selectedSignalIdx && !selectedGateId && !selectedPsychZone && !selectedCityIdx && !selectedCommodityId && !selectedNewsId && (() => {
-                const col = DOMAIN_COLORS[domainId] ?? '#c9a84c';
-                const gateIds = DOMAIN_GATES[domainId] ?? [];
-                return (
-                  <>
-                    <DomainInfoCard domainId={domainId} col={col} />
-                    {domainScores && domainScores[domainId as keyof DomainScores] && (
-                      <>
-                        <Divider />
-                        <SubIndexPanel
-                          subIndices={domainScores[domainId as keyof DomainScores].subIndices}
-                          col={col}
-                          liveScore={domainScores[domainId as keyof DomainScores].live}
-                        />
-                      </>
-                    )}
-                    <Divider />
-                    <DomainLiveFeedCard domainId={domainId} newsFeedPins={newsFeedPins} onNewsClick={onNewsClick} col={col} compact={true} />
-                    {gateIds.length > 0
-                      ? <><Divider /><DomainGatesCard domainId={domainId} col={col} gateStatuses={gateStatuses} showShop onOpenShop={onOpenShop} /></>
-                      : <><Divider /><PanelShopFooter domainId={domainId} col={col} onOpenShop={onOpenShop} /></>
-                    }
-                  </>
-                );
-              })()}
+              {domainId && !scenarioId && !selectedSignalIdx && !selectedGateId && !selectedPsychZone && !selectedCityIdx && !selectedCommodityId && !selectedNewsId && (
+                <DomainUnifiedPanel
+                  domainId={domainId}
+                  col={DOMAIN_COLORS[domainId] ?? '#c9a84c'}
+                  domainScores={domainScores}
+                  newsFeedPins={newsFeedPins}
+                  onNewsClick={onNewsClick}
+                  gateStatuses={gateStatuses}
+                  onOpenShop={onOpenShop}
+                />
+              )}
             </div>
           </div>
         </motion.div>
