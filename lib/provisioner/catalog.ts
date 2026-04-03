@@ -180,7 +180,7 @@ export const CATALOG: Product[] = [
     buildNote:"Keep all cans full at all times. Rotate fuel every quarter using PRI-G fuel stabilizer.",
     stripePriceId:"price_1TE8RUAQV21Gk5RwwZCWF6PZ",
     imageSlug:"wavian-jerry",
-    externalUrl:"https://wavian.us/",
+    externalUrl:"https://www.amazon.com/s?k=wavian+nato+jerry+can",
     gearLayers:{ durability:100, grid_independence:100, field_repairability:95, value_density:98, supply_chain:92 },
   },
   {
@@ -540,7 +540,7 @@ export const CATALOG: Product[] = [
     buildNote:"Keep mounted to any vehicle used for evacuation routes. Critical in regions with poor roads or winter conditions. Works on 2WD and 4WD vehicles.",
     stripePriceId:"price_placeholder_MOB005",
     imageSlug:"tred-gt-recovery",
-    externalUrl:"https://tredpro.com/",
+    externalUrl:"https://www.amazon.com/s?k=TRED+GT+recovery+boards",
     gearLayers:{ durability:96, grid_independence:100, field_repairability:88, value_density:90, supply_chain:82 },
   },
   {
@@ -1200,7 +1200,7 @@ export const CATALOG: Product[] = [
     buildNote:"The missing antenna for the Yaesu FT-891 (COM-012). Without a proper antenna, HF radio range is limited to a few miles. With this antenna erected, the FT-891 can reach the entire continental US and beyond on a single transmission.",
     stripePriceId:"price_placeholder_COM015",
     imageSlug:"comet-cha250b",
-    externalUrl:"https://www.cometantenna.com/cha250b/",
+    externalUrl:"https://www.dxengineering.com/parts/cma-cha250b",
     gearLayers:{ durability:88, grid_independence:100, field_repairability:72, value_density:88, supply_chain:72 },
   },
   {
@@ -1238,7 +1238,7 @@ export const CATALOG: Product[] = [
     buildNote:"Distributed free by some state governments but often out of stock. The US FDA recommends KI for everyone within 10 miles of a nuclear plant and as a fallout countermeasure after detonation. Take within 3–4 hours of exposure. Does NOT protect against other radiation types — shelter and distance are primary, KI is supplemental.",
     stripePriceId:"price_placeholder_MED015",
     imageSlug:"iosat-ki-tablets",
-    externalUrl:"https://www.anbexinc.com/iosat.htm",
+    externalUrl:"https://www.amazon.com/s?k=IOSAT+potassium+iodide+tablets+130mg",
     gearLayers:{ durability:96, grid_independence:100, field_repairability:100, value_density:99, supply_chain:80 },
   },
   {
@@ -1851,7 +1851,7 @@ export const CATALOG: Product[] = [
     buildNote:"Organized, stackable, ruggedized vehicle storage transforms a panicked bug-out into a systematic load-and-go. Label by priority: medical, comms, water, food, documents.",
     stripePriceId:"price_placeholder_MOB019",
     imageSlug:"frontrunner-wolfpack-pro-4pk",
-    externalUrl:"https://www.frontrunneroutfitters.com/en/us/wolf-pack-pro.html",
+    externalUrl:"https://www.amazon.com/s?k=Front+Runner+Wolf+Pack+Pro",
     gearLayers:{ durability:92, grid_independence:100, field_repairability:95, value_density:88, supply_chain:80 },
   },
   {
@@ -1877,7 +1877,7 @@ export const CATALOG: Product[] = [
     buildNote:"Self-recovery when MAXTRAX boards aren't enough. A winch on your primary bug-out vehicle means no terrain permanently stops you — wrap a tree and pull yourself out.",
     stripePriceId:"price_placeholder_MOB021",
     imageSlug:"warn-zeon-10s",
-    externalUrl:"https://www.warn.com/zeon-10-s",
+    externalUrl:"https://www.warn.com/products/electric-winches/zeon-10-s",
     gearLayers:{ durability:96, grid_independence:100, field_repairability:78, value_density:80, supply_chain:76 },
   },
 
@@ -1905,7 +1905,7 @@ export const CATALOG: Product[] = [
     buildNote:"You don't need to boil water — you only need to pasteurize it (65°C for 1 min kills everything). WAPIs save fuel by telling you exactly when water is safe, no rolling boil required.",
     stripePriceId:"price_placeholder_WAT020",
     imageSlug:"wapi-10pk",
-    externalUrl:"https://www.solarcookers.org/wapi",
+    externalUrl:"https://www.amazon.com/s?k=WAPI+water+pasteurization+indicator",
     gearLayers:{ durability:88, grid_independence:100, field_repairability:100, value_density:99, supply_chain:90 },
   },
   {
@@ -1918,7 +1918,7 @@ export const CATALOG: Product[] = [
     buildNote:"The most versatile inline filter available. Screw it onto any outdoor spigot, garden hose, or stream coupling and get clean water flow-through. Ideal for base camp plumbing.",
     stripePriceId:"price_placeholder_WAT021",
     imageSlug:"sagan-xstream-inline",
-    externalUrl:"https://saganlife.com/products/xstream-inline-water-filter",
+    externalUrl:"https://www.amazon.com/s?k=Sagan+XStream+inline+water+filter",
     gearLayers:{ durability:87, grid_independence:100, field_repairability:88, value_density:94, supply_chain:84 },
   },
 
