@@ -261,6 +261,8 @@ export default function GearPage() {
               </span>
               <input
                 type="text"
+                id="gear-search"
+                name="gear-search"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Radio, water filter, solar…"
