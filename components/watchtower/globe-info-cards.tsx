@@ -926,6 +926,49 @@ function scoreCol(score: number): string {
   return "#1ae8a0";
 }
 
+// ── Score methodology — one entry per sub-index label ────────────────────────
+// formula: concise explanation of the calculation inputs shown in the UI
+const SCORE_METHODOLOGY: Record<string, {
+  subIndexFormulas: Record<string, string>;
+  liveFeeds: string[];
+  staticNote: string;
+  anchorDate: string;
+}> = {
+  geopolitical: {
+    subIndexFormulas: {
+      "Nuclear Risk":      "BAS Clock(85s)=68 + nuclear news tier-weights · cap 88",
+      "Active Conflicts":  "30pt baseline (global minimum) + war news tier-weights · cap 82",
+      "Cyber Threats":     "22pt always-on baseline + cyber news tier-weights · cap 95",
+      "Political Fracture":"35pt (multipolar erosion base) + political news tier-weights",
+    },
+    liveFeeds: ["News feed (nuclear · war · cyber · political)", "BTC/USD — CoinGecko", "USD/RUB — open.er-api.com"],
+    staticNote: "BAS Doomsday Clock · CFR Conflicts 2026 · CISA/FBI Typhoon advisories · V-Dem 2026",
+    anchorDate: "Mar 2026",
+  },
+  economic: {
+    subIndexFormulas: {
+      "Debt Stress":       "US debt 124% GDP → (124−60)/150×100=43 + interest-crowding +17 (static)",
+      "Market Volatility": "LIVE: VIX(CBOE) score + T-bill yield tier-add — polls every 60s",
+      "Currency / Dollar": "48pt (BRICS/de-dollarization base) + LIVE DXY level tier-add",
+      "Banking Stress":    "32pt ($306B unrealized losses base) + economic news tier-weights",
+    },
+    liveFeeds: ["VIX — CBOE (via /api/watchtower/prices)", "T-bill yield — Fed (via server API)", "DXY — Yahoo Finance (via server API)", "XAU · WTI · BTC · USD/RUB", "News feed (economic)"],
+    staticNote: "Senate JEC Jan 2026 · CBO 2026 baseline · FDIC Q4 2025 · Atlantic Council CBDC Tracker",
+    anchorDate: "Mar 2026",
+  },
+  environmental: {
+    subIndexFormulas: {
+      "Pandemic Risk":          "H5N1: 18(animal) + 12(70 human cases) + 6(no vaccine) + 8(MPXV) + health news",
+      "Climate Stress":         "WMO +1.55°C → 52pts + Arctic ice −20%→+8 + La Niña +5 (static)",
+      "Food & Water":           "WFP 96M → 27pts + water-stress +12 + harvest +8 + health/climate news",
+      "Antimicrobial Resist.":  "1.27M deaths/10M threshold + ESKAPE spread + trajectory (fully static)",
+    },
+    liveFeeds: ["WTI — Yahoo Finance (via server API)", "News feed (health · climate)"],
+    staticNote: "CDC Bird Flu summary · WMO 2024 · NSIDC Mar 2026 · WFP 2026 · WHO DON Jan 2026 · Lancet 2024",
+    anchorDate: "Mar 2026",
+  },
+};
+
 // ── Unified domain panel ───────────────────────────────────────────────────────
 // One seamless narrative: Threat → Score Intelligence → Live Signals → Action
 function DomainUnifiedPanel({
@@ -1067,35 +1110,58 @@ function DomainUnifiedPanel({
         </div>
 
         {/* Sub-index bars */}
-        {scores?.subIndices.map((si, i) => (
-          <div
-            key={si.label}
-            className="px-3 pt-2.5 pb-2"
-            style={{ borderBottom: i < (scores.subIndices.length - 1) ? "1px solid rgba(255,255,255,0.04)" : undefined }}
-          >
-            <div className="flex items-center justify-between mb-1">
-              <div className="flex items-center gap-1.5">
-                <span className="font-mono text-[9.5px] text-text-dim tracking-[.04em]">{si.label}</span>
-                {si.isLive && (
-                  <span className="font-mono text-[7px] tracking-[.1em] px-1 py-px rounded"
-                    style={{ background: "rgba(26,232,160,0.12)", color: "#1ae8a0" }}>LIVE</span>
-                )}
+        {scores?.subIndices.map((si, i) => {
+          const formula = SCORE_METHODOLOGY[domainId]?.subIndexFormulas[si.label];
+          return (
+            <div
+              key={si.label}
+              className="px-3 pt-2.5 pb-2.5"
+              style={{ borderBottom: i < (scores.subIndices.length - 1) ? "1px solid rgba(255,255,255,0.04)" : undefined }}
+            >
+              {/* Label row */}
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-mono text-[9.5px] text-text-dim tracking-[.04em]">{si.label}</span>
+                  {si.isLive ? (
+                    <span className="inline-flex items-center gap-0.5 font-mono text-[7px] tracking-[.1em] px-1 py-px rounded"
+                      style={{ background: "rgba(26,232,160,0.12)", color: "#1ae8a0" }}>
+                      <span className="w-1 h-1 rounded-full bg-[#1ae8a0] animate-pulse inline-block" />
+                      LIVE
+                    </span>
+                  ) : (
+                    <span className="font-mono text-[7px] tracking-[.1em] px-1 py-px rounded"
+                      style={{ background: "rgba(150,165,180,0.08)", color: "rgba(150,165,180,0.5)" }}>
+                      STATIC
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-[8.5px] text-text-mute2/50">×{Math.round(si.weight * 100)}%</span>
+                  <span className="font-mono text-[10px] font-bold tabular-nums w-6 text-right"
+                    style={{ color: scoreCol(si.score) }}>{si.score}</span>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="font-mono text-[8.5px] text-text-mute2/50">×{Math.round(si.weight * 100)}%</span>
-                <span className="font-mono text-[10px] font-bold tabular-nums w-6 text-right"
-                  style={{ color: scoreCol(si.score) }}>{si.score}</span>
+
+              {/* Score bar */}
+              <div className="relative h-1 rounded-full overflow-hidden mb-1.5" style={{ background: "rgba(255,255,255,0.05)" }}>
+                <div
+                  className="absolute inset-y-0 left-0 rounded-full transition-all duration-700"
+                  style={{ width: `${si.score}%`, background: `linear-gradient(90deg,${scoreCol(si.score)}66,${scoreCol(si.score)})` }}
+                />
               </div>
+
+              {/* Data source */}
+              <p className="font-mono text-[7.5px] text-text-mute2/45 leading-snug mb-1">{si.source}</p>
+
+              {/* Formula breakdown */}
+              {formula && (
+                <p className="font-mono text-[7px] leading-snug" style={{ color: "rgba(150,165,180,0.35)" }}>
+                  <span style={{ color: "rgba(150,165,180,0.5)" }}>formula: </span>{formula}
+                </p>
+              )}
             </div>
-            <div className="relative h-1 rounded-full overflow-hidden mb-0.5" style={{ background: "rgba(255,255,255,0.05)" }}>
-              <div
-                className="absolute inset-y-0 left-0 rounded-full transition-all duration-700"
-                style={{ width: `${si.score}%`, background: `linear-gradient(90deg,${scoreCol(si.score)}66,${scoreCol(si.score)})` }}
-              />
-            </div>
-            <p className="font-mono text-[7.5px] text-text-mute2/35 truncate">{si.source}</p>
-          </div>
-        ))}
+          );
+        })}
 
         {/* Contribution row */}
         {scores && (
@@ -1112,6 +1178,38 @@ function DomainUnifiedPanel({
             <span className="font-mono text-[10px] font-bold" style={{ color: col }}>= {scores.live}</span>
           </div>
         )}
+
+        {/* Methodology footer */}
+        {SCORE_METHODOLOGY[domainId] && (() => {
+          const m = SCORE_METHODOLOGY[domainId];
+          return (
+            <div className="px-3 py-2.5" style={{ borderTop: "1px solid rgba(255,255,255,0.04)", background: "rgba(0,0,0,0.12)" }}>
+              <p className="font-mono text-[7.5px] tracking-[.14em] uppercase text-text-mute2/40 mb-1.5">
+                Data Sources &amp; Refresh Rate
+              </p>
+              {/* Live feeds list */}
+              <div className="mb-1.5">
+                <div className="flex items-center gap-1 mb-1">
+                  <span className="w-1 h-1 rounded-full bg-[#1ae8a0] animate-pulse flex-shrink-0" />
+                  <span className="font-mono text-[7.5px] text-[#1ae8a0]/70 tracking-[.08em]">LIVE — refreshes every 60s</span>
+                </div>
+                {m.liveFeeds.map((feed, i) => (
+                  <p key={i} className="font-mono text-[7px] text-text-mute2/40 leading-snug pl-2">· {feed}</p>
+                ))}
+              </div>
+              {/* Static anchors */}
+              <div>
+                <div className="flex items-center gap-1 mb-1">
+                  <span className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: "rgba(150,165,180,0.4)" }} />
+                  <span className="font-mono text-[7.5px] tracking-[.08em]" style={{ color: "rgba(150,165,180,0.5)" }}>
+                    STATIC anchors — last reviewed {m.anchorDate}
+                  </span>
+                </div>
+                <p className="font-mono text-[7px] text-text-mute2/35 leading-snug pl-2">{m.staticNote}</p>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Active signals — driving the scores above */}
         {newsItems.length > 0 && (
