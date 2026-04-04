@@ -680,19 +680,23 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
       }
     }
 
-    // World news feed pins — sort highest tier first, dedup at 10°, cap 8
+    // World news feed pins — sort highest tier first, dedup at 15°, cap 6
+    // Seed with already-placed label cards so news won't overlap domain/scenario/commodity overlays
     if (showNewsFeed && domainId) {
       const tierOrder: Record<string, number> = { t4: 0, t3: 1, t2: 2, t1: 3 };
-      const sortedNews = [...newsFeedPins].sort(
-        (a, b) => (tierOrder[a.tier] ?? 9) - (tierOrder[b.tier] ?? 9),
+      const newsItems = [...newsFeedPins]
+        .sort((a, b) => (tierOrder[a.tier] ?? 9) - (tierOrder[b.tier] ?? 9))
+        .map(pin => ({
+          type: "news" as const,
+          lat: pin.lat, lng: pin.lng,
+          newsId: pin.id, newsTier: pin.tier,
+          newsHeadline: pin.headline, newsCategory: pin.category,
+        }));
+      const labelSeeds = items.filter(i =>
+        i.type === "domain-label" || i.type === "scenario-label" || i.type === "commodity"
       );
-      const newsItems = sortedNews.map(pin => ({
-        type: "news" as const,
-        lat: pin.lat, lng: pin.lng,
-        newsId: pin.id, newsTier: pin.tier,
-        newsHeadline: pin.headline, newsCategory: pin.category,
-      }));
-      for (const item of geoDedup(newsItems, 10, 8)) items.push(item);
+      const deduped = geoDedup([...labelSeeds, ...newsItems], 15, labelSeeds.length + 6);
+      for (const item of deduped.slice(labelSeeds.length)) items.push(item);
     }
 
     return items;
