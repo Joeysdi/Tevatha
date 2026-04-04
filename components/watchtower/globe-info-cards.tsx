@@ -1043,6 +1043,9 @@ function DomainUnifiedPanel({
 
   if (!domain) return null;
 
+  const methodology      = SCORE_METHODOLOGY[domainId];
+  const subIndexFormulas = methodology?.subIndexFormulas ?? {};
+
   return (
     <div className="flex flex-col">
 
@@ -1111,7 +1114,7 @@ function DomainUnifiedPanel({
 
         {/* Sub-index bars */}
         {scores?.subIndices.map((si, i) => {
-          const formula = SCORE_METHODOLOGY[domainId]?.subIndexFormulas[si.label];
+          const formula = subIndexFormulas[si.label];
           return (
             <div
               key={si.label}
@@ -1151,7 +1154,7 @@ function DomainUnifiedPanel({
               </div>
 
               {/* Data source */}
-              <p className="font-mono text-[7.5px] text-text-mute2/45 leading-snug mb-1">{si.source}</p>
+              <p className="font-mono text-[7.5px] text-text-mute2/45 mb-1 truncate">{si.source}</p>
 
               {/* Formula breakdown */}
               {formula && (
@@ -1180,36 +1183,33 @@ function DomainUnifiedPanel({
         )}
 
         {/* Methodology footer */}
-        {SCORE_METHODOLOGY[domainId] && (() => {
-          const m = SCORE_METHODOLOGY[domainId];
-          return (
-            <div className="px-3 py-2.5" style={{ borderTop: "1px solid rgba(255,255,255,0.04)", background: "rgba(0,0,0,0.12)" }}>
-              <p className="font-mono text-[7.5px] tracking-[.14em] uppercase text-text-mute2/40 mb-1.5">
-                Data Sources &amp; Refresh Rate
-              </p>
-              {/* Live feeds list */}
-              <div className="mb-1.5">
-                <div className="flex items-center gap-1 mb-1">
-                  <span className="w-1 h-1 rounded-full bg-[#1ae8a0] animate-pulse flex-shrink-0" />
-                  <span className="font-mono text-[7.5px] text-[#1ae8a0]/70 tracking-[.08em]">LIVE — refreshes every 60s</span>
-                </div>
-                {m.liveFeeds.map((feed, i) => (
-                  <p key={i} className="font-mono text-[7px] text-text-mute2/40 leading-snug pl-2">· {feed}</p>
-                ))}
+        {methodology && (
+          <div className="px-3 py-2.5" style={{ borderTop: "1px solid rgba(255,255,255,0.04)", background: "rgba(0,0,0,0.12)" }}>
+            <p className="font-mono text-[7.5px] tracking-[.14em] uppercase text-text-mute2/40 mb-1.5">
+              Data Sources &amp; Refresh Rate
+            </p>
+            {/* Live feeds list */}
+            <div className="mb-1.5">
+              <div className="flex items-center gap-1 mb-1">
+                <span className="w-1 h-1 rounded-full bg-[#1ae8a0] animate-pulse flex-shrink-0" />
+                <span className="font-mono text-[7.5px] text-[#1ae8a0]/70 tracking-[.08em]">LIVE — refreshes every 60s</span>
               </div>
-              {/* Static anchors */}
-              <div>
-                <div className="flex items-center gap-1 mb-1">
-                  <span className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: "rgba(150,165,180,0.4)" }} />
-                  <span className="font-mono text-[7.5px] tracking-[.08em]" style={{ color: "rgba(150,165,180,0.5)" }}>
-                    STATIC anchors — last reviewed {m.anchorDate}
-                  </span>
-                </div>
-                <p className="font-mono text-[7px] text-text-mute2/35 leading-snug pl-2">{m.staticNote}</p>
-              </div>
+              {methodology.liveFeeds.map((feed, i) => (
+                <p key={i} className="font-mono text-[7px] text-text-mute2/40 leading-snug pl-2">· {feed}</p>
+              ))}
             </div>
-          );
-        })()}
+            {/* Static anchors */}
+            <div>
+              <div className="flex items-center gap-1 mb-1">
+                <span className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: "rgba(150,165,180,0.4)" }} />
+                <span className="font-mono text-[7.5px] tracking-[.08em]" style={{ color: "rgba(150,165,180,0.5)" }}>
+                  STATIC anchors — last reviewed {methodology.anchorDate}
+                </span>
+              </div>
+              <p className="font-mono text-[7px] text-text-mute2/35 leading-snug pl-2">{methodology.staticNote}</p>
+            </div>
+          </div>
+        )}
 
         {/* Active signals — driving the scores above */}
         {newsItems.length > 0 && (
