@@ -306,7 +306,7 @@ export default function TiersPage() {
                             </button>
                           ) : (
                             <Link
-                              href="/provisioner/tiers"
+                              href="/provisioner/gear"
                               className="font-mono text-[9px] text-gold-protocol hover:text-gold-bright transition-colors flex-shrink-0"
                             >
                               View →
@@ -434,7 +434,7 @@ export default function TiersPage() {
             {t("tiers_gear_cta_text")}
           </p>
           <Link
-            href="/provisioner/tiers"
+            href="/provisioner/gear"
             className="font-mono text-[10px] text-gold-protocol hover:text-gold-bright
                        transition-colors flex-shrink-0"
           >

@@ -186,7 +186,7 @@ export function GearPanel({ categories }: GearPanelProps) {
       {current && (
         <div className="mb-3">
           <Link
-            href="/provisioner/tiers"
+            href={`/provisioner/gear?domain=${CATEGORY_DOMAIN[current.cat] ?? "nuclear"}`}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg
                        bg-gold-protocol text-void-0 font-syne font-bold text-[12px]
                        tracking-[.06em] hover:bg-gold-bright hover:-translate-y-0.5

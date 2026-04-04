@@ -420,7 +420,7 @@ function DomainGatesCard({ domainId, col, gateStatuses, showShop, onOpenShop }: 
             </div>
           )}
           <Link
-            href="/provisioner/tiers"
+            href={`/provisioner/gear?domain=${provDomain}`}
             onClick={(e) => e.stopPropagation()}
             className="block w-full text-center font-mono text-[10px] font-bold py-2.5 rounded-lg border border-gold-dim bg-gold-glow text-gold-bright hover:-translate-y-px hover:shadow-[0_4px_20px_rgba(201,168,76,0.35)] transition-all duration-150 mb-3.5"
           >
@@ -453,7 +453,7 @@ function GearStrip({ domainId, col }: { domainId: string; col: string; onOpenSho
         ))}
       </div>
       <Link
-        href="/provisioner/tiers"
+        href={`/provisioner/gear?domain=${provDomain}`}
         onClick={(e) => e.stopPropagation()}
         className="block w-full text-center font-mono text-[9px] font-bold py-2 rounded-lg
                    border border-gold-dim bg-gold-glow text-gold-bright hover:-translate-y-px
@@ -905,7 +905,7 @@ function PanelShopFooter({ domainId, col, onOpenShop }: { domainId: string; col:
         ))}
       </div>
       <Link
-        href="/provisioner/tiers"
+        href={`/provisioner/gear?domain=${provDomain}`}
         onClick={(e) => e.stopPropagation()}
         className="block w-full text-center font-mono text-[10px] font-bold py-2.5 rounded-lg
                    border border-gold-dim bg-gold-glow text-gold-bright
@@ -1376,7 +1376,7 @@ function DomainUnifiedPanel({
                 ))}
               </div>
               <Link
-                href="/provisioner/tiers"
+                href={`/provisioner/gear?domain=${provDomain}`}
                 onClick={(e) => e.stopPropagation()}
                 className="block w-full text-center font-mono text-[10px] font-bold py-2.5 rounded-lg
                            border border-gold-dim bg-gold-glow text-gold-bright
@@ -1406,7 +1406,7 @@ function DomainUnifiedPanel({
               ))}
             </div>
             <Link
-              href="/provisioner/tiers"
+              href={`/provisioner/gear?domain=${provDomain}`}
               onClick={(e) => e.stopPropagation()}
               className="block w-full text-center font-mono text-[10px] font-bold py-2.5 rounded-lg
                          border border-gold-dim bg-gold-glow text-gold-bright

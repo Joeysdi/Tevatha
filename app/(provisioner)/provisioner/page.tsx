@@ -2,5 +2,5 @@
 import { redirect } from "next/navigation";
 
 export default function ProvisionerRoot() {
-  redirect("/provisioner/tiers");
+  redirect("/provisioner/gear");
 }
