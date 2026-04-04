@@ -721,13 +721,30 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
     return kept;
   }, [showNewsFeed, domainId, newsFeedPins]);
 
+  // ── Orbit psych: same dedup logic as htmlGlobeData psych-zone section ─
+  const filteredPsychItems = useMemo(() => {
+    if (!domainId || scenarioId) return [];
+    const all = PSYCH_ZONES.filter(z => z.domains.includes(domainId));
+    const kept: typeof PSYCH_ZONES = [];
+    for (const z of all) {
+      if (kept.length >= 3) break;
+      const clash = kept.some(k => {
+        const dLat = z.lat - k.lat;
+        const dLng = z.lng - k.lng;
+        return Math.sqrt(dLat * dLat + dLng * dLng) < 18;
+      });
+      if (!clash) kept.push(z);
+    }
+    return kept;
+  }, [domainId, scenarioId]);
+
   // ── Orbit card drag state ───────────────────────────────────────────
   const [dragOffsets, setDragOffsets] = useState<Record<string, { x: number; y: number }>>({});
   const draggingRef = useRef<{
     id: string; startMx: number; startMy: number; startX: number; startY: number;
   } | null>(null);
 
-  useEffect(() => { setDragOffsets({}); }, [filteredNewsPins]);
+  useEffect(() => { setDragOffsets({}); }, [filteredNewsPins, filteredPsychItems]);
 
   const startDrag = useCallback((e: React.PointerEvent, pinId: string) => {
     e.preventDefault();
@@ -843,43 +860,13 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
       `;
 
     } else if (item.type === "psych-zone") {
-      const truncated = (item.psychNote ?? "").length > 65 ? (item.psychNote ?? "").slice(0, 65) + "…" : (item.psychNote ?? "");
+      // Orbit overlay handles the full card; globe shows only a geographic anchor dot
       el.style.cssText = `
-        background: rgba(138,43,226,0.8);
-        border: 1px solid rgba(200,150,255,0.4);
-        border-radius: 8px;
-        padding: 5px 8px;
-        pointer-events: auto;
-        cursor: pointer;
-        max-width: 155px;
-        backdrop-filter: blur(4px);
-        transition: transform 0.15s, box-shadow 0.15s;
+        width: 7px; height: 7px; border-radius: 50%;
+        background: rgba(138,43,226,0.9);
+        box-shadow: 0 0 8px rgba(138,43,226,0.8), 0 0 16px rgba(138,43,226,0.4);
+        pointer-events: none;
       `;
-      el.innerHTML = `
-        <div style="font-family:monospace;font-size:7px;font-weight:bold;color:rgba(200,150,255,0.9);
-                    letter-spacing:.1em;margin-bottom:2px;">🧠 ${t("globe_psych_risk")}</div>
-        <div style="font-family:monospace;font-size:8.5px;font-weight:bold;color:#fff;
-                    margin-bottom:2px;">${item.region ?? ""}</div>
-        <div style="font-family:monospace;font-size:7px;color:rgba(200,150,255,0.85);
-                    margin-bottom:2px;">${item.threat ?? ""}</div>
-        <div style="font-family:monospace;font-size:7px;color:rgba(255,255,255,0.7);
-                    line-height:1.3;">${truncated}</div>
-      `;
-      el.addEventListener("mouseenter", () => {
-        el.style.transform = "scale(1.05)";
-        el.style.boxShadow = "0 4px 20px rgba(138,43,226,0.5)";
-      });
-      el.addEventListener("mouseleave", () => {
-        el.style.transform = "scale(1)";
-        el.style.boxShadow = "none";
-      });
-      el.addEventListener("click", (e) => {
-        e.stopPropagation();
-        el.dispatchEvent(new CustomEvent("psych-zone-click", {
-          bubbles: true,
-          detail: { region: item.region, threat: item.threat, note: item.psychNote },
-        }));
-      });
 
     } else if (item.type === "gate") {
       const tierCol = item.gateTier === "t4" ? "#e84040"
@@ -1329,26 +1316,44 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
     return canvas.toDataURL("image/png");
   }, []);
 
-  // ── Orbit card layout — positions around globe perimeter ─────────────
+  // ── Orbit card layout — news + psych merged into one evenly-spaced ring
   const ORBIT_TIER_COL: Record<string, string> = { t4: "#e84040", t3: "#f0a500", t2: "#38bdf8", t1: "#1ae8a0" };
   const ORBIT_CAT_ICON: Record<string, string> = {
     war: "⚔", economic: "📉", nuclear: "☢", health: "⚕", climate: "🌡", political: "🏛",
   };
-  const GLOBE_R_PX  = dims.h * 0.315;
-  const ORBIT_R_PX  = GLOBE_R_PX + 62;
-  const orbitCards = filteredNewsPins.map((pin, i) => {
-    const N = filteredNewsPins.length;
-    const angle   = -Math.PI / 2 + (2 * Math.PI * i) / Math.max(N, 1);
-    const baseX   = dims.w / 2 + ORBIT_R_PX * Math.cos(angle);
-    const baseY   = dims.h / 2 + ORBIT_R_PX * Math.sin(angle);
-    const dotX    = dims.w / 2 + (GLOBE_R_PX + 2) * Math.cos(angle);
-    const dotY    = dims.h / 2 + (GLOBE_R_PX + 2) * Math.sin(angle);
-    return {
-      pin, angle, baseX, baseY, dotX, dotY,
-      col:      ORBIT_TIER_COL[pin.tier] ?? "#38bdf8",
-      icon:     ORBIT_CAT_ICON[pin.category] ?? "📡",
-      truncHead: pin.headline.length > 36 ? pin.headline.slice(0, 36) + "…" : pin.headline,
-    };
+  const GLOBE_R_PX = dims.h * 0.315;
+  const ORBIT_R_PX = GLOBE_R_PX + 62;
+
+  type OrbitCard =
+    | { kind: "news";  id: string; angle: number; baseX: number; baseY: number; dotX: number; dotY: number; col: string; pin: NewsFeedPin; icon: string; truncHead: string }
+    | { kind: "psych"; id: string; angle: number; baseX: number; baseY: number; dotX: number; dotY: number; col: string; region: string; threat: string; truncNote: string };
+
+  const allOrbitItems: Array<{ kind: "news"; pin: NewsFeedPin } | { kind: "psych"; zone: typeof PSYCH_ZONES[number] }> = [
+    ...filteredNewsPins.map(pin => ({ kind: "news" as const, pin })),
+    ...filteredPsychItems.map(zone => ({ kind: "psych" as const, zone })),
+  ];
+  const N = allOrbitItems.length;
+  const orbitCards: OrbitCard[] = allOrbitItems.map((item, i) => {
+    const angle = -Math.PI / 2 + (2 * Math.PI * i) / Math.max(N, 1);
+    const baseX = dims.w / 2 + ORBIT_R_PX * Math.cos(angle);
+    const baseY = dims.h / 2 + ORBIT_R_PX * Math.sin(angle);
+    const dotX  = dims.w / 2 + (GLOBE_R_PX + 2) * Math.cos(angle);
+    const dotY  = dims.h / 2 + (GLOBE_R_PX + 2) * Math.sin(angle);
+    if (item.kind === "news") {
+      return { kind: "news", id: item.pin.id, angle, baseX, baseY, dotX, dotY,
+        col: ORBIT_TIER_COL[item.pin.tier] ?? "#38bdf8",
+        pin: item.pin,
+        icon: ORBIT_CAT_ICON[item.pin.category] ?? "📡",
+        truncHead: item.pin.headline.length > 36 ? item.pin.headline.slice(0, 36) + "…" : item.pin.headline,
+      };
+    } else {
+      return { kind: "psych", id: `psych-${item.zone.region}`, angle, baseX, baseY, dotX, dotY,
+        col: "#9b5de5",
+        region: item.zone.region,
+        threat: item.zone.threat,
+        truncNote: item.zone.note.length > 55 ? item.zone.note.slice(0, 55) + "…" : item.zone.note,
+      };
+    }
   });
 
   return (
@@ -1714,82 +1719,109 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
         </div>
       )}
 
-      {/* ── News orbit overlay — cards around globe with SVG connectors ──── */}
-      {showNewsFeed && domainId && orbitCards.length > 0 && dims.w > 0 && (
+      {/* ── Orbit overlay — news + psych cards around globe with SVG connectors */}
+      {domainId && orbitCards.length > 0 && dims.w > 0 && (
         <>
           {/* Connector lines */}
           <svg
             className="absolute inset-0 pointer-events-none"
             style={{ width: dims.w, height: dims.h, zIndex: 10 }}
           >
-            {orbitCards.map(({ pin, angle, baseX, baseY, dotX, dotY, col }) => {
-              const off = dragOffsets[pin.id] ?? { x: 0, y: 0 };
-              const cx  = baseX + off.x;
-              const cy  = baseY + off.y;
-              // Line endpoint: card edge facing the globe
+            {orbitCards.map(card => {
+              const off = dragOffsets[card.id] ?? { x: 0, y: 0 };
+              const cx  = card.baseX + off.x;
+              const cy  = card.baseY + off.y;
               const dx   = cx - dims.w / 2;
               const dy   = cy - dims.h / 2;
               const dist = Math.sqrt(dx * dx + dy * dy) || 1;
               const lineEndX = cx - (dx / dist) * 79;
               const lineEndY = cy - (dy / dist) * 31;
               return (
-                <g key={pin.id}>
+                <g key={card.id}>
                   <line
-                    x1={dotX} y1={dotY} x2={lineEndX} y2={lineEndY}
-                    stroke={col} strokeWidth={0.7} strokeDasharray="3 3" opacity={0.45}
+                    x1={card.dotX} y1={card.dotY} x2={lineEndX} y2={lineEndY}
+                    stroke={card.col} strokeWidth={0.7} strokeDasharray="3 3" opacity={0.45}
                   />
-                  <circle cx={dotX} cy={dotY} r={2.5} fill={col} opacity={0.8} />
+                  <circle cx={card.dotX} cy={card.dotY} r={2.5} fill={card.col} opacity={0.8} />
                 </g>
               );
             })}
           </svg>
 
           {/* Draggable cards */}
-          {orbitCards.map(({ pin, baseX, baseY, col, icon, truncHead }) => {
-            const off  = dragOffsets[pin.id] ?? { x: 0, y: 0 };
-            const left = baseX + off.x - 75;
-            const top  = baseY + off.y - 27;
-            return (
-              <div
-                key={pin.id}
-                style={{
-                  position: "absolute", left, top,
-                  width: 150, zIndex: 15,
+          {orbitCards.map(card => {
+            const off  = dragOffsets[card.id] ?? { x: 0, y: 0 };
+            const left = card.baseX + off.x - 75;
+            const top  = card.baseY + off.y - 27;
+            const isGrabbing = draggingRef.current?.id === card.id;
+
+            const sharedStyle: React.CSSProperties = {
+              position: "absolute", left, top, width: 150, zIndex: 15,
+              backdropFilter: "blur(8px)",
+              cursor: isGrabbing ? "grabbing" : "grab",
+              userSelect: "none", touchAction: "none",
+            };
+
+            if (card.kind === "news") {
+              return (
+                <div key={card.id} style={{
+                  ...sharedStyle,
                   background: "rgba(5,8,13,0.93)",
-                  border: `1px solid ${col}55`,
-                  borderLeft: `2px solid ${col}`,
-                  borderRadius: "6px",
-                  padding: "4px 8px",
-                  backdropFilter: "blur(8px)",
-                  boxShadow: `0 4px 16px rgba(0,0,0,0.7), 0 0 8px ${col}18`,
-                  cursor: draggingRef.current?.id === pin.id ? "grabbing" : "grab",
-                  userSelect: "none",
-                  touchAction: "none",
+                  border: `1px solid ${card.col}55`,
+                  borderLeft: `2px solid ${card.col}`,
+                  borderRadius: "6px", padding: "4px 8px",
+                  boxShadow: `0 4px 16px rgba(0,0,0,0.7), 0 0 8px ${card.col}18`,
                 }}
-                onPointerDown={e => startDrag(e, pin.id)}
-                onPointerMove={moveDrag}
-                onPointerUp={endDrag}
-                onPointerCancel={endDrag}
-                onClick={e => {
-                  if (draggingRef.current) return;
-                  e.stopPropagation();
-                  onNewsFeedPinClick(pin.id);
+                  onPointerDown={e => startDrag(e, card.id)}
+                  onPointerMove={moveDrag}
+                  onPointerUp={endDrag}
+                  onPointerCancel={endDrag}
+                  onClick={e => { if (draggingRef.current) return; e.stopPropagation(); onNewsFeedPinClick(card.pin.id); }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: "4px", marginBottom: "2px" }}>
+                    <span style={{ fontSize: "9px" }}>{card.icon}</span>
+                    <span style={{ fontFamily: "monospace", fontSize: "6.5px", fontWeight: "bold", color: card.col, letterSpacing: ".1em" }}>
+                      {card.pin.tier.toUpperCase()}
+                    </span>
+                    <span style={{ fontFamily: "monospace", fontSize: "6px", color: "rgba(150,165,180,0.4)", marginLeft: "auto" }}>⠿</span>
+                  </div>
+                  <div style={{ fontFamily: "monospace", fontSize: "8px", fontWeight: "bold", color: "rgba(215,220,230,0.92)", lineHeight: "1.3" }}>
+                    {card.truncHead}
+                  </div>
+                </div>
+              );
+            } else {
+              return (
+                <div key={card.id} style={{
+                  ...sharedStyle,
+                  background: "rgba(60,10,100,0.88)",
+                  border: "1px solid rgba(200,150,255,0.35)",
+                  borderLeft: "2px solid rgba(155,93,229,0.9)",
+                  borderRadius: "6px", padding: "4px 8px",
+                  boxShadow: "0 4px 16px rgba(0,0,0,0.7), 0 0 10px rgba(138,43,226,0.25)",
                 }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: "4px", marginBottom: "2px" }}>
-                  <span style={{ fontSize: "9px" }}>{icon}</span>
-                  <span style={{ fontFamily: "monospace", fontSize: "6.5px", fontWeight: "bold", color: col, letterSpacing: ".1em" }}>
-                    {pin.tier.toUpperCase()}
-                  </span>
-                  <span style={{ fontFamily: "monospace", fontSize: "6px", color: "rgba(150,165,180,0.4)", marginLeft: "auto" }}>
-                    ⠿
-                  </span>
+                  onPointerDown={e => startDrag(e, card.id)}
+                  onPointerMove={moveDrag}
+                  onPointerUp={endDrag}
+                  onPointerCancel={endDrag}
+                  onClick={e => { if (draggingRef.current) return; e.stopPropagation(); onPsychZoneClick({ region: card.region, threat: card.threat, note: card.truncNote }); }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: "4px", marginBottom: "2px" }}>
+                    <span style={{ fontSize: "8px" }}>🧠</span>
+                    <span style={{ fontFamily: "monospace", fontSize: "6px", fontWeight: "bold", color: "rgba(200,150,255,0.9)", letterSpacing: ".1em" }}>
+                      PSYCH RISK
+                    </span>
+                    <span style={{ fontFamily: "monospace", fontSize: "6px", color: "rgba(150,165,180,0.4)", marginLeft: "auto" }}>⠿</span>
+                  </div>
+                  <div style={{ fontFamily: "monospace", fontSize: "8.5px", fontWeight: "bold", color: "#fff", marginBottom: "1px" }}>
+                    {card.region}
+                  </div>
+                  <div style={{ fontFamily: "monospace", fontSize: "7px", color: "rgba(200,150,255,0.8)" }}>
+                    {card.threat}
+                  </div>
                 </div>
-                <div style={{ fontFamily: "monospace", fontSize: "8px", fontWeight: "bold", color: "rgba(215,220,230,0.92)", lineHeight: "1.3" }}>
-                  {truncHead}
-                </div>
-              </div>
-            );
+              );
+            }
           })}
         </>
       )}
