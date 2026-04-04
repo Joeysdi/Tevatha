@@ -231,7 +231,7 @@ export default function ZeroPage() {
             Critical Gear Checklist →
           </Link>
           <Link
-            href="/provisioner/gear"
+            href="/provisioner/tiers"
             className="font-mono font-bold text-[11px] tracking-[.06em] px-5 py-2.5 rounded-lg
                        border border-border-protocol text-text-mute2
                        hover:border-gold-protocol/40 hover:text-text-base transition-all duration-200"

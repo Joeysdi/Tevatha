@@ -272,7 +272,7 @@ export default function MethodologyPage() {
 
       {/* CTA */}
       <div className="flex flex-wrap gap-3">
-        <Link href="/provisioner/gear"
+        <Link href="/provisioner/tiers"
               className="font-mono font-bold text-[11px] tracking-[.06em] px-5 py-2.5 rounded-lg
                          bg-gold-protocol text-void-0 hover:bg-gold-bright hover:-translate-y-0.5
                          hover:shadow-[0_8px_24px_rgba(201,168,76,0.3)] transition-all duration-200">

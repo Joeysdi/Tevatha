@@ -180,7 +180,7 @@ export function ScenarioAccordion({ scenarios }: ScenarioAccordionProps) {
                       {SCENARIO_GEAR_MAP[s.id].skus.map((sku) => (
                         <Link
                           key={sku}
-                          href={`/provisioner/gear?domain=${SCENARIO_GEAR_MAP[s.id].domain}`}
+                          href="/provisioner/tiers"
                           onClick={(e) => e.stopPropagation()}
                           className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full
                                      border border-gold-protocol/30 bg-gold-glow
