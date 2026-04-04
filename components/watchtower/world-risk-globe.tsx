@@ -702,6 +702,52 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
     return items;
   }, [scenarioId, domainId, domainColor, domainMap, gatePhase, showCommodities, showNewsFeed, newsFeedPins, selectedFeat, cityPins]);
 
+  // ── Orbit news: stable set of visible pins (shared with orbit overlay) ─
+  const filteredNewsPins = useMemo(() => {
+    if (!showNewsFeed || !domainId) return [];
+    const tierOrder: Record<string, number> = { t4: 0, t3: 1, t2: 2, t1: 3 };
+    const sorted = [...newsFeedPins]
+      .sort((a, b) => (tierOrder[a.tier] ?? 9) - (tierOrder[b.tier] ?? 9));
+    const kept: NewsFeedPin[] = [];
+    for (const pin of sorted) {
+      if (kept.length >= 6) break;
+      const clash = kept.some(k => {
+        const dLat = pin.lat - k.lat;
+        const dLng = pin.lng - k.lng;
+        return Math.sqrt(dLat * dLat + dLng * dLng) < 15;
+      });
+      if (!clash) kept.push(pin);
+    }
+    return kept;
+  }, [showNewsFeed, domainId, newsFeedPins]);
+
+  // ── Orbit card drag state ───────────────────────────────────────────
+  const [dragOffsets, setDragOffsets] = useState<Record<string, { x: number; y: number }>>({});
+  const draggingRef = useRef<{
+    id: string; startMx: number; startMy: number; startX: number; startY: number;
+  } | null>(null);
+
+  useEffect(() => { setDragOffsets({}); }, [filteredNewsPins]);
+
+  const startDrag = useCallback((e: React.PointerEvent, pinId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    const offset = dragOffsets[pinId] ?? { x: 0, y: 0 };
+    draggingRef.current = { id: pinId, startMx: e.clientX, startMy: e.clientY, startX: offset.x, startY: offset.y };
+  }, [dragOffsets]);
+
+  const moveDrag = useCallback((e: React.PointerEvent) => {
+    if (!draggingRef.current) return;
+    const { id, startMx, startMy, startX, startY } = draggingRef.current;
+    setDragOffsets(prev => ({
+      ...prev,
+      [id]: { x: startX + e.clientX - startMx, y: startY + e.clientY - startMy },
+    }));
+  }, []);
+
+  const endDrag = useCallback(() => { draggingRef.current = null; }, []);
+
   const htmlElement = useCallback((d: object) => {
     const el = document.createElement("div");
     if (!d) return el;
@@ -903,50 +949,14 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
       });
 
     } else if (item.type === "news") {
+      // Orbit overlay handles the full card; globe shows only a geographic anchor dot
       const tierCol = item.newsTier === "t4" ? "#e84040" : item.newsTier === "t3" ? "#f0a500" : "#38bdf8";
-      const catIcon: Record<string, string> = {
-        war: "⚔", economic: "📉", nuclear: "☢", health: "⚕", climate: "🌡", political: "🏛",
-      };
-      const icon = catIcon[item.newsCategory ?? ""] ?? "📡";
       el.style.cssText = `
-        background: rgba(5,8,13,0.92);
-        border: 1px solid ${tierCol}55;
-        border-left: 2px solid ${tierCol};
-        border-radius: 6px;
-        padding: 4px 8px;
-        pointer-events: auto;
-        cursor: pointer;
-        max-width: 150px;
-        backdrop-filter: blur(8px);
-        box-shadow: 0 4px 16px rgba(0,0,0,0.7), 0 0 8px ${tierCol}18;
-        transition: transform 0.15s, box-shadow 0.15s;
+        width: 7px; height: 7px; border-radius: 50%;
+        background: ${tierCol};
+        box-shadow: 0 0 8px ${tierCol}cc, 0 0 16px ${tierCol}44;
+        pointer-events: none;
       `;
-      const truncHead = (item.newsHeadline ?? "").length > 38
-        ? (item.newsHeadline ?? "").slice(0, 38) + "…"
-        : (item.newsHeadline ?? "");
-      el.innerHTML = `
-        <div style="display:flex;align-items:center;gap:4px;margin-bottom:2px;">
-          <span style="font-size:9px;">${icon}</span>
-          <span style="font-family:monospace;font-size:6.5px;font-weight:bold;color:${tierCol};letter-spacing:.1em;">${(item.newsTier ?? "").toUpperCase()}</span>
-        </div>
-        <div style="font-family:monospace;font-size:8px;font-weight:bold;color:rgba(215,220,230,0.92);line-height:1.3;">${truncHead}</div>
-      `;
-      el.title = item.newsHeadline ?? "";
-      el.addEventListener("mouseenter", () => {
-        el.style.transform = "scale(1.05)";
-        el.style.boxShadow = `0 6px 24px rgba(0,0,0,0.8), 0 0 16px ${tierCol}30`;
-      });
-      el.addEventListener("mouseleave", () => {
-        el.style.transform = "scale(1)";
-        el.style.boxShadow = `0 4px 16px rgba(0,0,0,0.7), 0 0 8px ${tierCol}18`;
-      });
-      el.addEventListener("click", (e) => {
-        e.stopPropagation();
-        el.dispatchEvent(new CustomEvent("news-pin-click", {
-          bubbles: true,
-          detail:  { newsId: item.newsId },
-        }));
-      });
 
     } else if (item.type === "domain-label") {
       const hex   = item.domainHex ?? "#c9a84c";
@@ -1319,6 +1329,28 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
     return canvas.toDataURL("image/png");
   }, []);
 
+  // ── Orbit card layout — positions around globe perimeter ─────────────
+  const ORBIT_TIER_COL: Record<string, string> = { t4: "#e84040", t3: "#f0a500", t2: "#38bdf8", t1: "#1ae8a0" };
+  const ORBIT_CAT_ICON: Record<string, string> = {
+    war: "⚔", economic: "📉", nuclear: "☢", health: "⚕", climate: "🌡", political: "🏛",
+  };
+  const GLOBE_R_PX  = dims.h * 0.315;
+  const ORBIT_R_PX  = GLOBE_R_PX + 62;
+  const orbitCards = filteredNewsPins.map((pin, i) => {
+    const N = filteredNewsPins.length;
+    const angle   = -Math.PI / 2 + (2 * Math.PI * i) / Math.max(N, 1);
+    const baseX   = dims.w / 2 + ORBIT_R_PX * Math.cos(angle);
+    const baseY   = dims.h / 2 + ORBIT_R_PX * Math.sin(angle);
+    const dotX    = dims.w / 2 + (GLOBE_R_PX + 2) * Math.cos(angle);
+    const dotY    = dims.h / 2 + (GLOBE_R_PX + 2) * Math.sin(angle);
+    return {
+      pin, angle, baseX, baseY, dotX, dotY,
+      col:      ORBIT_TIER_COL[pin.tier] ?? "#38bdf8",
+      icon:     ORBIT_CAT_ICON[pin.category] ?? "📡",
+      truncHead: pin.headline.length > 36 ? pin.headline.slice(0, 36) + "…" : pin.headline,
+    };
+  });
+
   return (
     <div ref={containerRef} className="w-full h-full relative overflow-hidden select-none"
          style={{ background: "#000005" }}>
@@ -1680,6 +1712,86 @@ export function WorldRiskGlobe({ eraPhase, scenarioId, domainId, gatePhase, scru
             </div>
           </div>
         </div>
+      )}
+
+      {/* ── News orbit overlay — cards around globe with SVG connectors ──── */}
+      {showNewsFeed && domainId && orbitCards.length > 0 && dims.w > 0 && (
+        <>
+          {/* Connector lines */}
+          <svg
+            className="absolute inset-0 pointer-events-none"
+            style={{ width: dims.w, height: dims.h, zIndex: 10 }}
+          >
+            {orbitCards.map(({ pin, angle, baseX, baseY, dotX, dotY, col }) => {
+              const off = dragOffsets[pin.id] ?? { x: 0, y: 0 };
+              const cx  = baseX + off.x;
+              const cy  = baseY + off.y;
+              // Line endpoint: card edge facing the globe
+              const dx   = cx - dims.w / 2;
+              const dy   = cy - dims.h / 2;
+              const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+              const lineEndX = cx - (dx / dist) * 79;
+              const lineEndY = cy - (dy / dist) * 31;
+              return (
+                <g key={pin.id}>
+                  <line
+                    x1={dotX} y1={dotY} x2={lineEndX} y2={lineEndY}
+                    stroke={col} strokeWidth={0.7} strokeDasharray="3 3" opacity={0.45}
+                  />
+                  <circle cx={dotX} cy={dotY} r={2.5} fill={col} opacity={0.8} />
+                </g>
+              );
+            })}
+          </svg>
+
+          {/* Draggable cards */}
+          {orbitCards.map(({ pin, baseX, baseY, col, icon, truncHead }) => {
+            const off  = dragOffsets[pin.id] ?? { x: 0, y: 0 };
+            const left = baseX + off.x - 75;
+            const top  = baseY + off.y - 27;
+            return (
+              <div
+                key={pin.id}
+                style={{
+                  position: "absolute", left, top,
+                  width: 150, zIndex: 15,
+                  background: "rgba(5,8,13,0.93)",
+                  border: `1px solid ${col}55`,
+                  borderLeft: `2px solid ${col}`,
+                  borderRadius: "6px",
+                  padding: "4px 8px",
+                  backdropFilter: "blur(8px)",
+                  boxShadow: `0 4px 16px rgba(0,0,0,0.7), 0 0 8px ${col}18`,
+                  cursor: draggingRef.current?.id === pin.id ? "grabbing" : "grab",
+                  userSelect: "none",
+                  touchAction: "none",
+                }}
+                onPointerDown={e => startDrag(e, pin.id)}
+                onPointerMove={moveDrag}
+                onPointerUp={endDrag}
+                onPointerCancel={endDrag}
+                onClick={e => {
+                  if (draggingRef.current) return;
+                  e.stopPropagation();
+                  onNewsFeedPinClick(pin.id);
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "4px", marginBottom: "2px" }}>
+                  <span style={{ fontSize: "9px" }}>{icon}</span>
+                  <span style={{ fontFamily: "monospace", fontSize: "6.5px", fontWeight: "bold", color: col, letterSpacing: ".1em" }}>
+                    {pin.tier.toUpperCase()}
+                  </span>
+                  <span style={{ fontFamily: "monospace", fontSize: "6px", color: "rgba(150,165,180,0.4)", marginLeft: "auto" }}>
+                    ⠿
+                  </span>
+                </div>
+                <div style={{ fontFamily: "monospace", fontSize: "8px", fontWeight: "bold", color: "rgba(215,220,230,0.92)", lineHeight: "1.3" }}>
+                  {truncHead}
+                </div>
+              </div>
+            );
+          })}
+        </>
       )}
 
       {/* ── Loading veil — dark hold until globe canvas is ready ── */}
